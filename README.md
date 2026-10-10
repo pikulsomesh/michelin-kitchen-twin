@@ -29,6 +29,10 @@ Share links replay the same service to the second, for example [`?covers=120&sea
 
 See [docs/data-model.md](docs/data-model.md) for how kitchen concepts map to manufacturing ones, and for what is published versus estimated.
 
+## How it was built
+
+Several Claude sessions built the twin in parallel, one thread each for product, data, simulation, the 3D scene and Studio, coordinating through shared data ids. [docs/how-it-was-built.md](docs/how-it-was-built.md) tells the story.
+
 ## NVIDIA ecosystem
 
 The twin runs in the browser on GitHub Pages, with no NVIDIA software. Its model has the same shape as an industrial twin, so [docs/nvidia.md](docs/nvidia.md) maps it to OpenUSD and Omniverse, Isaac Sim and Isaac Lab for robotic stations, the Mega blueprint for facility-scale twins, and cuOpt for schedule optimization. The page is explicit about what runs here today and what would need Omniverse.
