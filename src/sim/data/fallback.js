@@ -104,7 +104,7 @@ const DISHES = [
     S('garnish', 'Garnish', 'garde_manger', null, 'garde', 50, 50, { pickled_shallot: 15, microgreens: 2 }, ['slice'], 0.4),
     PL('plate', 22, ['toast', 'garnish']) ] },
   { id: 'lobster', name: 'Butter-Poached Lobster', holdSec: 180, steps: [
-    S('poach', 'Butter-poach lobster', 'saucier', 'induction', 'saucier', 420, 100, { lobster_poach_ready: 110, beurre_monte_base: 70 }, [], 0.25),
+    S('poach', 'Butter-poach lobster', 'saucier', 'induction', 'saucier', 420, 100, { lobster_poach_ready: 110, beurre_monte_base: 70 }, [], 0.08),
     S('puree', 'Pea purée & garnish', 'garde_manger', null, 'garde', 60, 60, { pea_puree: 40, microgreens: 3 }, [], 0.4),
     PL('plate', 24, ['poach', 'puree']) ] },
   { id: 'agnolotti', name: 'Truffle Agnolotti', holdSec: 120, steps: [
@@ -112,16 +112,16 @@ const DISHES = [
     S('sauce', 'Mount sauce & shave truffle', 'saucier', 'induction', 'saucier', 130, 100, { beurre_monte_base: 30, veal_jus: 25, black_truffle: 3 }, [], 0.35),
     PL('plate', 26, ['boil', 'sauce']) ] },
   { id: 'halibut', name: 'Pan-Roasted Halibut', holdSec: 150, steps: [
-    S('sear', 'Sear halibut', 'poisson', 'range', 'poissonier', 300, 260, { halibut_portion: 120, olive_oil: 6, butter: 10 }, [], 0.2),
+    S('sear', 'Sear halibut', 'poisson', 'range', 'poissonier', 300, 260, { halibut_portion: 120, olive_oil: 6, butter: 10 }, [], 0.08),
     S('finish', 'Finish in combi', 'poisson', 'combi', 'poissonier', 240, 25, {}, ['sear'], 0.05),
     S('sauce', 'Beurre blanc & asparagus', 'saucier', 'range', 'saucier', 150, 110, { beurre_monte_base: 40, white_wine: 10, asparagus: 40 }, [], 0.3),
     PL('plate', 30, ['finish', 'sauce']) ] },
   { id: 'scallop', name: 'Seared Scallop', holdSec: 120, steps: [
-    S('sear', 'Sear scallops', 'poisson', 'plancha', 'poissonier', 200, 180, { scallop: 80, butter: 12 }, [], 0.25),
+    S('sear', 'Sear scallops', 'poisson', 'plancha', 'poissonier', 200, 180, { scallop: 80, butter: 12 }, [], 0.1),
     S('sauce', 'Purée & beurre monté', 'saucier', 'induction', 'saucier', 110, 80, { pea_puree: 40, beurre_monte_base: 30 }, [], 0.3),
     PL('plate', 24, ['sear', 'sauce']) ] },
   { id: 'wagyu', name: 'Wagyu Strip Loin', holdSec: 200, steps: [
-    S('sear', 'Plancha sear', 'meat', 'plancha', 'rotisseur', 380, 320, { wagyu_portion: 120, butter: 15 }, [], 0.2),
+    S('sear', 'Plancha sear', 'meat', 'plancha', 'rotisseur', 380, 320, { wagyu_portion: 120, butter: 15 }, [], 0.08),
     S('rest', 'Rest in warming drawer', 'meat', 'warming_drawer', 'rotisseur', 300, 10, {}, ['sear'], 0.02),
     S('garnish', 'Jus, mushrooms & potato', 'saucier', 'range', 'saucier', 160, 130, { veal_jus: 40, mushrooms: 40, potato: 60, butter: 15 }, [], 0.3),
     PL('plate', 36, ['rest', 'garnish']) ] },
@@ -211,9 +211,9 @@ const STAFF = [
 ];
 
 const TABLES = [
-  ...Array.from({ length: 14 }, (_, i) => ({ id: `T${i + 1}`, seats: 2 })),
-  ...Array.from({ length: 8 }, (_, i) => ({ id: `T${i + 15}`, seats: 4 })),
-  ...Array.from({ length: 3 }, (_, i) => ({ id: `T${i + 23}`, seats: 6 })),
+  ...Array.from({ length: 16 }, (_, i) => ({ id: `T${i + 1}`, seats: 2 })),
+  ...Array.from({ length: 10 }, (_, i) => ({ id: `T${i + 17}`, seats: 4 })),
+  ...Array.from({ length: 4 }, (_, i) => ({ id: `T${i + 27}`, seats: 6 })),
 ];
 
 /**

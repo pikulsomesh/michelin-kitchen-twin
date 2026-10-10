@@ -44,7 +44,7 @@ test('every guest is served every course; inventory never goes negative and bala
 test('under-stocked plan produces stockouts, well-stocked plan does not', () => {
   const ok = createSim({ data, covers: 40, seed: 5 }).forecast.snapshot;
   assert.equal(ok.kpis.stockoutCount, 0);
-  const bad = createSim({ data, covers: 130, seed: 5 }).forecast.snapshot;
+  const bad = createSim({ data, covers: 40, seed: 5, purchasing: "fixed", supply: { lobster_poach_ready: 1, lobster: 0.3 } }).forecast.snapshot;
   assert.ok(bad.kpis.stockoutCount > 0);
 });
 

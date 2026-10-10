@@ -6,7 +6,13 @@ import { makeRng, Heap, pct, fmtClock } from './rng.js';
 import { explodeRequirements, unitCosts } from './mrp.js';
 
 export const DEFAULT_CFG = {
-  covers: 80,
+  covers: 60,
+  seating: 'twoTurn',   // 'twoTurn' (5:30 + 8:00) | 'bell' | 'rush' (everyone within 30 min)
+  staffOut: [],         // staff ids removed from the schedule (short-staffed what-if)
+  faults: [],           // [{ appliance: id|type, at: seconds, durationSec }] forced breakdowns
+  purchasing: 'plan',   // 'plan': stock bought for booked covers x purchaseFactor | 'fixed': use data on-hand as delivered
+  purchaseFactor: 1.15,
+  supply: {},           // { ingredientId: factor } scales starting stock (supply shock what-if)
   seed: 1,
   prepStart: 8 * 3600,
   doorsOpen: 17.5 * 3600,
@@ -30,7 +36,10 @@ export class Engine {
   constructor(data, cfgIn = {}, emit = () => {}) {
     this.data = data;
     this.cfg = { ...DEFAULT_CFG, ...cfgIn };
-    this.emit = emit;
+    this.events = [];
+    this.taskLog = [];
+    this.blockLog = [];
+    this.emit = (type, payload) => { if (this.events.length < 250000) this.events.push({ t: this.now, type, ...payload }); emit(type, payload); };
     const c = this.cfg;
     this.rngRes = makeRng(c.seed);
     this.rng = makeRng((c.seed ^ 0x9e3779b9) >>> 0);
@@ -46,11 +55,17 @@ export class Engine {
     this.stationDef = Object.fromEntries(data.stations.map((s) => [s.id, s]));
 
     // ---- resources -------------------------------------------------------------------------
-    this.inv = new Map(data.ingredients.map((i) => [i.id, {
-      def: i, onHand: i.onHand ?? 0, start: i.onHand ?? 0, used: 0, produced: 0, wasted: 0, stockouts: 0, minOnHand: i.onHand ?? 0,
-    }]));
+    const planRaw = c.purchasing === 'plan' ? explodeRequirements(data, c.covers * c.purchaseFactor, 1.08).raw : null;
+    const stockOf = (i) => {
+      let q = i.onHand ?? 0;
+      if (planRaw && i.kind !== 'component') { const step = i.unit === 'ea' ? 1 : 100; q = Math.ceil((planRaw[i.id] || 0) / step) * step; }
+      return q * (c.supply[i.id] ?? 1);
+    };
+    this.inv = new Map(data.ingredients.map((i) => { const q = stockOf(i); return [i.id, {
+      def: i, onHand: q, start: q, used: 0, produced: 0, wasted: 0, stockouts: 0, minOnHand: q,
+    }]; }));
     this.pendingProd = {}; // component -> number of unfinished prep tasks that yield it
-    this.staff = data.staff.map((d, idx) => ({
+    this.staff = data.staff.filter((d) => !c.staffOut.includes(d.id)).map((d, idx) => ({
       id: d.id, def: d, station: d.home, state: 'off', onShift: false, leaving: false, task: null,
       busy: 0, walk: 0, done: 0, busyAtOpen: 0, walkAtOpen: 0, ord: idx,
     }));
@@ -100,12 +115,17 @@ export class Engine {
     const c = this.cfg; const r = this.rngRes; const out = [];
     const slots = [];
     for (let t = c.doorsOpen; t <= c.lastSeating; t += 900) slots.push(t);
-    const mid = (c.doorsOpen + c.lastSeating) / 2 + 600; const sd = 3300;
+    const peak = (t, m, sd) => Math.exp(-0.5 * ((t - m) / sd) ** 2);
+    const weight = {
+      twoTurn: (t) => peak(t, c.doorsOpen + 900, 1500) + 0.85 * peak(t, c.doorsOpen + 9000, 1800) + 0.03,
+      bell: (t) => peak(t, (c.doorsOpen + c.lastSeating) / 2 + 600, 3300) + 0.05,
+      rush: (t) => (t <= c.doorsOpen + 1800 ? 1 : 0.0001),
+    }[c.seating] || ((t) => 1);
     const sizes = [[1, 0.03], [2, 0.57], [3, 0.08], [4, 0.2], [5, 0.04], [6, 0.08]];
     let left = c.covers; let n = 0;
     while (left > 0) {
       let size = r.pick(sizes, (s) => s[1])[0]; size = Math.min(size, left);
-      const slot = r.pick(slots, (t) => Math.exp(-0.5 * ((t - mid) / sd) ** 2) + 0.05);
+      const slot = r.pick(slots, weight);
       const at = slot + r.int(0, 2) * 300 + Math.max(-120, Math.round(r.normal() * 150));
       out.push({ id: `R${++n}`, size, at, noShow: r.next() < c.noShowRate, status: 'booked', table: null, course: -1 });
       left -= size;
@@ -133,6 +153,10 @@ export class Engine {
       this.at(p.at, () => this.#arrive(p));
     }
     if (c.failures) for (const a of this.appl) this.#scheduleFailure(a, c.prepStart);
+    for (const f of c.faults) this.at(f.at, () => {
+      const a = this.applBy[f.appliance] || this.appl.find((x) => x.def.type === f.appliance && x.up);
+      if (a && a.up) this.#breakDown(a, f.durationSec, false);
+    });
     this.at(c.prepStart, () => this.#sample());
   }
 
@@ -216,7 +240,10 @@ export class Engine {
 
   #callCourse(p, idx, readyAt) {
     p.nextReady = readyAt; p.course = idx;
-    this.at(Math.max(this.now, readyAt - this.cfg.leadSec), () => this.#fireTicket(p, idx, readyAt));
+    // expo fires early by the planned lead time of the slowest dish on this course (JIT / offset scheduling)
+    const course = this.data.courses[idx]; let lead = 0;
+    for (const part of course.parts) for (const o of part) lead = Math.max(lead, this.#critical(this.dishById[o.dish], Math.max(1, Math.round(p.size / part.length))));
+    this.at(Math.max(this.now, readyAt - lead * 0.9 - this.cfg.leadSec), () => this.#fireTicket(p, idx, readyAt));
   }
 
   #fireTicket(p, idx, readyAt) {
@@ -418,6 +445,8 @@ export class Engine {
     if (t.blocker && wait > 0.5 && t.cls <= CLASS.service) {
       this.m.blockedWait[t.blocker] = (this.m.blockedWait[t.blocker] || 0) + wait;
       this.m.blockedCount[t.blocker] = (this.m.blockedCount[t.blocker] || 0) + 1;
+      this.blockLog.push({ t: now, key: t.blocker, wait });
+      if (this.blockLog.length > 4000) this.blockLog.shift();
     }
     staff.state = walk > 0.05 ? 'walking' : 'working'; staff.task = t; staff.walk += walk;
     t.staff = staff; t.startAt = now + walk; t.endAt = now + walk + durActual; t.freeAt = now + walk + attendActual; t.waited = wait;
@@ -428,6 +457,8 @@ export class Engine {
     }
     staff.busy += attendActual;
     stn.busy += attendActual;
+    if (this.taskLog.length < 40000) this.taskLog.push({ id: t.id, kind: t.kind, name: t.name, staff: staff.id, appliance: appl?.id || null, station: t.station,
+      start: now + walk, end: now + walk + durActual, free: now + walk + attendActual, ticket: t.line?.ticket.id || null, course: t.line?.ticket.courseId || null, dish: t.line?.dish.id || null, wait });
     this.emit('task:start', { task: t.id, name: t.name, kind: t.kind, station: t.station, appliance: appl?.id || null, staff: staff.id,
       dish: t.line?.dish.id || null, ticket: t.line?.ticket.id || null, start: t.startAt, end: t.endAt });
     this.at(now + walk, () => { if (staff.task === t) staff.state = 'working'; });
@@ -521,10 +552,10 @@ export class Engine {
       if (l.dead || l.good <= 0 || l.platedAt === null) continue;
       const hold = this.now - l.platedAt;
       const limit = l.dish.holdSec;
-      if (hold > limit) {
+      if (hold > limit && !l.holdRejected && !tk.holdReopened) {
         const p = Math.min(0.85, ((hold - limit) / limit) * 0.55);
         if (this.rng.next() < p) {
-          l.good--; this.m.holdRejects++; this.m.remakes++;
+          l.good--; l.holdRejected = true; tk.holdReopened = true; this.m.holdRejects++; this.m.remakes++;
           this.m.wasteCost += this.#lineCost(l) / l.qty;
           this.#log('qc', `Held too long (${Math.round(hold)}s) — ${l.dish.name} (${tk.id}) remade`);
           this.emit('qc:reject', { ticket: tk.id, dish: l.dish.id, hold: true });
@@ -590,17 +621,21 @@ export class Engine {
     const t = from + this.rngFail.exp(a.def.mtbfH * 3600);
     this.at(t, () => {
       if (this.serviceDone) return;
-      a.up = false; a.downSince = this.now; a.failures++;
-      const repair = Math.max(300, this.rngFail.exp(a.def.mttrMin * 60));
-      this.#log('fault', `${a.def.name} (${a.id}) FAULT — repair ~${Math.round(repair / 60)} min`);
-      this.emit('appliance:down', { appliance: a.id, repair });
-      this.at(this.now + repair, () => {
-        a.down += this.now - a.downSince; a.downSince = null; a.up = true;
-        this.#log('fault', `${a.def.name} (${a.id}) back online`);
-        this.emit('appliance:up', { appliance: a.id });
-        this.dirty = true;
-        this.#scheduleFailure(a, this.now);
-      });
+      if (!a.up) { this.#scheduleFailure(a, this.now); return; }
+      this.#breakDown(a, Math.max(300, this.rngFail.exp(a.def.mttrMin * 60)), true);
+    });
+  }
+
+  #breakDown(a, repair, random) {
+    a.up = false; a.downSince = this.now; a.failures++;
+    this.#log('fault', `${a.def.name} (${a.id}) FAULT — repair ~${Math.round(repair / 60)} min`);
+    this.emit('appliance:down', { appliance: a.id, repair });
+    this.at(this.now + repair, () => {
+      a.down += this.now - a.downSince; a.downSince = null; a.up = true;
+      this.#log('fault', `${a.def.name} (${a.id}) back online`);
+      this.emit('appliance:up', { appliance: a.id });
+      this.dirty = true;
+      if (random) this.#scheduleFailure(a, this.now);
     });
   }
 
@@ -695,7 +730,7 @@ export class Engine {
       id: tk.id, table: tk.table, course: tk.courseName, fireAt: tk.fireAt, age: now - tk.fireAt, late: now > tk.readyAt + 120,
       lines: tk.lines.map((l) => ({ dish: l.dish.name, qty: l.qty, done: l.platedAt !== null && !l.dead })), pending: tk.pending, passed: !!tk.passAt,
     })).sort((a, b) => a.fireAt - b.fireAt);
-    const kpis = this.#kpis(win, inService);
+    const kpis = this.#kpis(win, inService, staff, appliances);
     return {
       t: now, clock: fmtClock(now), phase: this.phase, done: this.serviceDone, endT: this.endT,
       covers: { booked: c.covers, seated: this.m.seatedGuests, finished: this.m.finishedGuests, noShows: this.m.noShowGuests,
@@ -705,7 +740,40 @@ export class Engine {
     };
   }
 
-  #kpis(win, inService) {
+  /** Theory-of-constraints read-out: the resource that made work wait longest (last 30 min, or whole service once closed). */
+  #bottleneck(staff, appliances) {
+    const from = this.phase === 'closed' ? -Infinity : this.now - 1800; const agg = {};
+    if (this.phase === 'closed') for (const [k, w] of Object.entries(this.m.blockedWait)) agg[k] = { key: k, wait: w, n: this.m.blockedCount[k] };
+    else for (const b of this.blockLog) if (b.t >= from) { const a = (agg[b.key] ||= { key: b.key, wait: 0, n: 0 }); a.wait += b.wait; a.n++; }
+    const top = Object.values(agg).sort((a, b) => b.wait - a.wait)[0];
+    if (!top || top.wait < 120) return { key: null, text: this.phase === 'service' ? 'No constraint: work is flowing without queues.' : 'Waiting for service to start.', waitSec: 0, n: 0, util: 0, queue: 0 };
+    const [kind, id] = top.key.split(':');
+    const ROLE = { expo: 'the pass (expo)', saucier: 'the sauce station', poissonier: 'the fish station', rotisseur: 'the meat station', garde: 'garde manger', patissier: 'pastry', runner: 'food runners', plonge: 'the dish pit', prep: 'prep cooks' };
+    let label = id, util = 0, queue = 0, factory = id;
+    if (kind === 'role') {
+      label = ROLE[id] || id; factory = `labor: ${id}`;
+      const crew = staff.filter((x) => x.roles.includes(id) && x.roll > 0 || (x.roles.includes(id) && x.state !== 'off'));
+      util = crew.length ? crew.reduce((a, x) => a + x.roll, 0) / crew.length : 0;
+      queue = this.ready.filter((t) => t.role === id).length;
+    } else if (kind === 'appliance') {
+      const same = appliances.filter((a) => a.type === id);
+      label = `${(this.data.appliances.find((a) => a.type === id)?.name || id).replace(/ \(.*\)/, '')}${same.length > 1 ? ` (${same.length} units)` : ''}`;
+      factory = `machine: ${id}`;
+      util = same.reduce((a, x) => a + x.roll, 0) / Math.max(1, same.length); queue = this.ready.filter((t) => t.appliance === id).length;
+    } else if (kind === 'station') {
+      const st = this.stationBy[id]; label = `${st?.def.name || id} station positions`; factory = `work centre: ${id}`;
+      util = st ? st.active / st.def.capacity : 0; queue = this.ready.filter((t) => t.station === id).length;
+    } else if (kind === 'input') {
+      label = `${this.inv.get(id)?.def.name || id} (prep stock)`; factory = `material: ${id}`; queue = this.ready.filter((t) => t.blocker === top.key).length;
+    }
+    const mins = (top.wait / 60).toFixed(1);
+    const text = kind === 'input'
+      ? `${label} is the constraint: ${top.n} orders waited ${mins} min ${this.phase === 'closed' ? 'over the service' : 'in the last 30 min'} for it to be prepped.`
+      : `${label} ${kind === 'appliance' ? 'is' : 'is'} the constraint: ${top.n} tasks waited ${mins} min ${this.phase === 'closed' ? 'over the service' : 'in the last 30 min'} (avg ${Math.round(top.wait / top.n)} s)${util ? `, ${Math.round(util * 100)}% busy` : ''}${queue ? `, ${queue} queued now` : ''}.`;
+    return { key: top.key, kind, id, label, factory, text, waitSec: top.wait, n: top.n, util, queue };
+  }
+
+  #kpis(win, inService, staff, appliances) {
     const m = this.m; const now = this.now;
     const all = Object.values(m.ticketTimes).flat();
     const perCourse = this.data.courses.map((cc) => {
@@ -725,8 +793,9 @@ export class Engine {
     const svcSpan = Math.max(1, (m.lastServedAt ?? now) - this.cfg.doorsOpen);
     const kwh = this.appl.reduce((s, a) => s + slotSecToKwh(a, this.#applSlotSec(a)), 0);
     const fpy = m.platesPlated ? 1 - (m.defects + m.holdRejects) / m.platesPlated : 1;
+    const bottleneck = this.#bottleneck(staff, appliances);
     return {
-      ticketAvg: avg(all), ticketP50: pct(all, 50), ticketP90: pct(all, 90), ticketP95: pct(all, 95),
+      bottleneck, ticketAvg: avg(all), ticketP50: pct(all, 50), ticketP90: pct(all, 90), ticketP95: pct(all, 95),
       guestWaitAvg: avg(m.guestWaits), guestWaitP90: pct(m.guestWaits, 90), passHoldAvg: avg(m.passHold), passHoldP90: pct(m.passHold, 90),
       perCourse, constraints, openTickets: this.openTickets.size, wip: this.ready.length + this.staff.filter((s) => s.task).length,
       queued: this.ready.length, peakWip: m.peakWip, throughputPortionsHr: portionsPerHr, avgPortionsHr: elapsedSvc ? (m.served / svcSpan) * 3600 : 0,
