@@ -59,3 +59,28 @@ test('events fire while stepping', () => {
   sim.step(sim.end - sim.start);
   for (const e of ['ticket:fired', 'task:start', 'task:end', 'inventory:change', 'course:served', 'table:seated']) assert.ok(seen.has(e), e);
 });
+
+import { SCENARIOS, runHeadless, compare, shiftReportCSV } from '../src/sim/scenarios.js';
+import { DEFAULT_CFG } from '../src/sim/engine.js';
+
+test('what-if scenarios change the KPIs they should', () => {
+  const base = runHeadless(data, { ...DEFAULT_CFG });
+  const get = (id) => SCENARIOS.find((s) => s.id === id);
+  const full = runHeadless(data, { ...DEFAULT_CFG, ...get('full-house').apply(DEFAULT_CFG, data) });
+  assert.ok(full.kpis.guestWaitP90 > base.kpis.guestWaitP90 * 1.5, 'full house slows the kitchen');
+  const shock = runHeadless(data, { ...DEFAULT_CFG, ...get('supply-shock').apply(DEFAULT_CFG, data) });
+  assert.ok(shock.kpis.stockoutCount > 0, 'supply shock causes 86s');
+  const rows = compare(base, full);
+  assert.ok(rows.some((r) => r.verdict === 'bad'));
+  assert.ok(shiftReportCSV(base, data).split('\n').length > 50);
+});
+
+test('stateAt and PRD event aliases', () => {
+  const sim = createSim({ data, covers: 20, seed: 4 });
+  const names = new Set(); sim.on('op.start', () => names.add('op.start')); sim.on('plate.passed', () => names.add('plate.passed'));
+  sim.step(sim.end - sim.start);
+  assert.ok(names.has('op.start') && names.has('plate.passed'));
+  const s = sim.stateAt(sim.config.doorsOpen + 7200);
+  assert.ok(s.tables.some((t) => t.state === 'seated'));
+  assert.ok(sim.events.length > 100);
+});

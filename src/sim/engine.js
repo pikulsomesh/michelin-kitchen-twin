@@ -212,6 +212,7 @@ export class Engine {
       appl: Object.fromEntries(this.appl.map((a) => [a.id, [this.#applSlotSec(a), this.#applDown(a)]])),
       stations: Object.fromEntries(this.stations.map((s) => [s.id, this.#stationBusy(s)])),
     };
+    for (const e of this.inv.values()) e.atOpen = e.onHand;
     for (const s of this.staff) { s.busyAtOpen = this.openBase.staff[s.id][0]; s.walkAtOpen = s.walk; }
     this.emit('phase', { phase: 'service' });
   }
@@ -721,7 +722,7 @@ export class Engine {
     const inventory = [...this.inv.values()].map((e) => {
       const rate = e.used / Math.max(1, (now - c.prepStart));
       return { id: e.def.id, name: e.def.name, unit: e.def.unit, kind: e.def.kind, storage: e.def.storage, onHand: e.onHand, start: e.start,
-        used: e.used, produced: e.produced, wasted: e.wasted, par: e.def.par || 0, stockouts: e.stockouts,
+        atOpen: e.atOpen ?? e.onHand, used: e.used, produced: e.produced, wasted: e.wasted, par: e.def.par || 0, stockouts: e.stockouts,
         pct: e.start > 0 ? e.onHand / e.start : (e.def.kind === 'component' ? null : 0), cost: e.def.cost || 0 };
     });
     const tables = this.tables.map((t) => ({ id: t.id, seats: t.seats, state: t.state, party: t.party?.id || null, size: t.party?.size || 0,
@@ -766,11 +767,12 @@ export class Engine {
     } else if (kind === 'input') {
       label = `${this.inv.get(id)?.def.name || id} (prep stock)`; factory = `material: ${id}`; queue = this.ready.filter((t) => t.blocker === top.key).length;
     }
-    const mins = (top.wait / 60).toFixed(1);
+    const mins = top.wait > 7200 ? `${(top.wait / 3600).toFixed(1)} h` : `${(top.wait / 60).toFixed(1)} min`;
     const text = kind === 'input'
-      ? `${label} is the constraint: ${top.n} orders waited ${mins} min ${this.phase === 'closed' ? 'over the service' : 'in the last 30 min'} for it to be prepped.`
-      : `${label} ${kind === 'appliance' ? 'is' : 'is'} the constraint: ${top.n} tasks waited ${mins} min ${this.phase === 'closed' ? 'over the service' : 'in the last 30 min'} (avg ${Math.round(top.wait / top.n)} s)${util ? `, ${Math.round(util * 100)}% busy` : ''}${queue ? `, ${queue} queued now` : ''}.`;
-    return { key: top.key, kind, id, label, factory, text, waitSec: top.wait, n: top.n, util, queue };
+      ? `${label} is the constraint: ${top.n} orders waited ${mins} ${this.phase === 'closed' ? 'over the service' : 'in the last 30 min'} for it to be prepped.`
+      : `${label} ${kind === 'appliance' ? 'is' : 'is'} the constraint: ${top.n} tasks waited ${mins} ${this.phase === 'closed' ? 'over the service' : 'in the last 30 min'} (avg ${Math.round(top.wait / top.n)} s)${util ? `, ${Math.round(util * 100)}% busy` : ''}${queue ? `, ${queue} queued now` : ''}.`;
+    const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    return { key: top.key, kind, id, label: cap(label), factory, text: cap(text), waitSec: top.wait, n: top.n, util, queue };
   }
 
   #kpis(win, inService, staff, appliances) {
@@ -787,7 +789,7 @@ export class Engine {
     const r0 = recent[0];
     const portionsPerHr = r0 && now > r0.t ? ((m.served - r0.served) / (now - r0.t)) * 3600 : 0;
     const covers = m.finishedGuests;
-    const revenue = m.seatedGuests * (this.data.meta?.menuPricePerCover ?? 0);
+    const revenue = this.cfg.covers * (this.data.meta?.menuPricePerCover ?? 0); // planned revenue for the booked covers
     const foodCost = this.#consumedCost();
     const elapsedSvc = this.openBase && now > this.cfg.doorsOpen ? now - this.cfg.doorsOpen : 0;
     const svcSpan = Math.max(1, (m.lastServedAt ?? now) - this.cfg.doorsOpen);

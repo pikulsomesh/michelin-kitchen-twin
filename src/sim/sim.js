@@ -10,13 +10,20 @@ export function createSim({ data, ...cfg } = {}) {
   if (!data) throw new Error('createSim: data (KitchenData) is required');
   const listeners = new Map();
   let muted = false;
+  // PRD event names (dotted) alongside the colon-style ones
+  const ALIAS = { 'ticket:fired': 'ticket.fired', 'task:start': 'op.start', 'task:end': 'op.end', 'staff:move': 'staff.move',
+    'appliance:down': 'machine.state', 'appliance:up': 'machine.state', 'inventory:change': 'inventory.change',
+    'course:served': 'plate.passed', 'qc:reject': 'plate.refire', 'plate:ready': 'plate.ready' };
   const emit = (type, payload) => {
     if (muted) return;
+    if (ALIAS[type]) { const p = { ...payload, state: type === 'appliance:down' ? 'down' : type === 'appliance:up' ? 'up' : undefined, t: eng?.now };
+      for (const cb of listeners.get(ALIAS[type]) || []) cb(p); }
     for (const cb of listeners.get(type) || []) cb(payload);
     for (const cb of listeners.get('*') || []) cb(type, payload);
   };
   let config = { ...DEFAULT_CFG, ...cfg };
-  let eng = new Engine(data, config, emit);
+  let eng = null; // set below (emit may fire during construction)
+  eng = new Engine(data, config, emit);
   let forecast = null;
 
   const computeForecast = () => {
@@ -50,6 +57,12 @@ export function createSim({ data, ...cfg } = {}) {
     step(dt) { eng.advance(Math.min(eng.now + dt, forecast.endT)); emit('tick', { t: eng.now }); return eng.now; },
     /** advance by wall-clock seconds at the current speed (call from requestAnimationFrame) */
     tick(wallDt) { if (this.playing) this.step(wallDt * this.speed); if (eng.now >= forecast.endT) this.playing = false; },
+    /** PRD query: state of the whole twin at time t (seeks, then returns the snapshot) */
+    stateAt(t) { this.seek(t); return this.state; },
+    /** ordered event log so far: [{ t, type, ...payload }] */
+    get events() { return eng.events; },
+    /** task intervals for Gantt views */
+    get taskLog() { return eng.taskLog; },
     /** jump to an absolute time (seconds since midnight); backwards seeks replay from the seed deterministically */
     seek(t) {
       t = Math.max(eng.t0, Math.min(t, forecast.endT));
