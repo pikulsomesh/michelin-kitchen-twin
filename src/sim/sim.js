@@ -27,6 +27,7 @@ export function createSim({ data, ...cfg } = {}) {
     const c = { ...DEFAULT_CFG, ...(data.sim ? { covers: data.sim.defaultCovers, seating: data.sim.defaultSeating, prepStart: data.sim.times.prepStart } : {}), ...prev, ...patch };
     const sc = (data.seatingScenarios || []).find((s) => s.id === c.seating);
     if (sc) { const [a, b] = seatingWindow(sc); c.doorsOpen = a; c.lastSeating = b; }
+    if (c.arrival && c.arrival.start != null) { c.doorsOpen = c.arrival.start; c.lastSeating = Math.max(c.arrival.end ?? c.lastSeating, c.arrival.start + 900); }
     return c;
   };
   let config = resolve(cfg);

@@ -16,3 +16,5 @@ for (const c of k.perCourse) console.log(`  ${c.name.padEnd(28)} n=${String(c.n)
 console.log(`prep ${s.prep.done}/${s.prep.total} batches (${s.prep.skipped} skipped)`);
 console.log('appliances:', s.appliances.filter((a) => a.tasks).map((a) => `${a.id} ${(a.util * 100) | 0}%`).join('  '));
 console.log('cooks:', s.staff.filter((x) => x.util > 0).map((x) => `${x.id.replace('ST-', '')} ${(x.util * 100) | 0}%`).join('  '));
+const g = s.guests;
+console.log(`guests: table wait p90 ${mm(g.tableWaitP90)}  balked ${g.balked}  course gap avg ${mm(g.gapAvg)} (target ${mm(g.gapTarget)})  meal avg ${mm(g.mealAvg)} p90 ${mm(g.mealP90)} (target ${mm(g.mealTarget)})  value-added ${(g.valueAdded * 100).toFixed(0)}%`);

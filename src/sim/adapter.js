@@ -89,12 +89,13 @@ export function adaptKitchenData({ items, products, menu, resources, service, la
   function scaleUses(u) { return u; }
 
   // ---- menu -> courses -------------------------------------------------------------------------------
-  const gap = service.pacing?.courseGapMinutes?.mean ?? 17;
+  const target = (service.pacing?.targetMealMinutes ?? 195) * MIN;
+  const nCourses = menu.courses.length;
   const courses = menu.courses.map((c) => {
     const parts = [c.options.map((o) => ({ dish: o.product, weight: o.share }))];
     for (const inc of c.includes || []) parts.push([{ dish: inc.product, weight: 1 }]);
     for (const sup of c.supplements || []) parts.push([{ dish: sup.product, weight: sup.uptake }, { dish: null, weight: 1 - sup.uptake }]);
-    return { id: c.id, name: c.name, eatSec: Math.max(300, gap * MIN - 120), parts };
+    return { id: c.id, name: c.name, eatSec: Math.max(300, target / nCourses - 330), parts };
   });
 
   // ---- stations (work centres) with layout geometry -------------------------------------------------

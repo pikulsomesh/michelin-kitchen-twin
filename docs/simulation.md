@@ -33,3 +33,24 @@ Use `loadKitchenData(fetchReader('./data/'))` (browser) or `loadKitchenData(read
 Scenarios, comparisons, capacity sweeps and the shift-report CSV are in `src/sim/scenarios.js`. Mount the dashboard with `mountDashboard(el, sim, { onSelect })`; `onSelect` receives `{ type: 'station' | 'ingredient' | 'appliance', id }` so the 3D scene can highlight it.
 
 Run the demo with any static server: `python3 -m http.server` and open `dashboard-demo.html` (query: `covers`, `seed`, `seating`, `speed`, `t`, `play`). Tests: `npm test`; terminal KPI report: `npm run sim:report -- 124` (add `1 fallback` for the built-in menu).
+
+## Guest-side controls and the guest line
+
+The dining room is modelled like a second production line: parties arrive, queue for a table, are seated, eat each course at their own pace, and leave. Every stage has a queue and a KPI.
+
+Config fields (all optional, pass to `createSim` or `sim.reset(patch)`):
+
+| Field | Meaning |
+|---|---|
+| `covers`, `noShowRate` | Guests booked and share who never arrive |
+| `arrival` | `{ start, end, shape }` seconds since midnight, shape `uniform`, `bell` or `waves`. Overrides the seating scenario |
+| `partyMix` | `[{ size, share }]` party sizes |
+| `patienceMin` | A party that waits longer than this for a table walks away (balks) |
+| `mix` | `{ weights: { dishId: share }, planFollows }`. Option shares and supplement uptake. Unless `planFollows`, the kitchen preps to the original forecast, so a skewed order can run an item out |
+| `eatScale`, `paceCv` | Eating pace multiplier and per-party variation |
+| `courseGapMin` | Minutes from a course being cleared to the next being called. Defaults to the menu's own pacing |
+| `purchasing`, `purchaseFactor`, `stockOverride` | Stock policy and explicit starting stock per raw item |
+
+`state.guests` reports: guests in house, waiting, balked and lost revenue, seat occupancy, table wait (avg, p90), first-course wait, course gap by course against target, eating time, total time at the table against target, and value-added ratio (eating time over time at the table). The series also carries `inHouse`, `waiting` and `balked` for charting.
+
+In the dashboard, the "Plan the night" panel builds a patch from the Guests, Orders, Stock and Timing tabs and re-runs the night from the same seed. "Reset to defaults" restores the dataset's own values.

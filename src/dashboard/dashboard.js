@@ -2,6 +2,7 @@
 // Usage: const dash = mountDashboard(el, sim, { onSelect }); dash.start();   // or call dash.update() from your own loop
 import { C, fit, lineChart, nearest, barRows, hhmm, mmss } from './charts.js';
 import { TERMS } from './terms.js';
+import { mountPlan, drawGuestLine } from './plan.js';
 import { scenariosFor, runHeadless, compare, capacitySweep, shiftReportCSV, avgOee } from '../sim/scenarios.js';
 
 const SPEEDS = [1, 10, 60, 300, 900, 2400];
@@ -63,6 +64,13 @@ const TEMPLATE = `
 
     <article class="panel"><h2 data-term="labor">Brigade</h2><canvas class="ch tall" data-ch-labor></canvas>
       <div class="legend muted">Utilization by station, last 15 min (cooks on shift)</div></article>
+
+    <article class="panel wide"><h2 data-term="plan">Plan the night</h2><div data-plan></div></article>
+
+    <article class="panel wide"><h2 data-term="guestLine">Guests: the dining-room line</h2>
+      <div class="mtiles" data-gl-tiles></div>
+      <div class="two"><div><canvas class="ch tall" data-gl-flow></canvas><div class="legend"><i style="background:${C.blue}"></i>In the house <i style="background:${C.orange}"></i>Waiting for a table <i style="background:${C.crit}"></i>Walked away</div></div>
+      <div><canvas class="ch tall" data-gl-gap></canvas><div class="legend"><i style="background:${C.blue}"></i>Average wait between courses <i style="background:${C.orange}"></i>p90 <span class="muted">dashed = target</span></div></div></div></article>
 
     <article class="panel wide"><h2 data-term="whatif">What if…</h2>
       <div class="scen" data-scen></div>
@@ -384,7 +392,7 @@ export function mountDashboard(root, sim, opts = {}) {
     $('[data-act="play"]').textContent = sim.playing ? '⏸ Pause' : '▶ Play';
     if (document.activeElement !== scrub) scrub.value = st.t;
     renderKpis(st); renderBanner(st); drawFloor(st); renderRail(st); renderOee(st); renderLog(st);
-    if (force || state.tick % 4 === 0) { drawCharts(st); renderInv(st); }
+    if (force || state.tick % 4 === 0) { drawCharts(st); renderInv(st); drawGuestLine($('[data-guestline]') || root, st, sim, state.hover); }
     if (force || state.tick % 40 === 0) renderMrp();
   }
 
@@ -400,6 +408,7 @@ export function mountDashboard(root, sim, opts = {}) {
   new ResizeObserver(() => update(true)).observe(root);
 
   syncRange(); paintPhases(); syncPlan(); renderScen(); applyTerms();
+  mountPlan($('[data-plan]'), sim, { onApply: () => { syncRange(); syncPlan(); state.scen = null; state.sweep = null; renderScen(); sim.seek(doorsT()); sim.play(); update(true); } });
   const api = {
     update, start() { if (!raf) { prev = performance.now(); raf = requestAnimationFrame(loop); } update(true); },
     stop() { cancelAnimationFrame(raf); raf = 0; }, on: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
