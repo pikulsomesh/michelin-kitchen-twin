@@ -2,15 +2,58 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Michelin Kitchen Twin</title>
-    <meta name="description" content="A 3D digital twin of The French Laundry's kitchen running a dinner service, modeled like a manufacturing plant." />
+    <meta name="description" content="A photoreal 3D digital twin of The French Laundry's kitchen running a dinner service, modeled like a manufacturing plant." />
+    <meta name="theme-color" content="#0e0f11" />
     <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/dashboard/dashboard.css" />
+    <link rel="stylesheet" href="/src/app.css" />
   </head>
   <body>
     <div id="app">
-      <canvas id="scene" aria-label="3D view of the kitchen"></canvas>
-      <aside id="panel" aria-label="Production plan"></aside>
+      <div id="twin" aria-label="3D view of the kitchen"></div>
+
+      <header class="hud" aria-label="Service">
+        <div class="hud-brand"><span class="mark">◆</span><div><b>The French Laundry</b><small>Kitchen digital twin</small></div></div>
+        <div class="hud-clock"><span data-clock>--:--</span><span class="pill" data-phase>loading</span></div>
+        <div class="hud-stats" data-stats></div>
+        <div class="hud-transport">
+          <button class="hbtn" data-act="play" aria-label="Play or pause the service">▶</button>
+          <select class="hsel" data-speed aria-label="Simulation speed"></select>
+        </div>
+      </header>
+
+      <nav class="dock" aria-label="View controls">
+        <button class="dbtn" data-act="tour" title="Guided camera tour">Tour</button>
+        <button class="dbtn" data-act="overview" title="Bird's-eye view of the plant">Overview</button>
+        <button class="dbtn" data-act="plate" title="Follow the next plate from the stove to the table">Follow a plate</button>
+        <button class="dbtn" data-act="labels" title="Station and machine labels">Labels</button>
+        <select class="dsel" data-overlay aria-label="Overlay">
+          <option value="none">No overlay</option>
+          <option value="utilization">Utilization</option>
+          <option value="traffic">Foot traffic</option>
+          <option value="both">Both</option>
+        </select>
+        <select class="dsel" data-quality aria-label="Render quality"></select>
+        <button class="dbtn" data-act="usd" title="Download the plant as OpenUSD for NVIDIA Omniverse / Isaac Sim">USD ⤓</button>
+        <button class="dbtn primary" data-act="drawer" title="Operations dashboard and production plan">Operations</button>
+      </nav>
+
+      <aside class="drawer" data-drawer aria-label="Operations" hidden>
+        <div class="drawer-tabs">
+          <button class="on" data-tab="ops">Live operations</button>
+          <button data-tab="plan">Production plan</button>
+          <button class="close" data-act="drawer" aria-label="Close">✕</button>
+        </div>
+        <div class="drawer-body">
+          <div data-pane="ops" id="dashboard"></div>
+          <div data-pane="plan" hidden><aside id="panel" aria-label="Production plan"></aside></div>
+        </div>
+      </aside>
+
+      <div class="caption" data-caption hidden></div>
+      <div class="loading" data-loading><div><span class="mark">◆</span><b>The French Laundry</b><small>Building the kitchen…</small></div></div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
