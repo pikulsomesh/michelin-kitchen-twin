@@ -1,0 +1,32 @@
+{
+  "$comment": "Kitchen / Factory vocabulary toggle (docs/product/PRD.md section 2). The dashboard looks up a term id and shows `kitchen` or `factory` depending on the toggle.",
+  "terms": [
+    { "id": "menu", "kitchen": "Tasting menu", "factory": "Product mix" },
+    { "id": "recipe", "kitchen": "Recipe", "factory": "Bill of materials" },
+    { "id": "step", "kitchen": "Prep and cook step", "factory": "Routing operation" },
+    { "id": "station", "kitchen": "Station", "factory": "Workcell" },
+    { "id": "appliance", "kitchen": "Appliance", "factory": "Machine" },
+    { "id": "cook", "kitchen": "Cook", "factory": "Operator" },
+    { "id": "brigade", "kitchen": "Brigade", "factory": "Crew and skills matrix" },
+    { "id": "mise-en-place", "kitchen": "Mise en place", "factory": "Kitting / WIP buffer" },
+    { "id": "storage", "kitchen": "Reach-ins and dry store", "factory": "Raw-material inventory" },
+    { "id": "ticket", "kitchen": "Ticket", "factory": "Work order" },
+    { "id": "covers", "kitchen": "Covers", "factory": "Build plan" },
+    { "id": "seating", "kitchen": "Seatings", "factory": "Master production schedule" },
+    { "id": "fire", "kitchen": "Fire a course", "factory": "Release a work order" },
+    { "id": "pacing", "kitchen": "Course pacing", "factory": "Takt and sequencing" },
+    { "id": "pass", "kitchen": "The pass", "factory": "Final inspection / QA gate" },
+    { "id": "expo", "kitchen": "Expediter", "factory": "Quality inspector" },
+    { "id": "refire", "kitchen": "Re-fire", "factory": "Scrap and rework" },
+    { "id": "86", "kitchen": "86'd", "factory": "Stockout" },
+    { "id": "ticket-time", "kitchen": "Ticket time", "factory": "Lead time" },
+    { "id": "course-gap", "kitchen": "Course gap", "factory": "Takt adherence" },
+    { "id": "plates-per-hour", "kitchen": "Plates per hour", "factory": "Throughput" },
+    { "id": "covers-served", "kitchen": "Covers served", "factory": "Units shipped" },
+    { "id": "in-the-weeds", "kitchen": "In the weeds", "factory": "Bottleneck" },
+    { "id": "par", "kitchen": "Par level", "factory": "Reorder point" },
+    { "id": "service", "kitchen": "Dinner service", "factory": "Production shift" },
+    { "id": "plate", "kitchen": "Plate", "factory": "Finished good" },
+    { "id": "ingredient", "kitchen": "Ingredient", "factory": "Raw material" }
+  ]
+}

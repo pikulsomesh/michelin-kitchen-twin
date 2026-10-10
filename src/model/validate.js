@@ -96,6 +96,9 @@ export function validate(data) {
     if (c.seatingScenario && !scenarios.has(c.seatingScenario)) errors.push(`what-if ${w.id}: unknown seating scenario ${c.seatingScenario}`);
   }
 
+  const termIds = (data.terms?.terms ?? []).map((t) => t.id);
+  if (new Set(termIds).size !== termIds.length) errors.push('terms: duplicate ids');
+
   const placed = new Set();
   for (const pl of data.layout.placements) {
     if (!equipment.has(pl.equipment)) errors.push(`layout: unknown equipment ${pl.equipment}`);

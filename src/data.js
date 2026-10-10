@@ -7,5 +7,6 @@ import resources from '../data/resources.json';
 import menu from '../data/menu.json';
 import service from '../data/service.json';
 import layout from '../data/layout.json';
+import terms from '../data/terms.json';
 
-export const data = { sources, restaurant, items, products, resources, menu, service, layout };
+export const data = { sources, restaurant, items, products, resources, menu, service, layout, terms };

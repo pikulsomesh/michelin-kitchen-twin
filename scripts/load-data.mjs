@@ -16,5 +16,6 @@ export function loadData() {
     menu: read('menu'),
     service: read('service'),
     layout: read('layout'),
+    terms: read('terms'),
   };
 }
