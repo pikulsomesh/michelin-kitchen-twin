@@ -1,0 +1,1094 @@
+{
+ "$comment": "Item master for purchased raw materials. uom is g (liquids too, density taken as 1), or ea. yieldPct is usable fraction after trimming, shelling, peeling or pitting; BOM quantities are net (usable) amounts, so gross requirement = net / yieldPct. src says which source the ingredient comes from; quantities live in products.json.",
+ "items": [
+  {
+   "id": "RM-BUTTER-UNSALTED",
+   "name": "Unsalted butter (cultured)",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 21,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-BUTTER-SALTED",
+   "name": "Salted butter (table service)",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 21,
+   "yieldPct": 1.0,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-CREAM",
+   "name": "Heavy cream",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 7,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-MILK",
+   "name": "Whole milk",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 7,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-CREME-FRAICHE",
+   "name": "Crème fraîche",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 14,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-YOGURT",
+   "name": "Whole-milk yogurt",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 14,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-EGG",
+   "name": "Egg, large (yolk ~18 g, white ~30 g)",
+   "category": "dairy",
+   "uom": "ea",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 21,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-GRUYERE",
+   "name": "Gruyère",
+   "category": "cheese",
+   "uom": "g",
+   "storage": "SL-HUMIDOR",
+   "shelfLifeDays": 60,
+   "yieldPct": 0.95,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-COMTE",
+   "name": "Comté",
+   "category": "cheese",
+   "uom": "g",
+   "storage": "SL-HUMIDOR",
+   "shelfLifeDays": 60,
+   "yieldPct": 0.9,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-OYSTER",
+   "name": "Oyster, live",
+   "category": "seafood",
+   "uom": "ea",
+   "storage": "SL-LIVE-TANK",
+   "shelfLifeDays": 5,
+   "yieldPct": 1.0,
+   "origin": "Island Creek, Duxbury MA",
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-CAVIAR-STURGEON",
+   "name": "White sturgeon caviar",
+   "category": "seafood",
+   "uom": "g",
+   "storage": "SL-REACHIN-FISH",
+   "shelfLifeDays": 21,
+   "yieldPct": 1.0,
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-CAVIAR-KALUGA",
+   "name": "Royal Kaluga caviar (supplement)",
+   "category": "seafood",
+   "uom": "g",
+   "storage": "SL-REACHIN-FISH",
+   "shelfLifeDays": 21,
+   "yieldPct": 1.0,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-SALMON",
+   "name": "Salmon fillet, skin on",
+   "category": "seafood",
+   "uom": "g",
+   "storage": "SL-REACHIN-FISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.8,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-YELLOWTAIL",
+   "name": "Pacific yellowtail, whole loin",
+   "category": "seafood",
+   "uom": "g",
+   "storage": "SL-REACHIN-FISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.85,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-LOBSTER",
+   "name": "Maine lobster, live, ~1.25 lb",
+   "category": "seafood",
+   "uom": "ea",
+   "storage": "SL-LIVE-TANK",
+   "shelfLifeDays": 2,
+   "yieldPct": 1.0,
+   "origin": "Maine",
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-FOIE-GRAS",
+   "name": "Moulard duck foie gras, grade A lobe",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-REACHIN-MEAT",
+   "shelfLifeDays": 7,
+   "yieldPct": 0.85,
+   "origin": "Hudson Valley, NY",
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-DUCK-BREAST",
+   "name": "Pekin duck breast",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-REACHIN-MEAT",
+   "shelfLifeDays": 5,
+   "yieldPct": 0.9,
+   "origin": "Liberty Farm, Sonoma County",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-DUCK-BONES",
+   "name": "Duck carcasses for jus",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-REACHIN-MEAT",
+   "shelfLifeDays": 3,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-BEEF-CALOTTE",
+   "name": "Wagyu beef calotte (rib cap)",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-AGING",
+   "shelfLifeDays": 14,
+   "yieldPct": 0.8,
+   "origin": "Snake River Farms, Idaho",
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-VEAL-TONGUE",
+   "name": "Veal tongue",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-REACHIN-MEAT",
+   "shelfLifeDays": 5,
+   "yieldPct": 0.7,
+   "origin": "Marcho Farms, PA",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-VEAL-BONES",
+   "name": "Veal knuckle bones",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-REACHIN-MEAT",
+   "shelfLifeDays": 3,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-BONE-MARROW",
+   "name": "Beef bone marrow",
+   "category": "meat",
+   "uom": "g",
+   "storage": "SL-REACHIN-MEAT",
+   "shelfLifeDays": 3,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-SHALLOT",
+   "name": "Shallot",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 21,
+   "yieldPct": 0.85,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-CHIVES",
+   "name": "Chives",
+   "category": "herb",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 4,
+   "yieldPct": 0.9,
+   "origin": "TFL culinary garden",
+   "src": [
+    "recipe-oysters-pearls",
+    "foxnews-2012"
+   ]
+  },
+  {
+   "id": "RM-RED-ONION",
+   "name": "Red onion",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 21,
+   "yieldPct": 0.85,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-ONION-YELLOW",
+   "name": "Yellow onion",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 30,
+   "yieldPct": 0.85,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-CELERY",
+   "name": "Celery",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 10,
+   "yieldPct": 0.8,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-GARLIC",
+   "name": "Garlic",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 30,
+   "yieldPct": 0.85,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-THYME",
+   "name": "Thyme",
+   "category": "herb",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 7,
+   "yieldPct": 0.7,
+   "origin": "TFL culinary garden",
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-TARRAGON",
+   "name": "Tarragon",
+   "category": "herb",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 4,
+   "yieldPct": 0.7,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-MINT",
+   "name": "Mint",
+   "category": "herb",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 4,
+   "yieldPct": 0.7,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-CARROT-BABY",
+   "name": "Garden baby carrots",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 5,
+   "yieldPct": 0.85,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-tinyurban",
+    "foxnews-2012"
+   ]
+  },
+  {
+   "id": "RM-PEAS",
+   "name": "English peas, in the pod",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.4,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-RADISH",
+   "name": "Red radish",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 5,
+   "yieldPct": 0.85,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-tinyurban",
+    "foxnews-2012"
+   ]
+  },
+  {
+   "id": "RM-CORN",
+   "name": "Sweet white corn, on the cob",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.45,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-FAVA",
+   "name": "Fava beans, in the pod",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 4,
+   "yieldPct": 0.25,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-TOMATO-CHERRY",
+   "name": "Cherry tomatoes",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 5,
+   "yieldPct": 0.9,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-ENDIVE",
+   "name": "Belgian endive",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 7,
+   "yieldPct": 0.85,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-WATERCRESS",
+   "name": "Watercress",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.8,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-APRICOT",
+   "name": "Apricots",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 4,
+   "yieldPct": 0.88,
+   "origin": "K&J Orchards, Winters CA",
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-BLACK-TRUFFLE",
+   "name": "Black winter truffle",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 7,
+   "yieldPct": 0.95,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-CHERRY-BING",
+   "name": "Bing cherries",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 5,
+   "yieldPct": 0.85,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-CARROT-CHANTENAY",
+   "name": "Chantenay carrots",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 7,
+   "yieldPct": 0.85,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-CEPES",
+   "name": "Wild cèpes (porcini)",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.85,
+   "origin": "Oregon",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-SPINACH-ARROWLEAF",
+   "name": "Arrowleaf spinach",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.75,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-POTATO-LARATTE",
+   "name": "La Ratte potatoes",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 21,
+   "yieldPct": 0.85,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-MORELS",
+   "name": "Morel mushrooms",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.85,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-CIPOLLINI",
+   "name": "Cipollini onions",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 21,
+   "yieldPct": 0.8,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-PEPPER-RED",
+   "name": "Red bell peppers",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GARNISH",
+   "shelfLifeDays": 7,
+   "yieldPct": 0.75,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-ARUGULA",
+   "name": "Arugula",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.85,
+   "origin": "TFL culinary garden",
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-APPLE-GRANNY",
+   "name": "Granny Smith apple",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 21,
+   "yieldPct": 0.75,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-LEMON",
+   "name": "Lemon",
+   "category": "produce",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 21,
+   "yieldPct": 0.4,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-TAPIOCA-PEARL",
+   "name": "Pearl tapioca",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-FLOUR-AP",
+   "name": "All-purpose flour",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-cornets",
+    "recipe-coffee-doughnuts"
+   ]
+  },
+  {
+   "id": "RM-CHICKPEA-FLOUR",
+   "name": "Chickpea flour",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-SUGAR",
+   "name": "Granulated sugar",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 730,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-cornets"
+   ]
+  },
+  {
+   "id": "RM-GLUCOSE",
+   "name": "Glucose syrup",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-HONEY",
+   "name": "White honey",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-SALT-KOSHER",
+   "name": "Kosher salt",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 3650,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-cornets"
+   ]
+  },
+  {
+   "id": "RM-SALT-FINISHING",
+   "name": "Finishing salts (six-salt service)",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 3650,
+   "yieldPct": 1.0,
+   "origin": "France, Japan, Hawaii, Utah",
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-BLACK-PEPPER",
+   "name": "Black pepper",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-SESAME-BLACK",
+   "name": "Black sesame seeds",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-cornets"
+   ]
+  },
+  {
+   "id": "RM-CURRY-MADRAS",
+   "name": "Madras curry powder",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-CINNAMON",
+   "name": "Ground cinnamon",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-coffee-doughnuts"
+   ]
+  },
+  {
+   "id": "RM-VANILLA-BEAN",
+   "name": "Vanilla bean",
+   "category": "dry",
+   "uom": "ea",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-coffee-doughnuts"
+   ]
+  },
+  {
+   "id": "RM-ESPRESSO",
+   "name": "Espresso extract",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-coffee-doughnuts"
+   ]
+  },
+  {
+   "id": "RM-YEAST-FRESH",
+   "name": "Fresh compressed yeast",
+   "category": "dairy",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 14,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-coffee-doughnuts"
+   ]
+  },
+  {
+   "id": "RM-PISTACHIO",
+   "name": "Sicilian pistachios",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "origin": "Sicily",
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-WALNUT",
+   "name": "Walnuts",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-MACADAMIA",
+   "name": "Macadamia nuts",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-OATS-STEELCUT",
+   "name": "Steel-cut oats",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-OATS-ROLLED",
+   "name": "Rolled oats",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-RAISINS",
+   "name": "Raisins",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-OLIVES-LUCQUES",
+   "name": "Lucques olives",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-REACHIN-GM",
+   "shelfLifeDays": 60,
+   "yieldPct": 0.8,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-CHOCOLATE-DARK",
+   "name": "Dark couverture chocolate 64%",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-COCOA",
+   "name": "Cocoa powder",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-OLIVE-OIL",
+   "name": "Extra virgin olive oil",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "review-chihuo"
+   ]
+  },
+  {
+   "id": "RM-CANOLA-OIL",
+   "name": "Canola oil (frying)",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-coffee-doughnuts"
+   ]
+  },
+  {
+   "id": "RM-TOMATO-PASTE",
+   "name": "Tomato paste",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-BRIOCHE",
+   "name": "Brioche loaf",
+   "category": "bakery",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 3,
+   "yieldPct": 0.85,
+   "src": [
+    "review-chihuo",
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-PRETZEL-ROLL",
+   "name": "Pretzel roll, par-baked",
+   "category": "bakery",
+   "uom": "ea",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 2,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-VERMOUTH",
+   "name": "Dry vermouth",
+   "category": "bar",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 180,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-WINE-VINEGAR",
+   "name": "White wine vinegar",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 730,
+   "yieldPct": 1.0,
+   "src": [
+    "recipe-oysters-pearls"
+   ]
+  },
+  {
+   "id": "RM-SHERRY-VINEGAR",
+   "name": "Sherry vinegar",
+   "category": "dry",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 730,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-RED-WINE",
+   "name": "Red wine (cooking)",
+   "category": "bar",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 30,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-MADEIRA",
+   "name": "Madeira",
+   "category": "bar",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 365,
+   "yieldPct": 1.0,
+   "src": [
+    "est"
+   ]
+  },
+  {
+   "id": "RM-JURANCON",
+   "name": "Jurançon / sweet white wine",
+   "category": "bar",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 30,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  },
+  {
+   "id": "RM-RUM",
+   "name": "Dark rum",
+   "category": "bar",
+   "uom": "g",
+   "storage": "SL-DRY",
+   "shelfLifeDays": 3650,
+   "yieldPct": 1.0,
+   "src": [
+    "review-tinyurban"
+   ]
+  }
+ ]
+}

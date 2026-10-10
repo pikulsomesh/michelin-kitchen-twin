@@ -1,0 +1,39 @@
+{
+  "$comment": "The master production schedule for one dinner service. `covers` is the build plan: change it and every downstream requirement (ingredients, intermediates, labor, machine time) scales through the BOM and routings. Values marked 'est' are modelling assumptions, not published figures.",
+  "service": "dinner",
+  "defaultCovers": { "value": 62, "note": "One turn of every seat.", "src": ["fermag-2017"] },
+  "coversRange": [1, 400],
+  "reservations": {
+    "firstSeating": "17:00",
+    "lastSeating": "21:30",
+    "intervalMin": 15,
+    "partySizeMix": [
+      { "size": 2, "share": 0.62 },
+      { "size": 3, "share": 0.06 },
+      { "size": 4, "share": 0.26 },
+      { "size": 6, "share": 0.06 }
+    ],
+    "src": ["est"]
+  },
+  "pacing": {
+    "targetMealMinutes": 195,
+    "courseGapMinutes": { "mean": 17, "sd": 4, "note": "Time from one course being cleared to the next being fired." },
+    "fireLeadMinutes": 6,
+    "note": "Fit to the 3 to 3.5 hour meals reported by diners.",
+    "src": ["pressdemocrat-2017", "review-chihuo", "review-tinyurban", "est"]
+  },
+  "inventoryPolicy": {
+    "parFactor": 1.15,
+    "note": "Start-of-service stock is the BOM explosion for the planned covers times parFactor, rounded up to whole batches for intermediates.",
+    "src": ["est"]
+  },
+  "kpis": [
+    { "id": "ticket-time", "name": "Ticket time", "manufacturingAnalogue": "Cycle time per work order" },
+    { "id": "course-gap", "name": "Course gap adherence", "manufacturingAnalogue": "Takt adherence" },
+    { "id": "oee", "name": "Equipment utilization (OEE: availability x performance x quality)", "manufacturingAnalogue": "OEE" },
+    { "id": "labor-utilization", "name": "Cook utilization by station", "manufacturingAnalogue": "Labor efficiency" },
+    { "id": "wip", "name": "Plates in progress / waiting at the pass", "manufacturingAnalogue": "Work in process" },
+    { "id": "first-pass-yield", "name": "Plates sent without a refire", "manufacturingAnalogue": "First-pass yield" },
+    { "id": "stockouts", "name": "Ingredient stockouts", "manufacturingAnalogue": "Material shortages" }
+  ]
+}

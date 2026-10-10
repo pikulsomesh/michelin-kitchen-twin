@@ -1,0 +1,53 @@
+{
+  "$comment": "The product catalogue: one representative Chef's Tasting Menu. The real menu changes daily, so this is a composite of courses documented in published meal reviews plus the restaurant's signature dishes from The French Laundry Cookbook. `options` are the configurable variants of a course (like product options in a configure-to-order plant); `share` is the default fraction of covers choosing that option. Supplements are optional add-ons with an uptake rate.",
+  "id": "chefs-tasting-menu",
+  "name": "Chef's Tasting Menu",
+  "priceUSD": { "value": 390, "note": "Published figures range from $310 (older review) to $425 (current, service included).", "src": ["tastingtable", "wikipedia", "review-chihuo"] },
+  "courses": [
+    { "seq": 0, "id": "canapes", "name": "Canapés", "fireStation": "WC-GM",
+      "options": [{ "product": "FG-C0-CANAPES", "share": 1 }],
+      "includes": [{ "product": "FG-C0B-BREAD", "note": "Bread and butter service, sent with the first course" }],
+      "src": ["review-chihuo", "review-tinyurban"] },
+    { "seq": 1, "id": "oysters-and-pearls", "name": "Oysters and Pearls", "fireStation": "WC-FISH",
+      "options": [{ "product": "FG-C1-OYSTERS-PEARLS", "share": 1 }],
+      "supplements": [{ "product": "FG-S1-KALUGA", "uptake": 0.2, "priceUSD": 60 }],
+      "src": ["review-chihuo", "review-tinyurban"] },
+    { "seq": 2, "id": "garden-salad", "name": "Garden course", "fireStation": "WC-GM",
+      "options": [
+        { "product": "FG-C2-CARROT-SALAD", "share": 0.75 },
+        { "product": "FG-S2-FOIE-GRAS", "share": 0.25, "supplementPriceUSD": 30 }
+      ],
+      "src": ["review-tinyurban", "review-chihuo"] },
+    { "seq": 3, "id": "yellowtail", "name": "Fish", "fireStation": "WC-FISH",
+      "options": [{ "product": "FG-C3-YELLOWTAIL", "share": 1 }],
+      "src": ["review-chihuo"] },
+    { "seq": 4, "id": "lobster", "name": "Butter-poached lobster", "fireStation": "WC-FISH",
+      "options": [{ "product": "FG-C4-LOBSTER", "share": 1 }],
+      "src": ["review-tinyurban", "tflcookbook"] },
+    { "seq": 5, "id": "duck", "name": "Poultry", "fireStation": "WC-MEAT",
+      "options": [{ "product": "FG-C5-DUCK", "share": 1 }],
+      "src": ["review-chihuo"] },
+    { "seq": 6, "id": "main", "name": "Meat", "fireStation": "WC-MEAT",
+      "options": [
+        { "product": "FG-C6A-BEEF", "share": 0.7 },
+        { "product": "FG-C6B-VEAL-TONGUE", "share": 0.3 }
+      ],
+      "src": ["review-chihuo", "review-tinyurban"] },
+    { "seq": 7, "id": "cheese", "name": "Cheese", "fireStation": "WC-GM",
+      "options": [{ "product": "FG-C7-COMTE", "share": 1 }],
+      "src": ["review-tinyurban"] },
+    { "seq": 8, "id": "pre-dessert", "name": "Pre-dessert", "fireStation": "WC-PASTRY",
+      "options": [{ "product": "FG-C8-OAT-SHERBET", "share": 1 }],
+      "src": ["review-tinyurban"] },
+    { "seq": 9, "id": "coffee-and-doughnuts", "name": "Coffee and Doughnuts", "fireStation": "WC-PASTRY",
+      "options": [{ "product": "FG-C9-COFFEE-DOUGHNUTS", "share": 1 }],
+      "src": ["recipe-coffee-doughnuts", "tflcookbook"] },
+    { "seq": 10, "id": "mignardises", "name": "Mignardises", "fireStation": "WC-PASTRY",
+      "options": [{ "product": "FG-C10-MIGNARDISES", "share": 1 }],
+      "src": ["review-chihuo", "review-tinyurban"] }
+  ],
+  "notes": [
+    "Shares and supplement uptake rates are modelling estimates (src 'est'); supplement prices come from review-chihuo and are dated.",
+    "The Tasting of Vegetables menu is not modelled yet; the same structure supports it."
+  ]
+}

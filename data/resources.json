@@ -1,0 +1,91 @@
+{
+  "$comment": "Resources, in manufacturing terms: work centers (stations), machines (appliances), storage locations and labor. `capacity.slots` is how many jobs a machine can run in parallel; the simulation treats each slot as a finite resource. Makers come from the published equipment schedule; slot counts and dimensions are modelling estimates (src 'est').",
+
+  "workCenters": [
+    { "id": "WC-PASS", "name": "The Pass", "brigade": "Expediting", "area": "kitchen", "roles": ["chef-de-cuisine"], "equipment": ["EQ-PASS-TABLE", "EQ-HEAT-LAMP"], "src": ["archrecord-2018"] },
+    { "id": "WC-GM", "name": "Garde Manger", "brigade": "Garde manger (cold kitchen, canapés, cheese)", "area": "kitchen", "roles": ["cdp-garde-manger", "commis-garde-manger"], "equipment": ["EQ-BONNET-PASTRY", "EQ-REACHIN-GM", "EQ-CHEESE-HUMIDOR", "EQ-SALAMANDER-2", "EQ-SLICER"], "src": ["fermag-2017", "archrecord-2018"] },
+    { "id": "WC-FISH", "name": "Fish", "brigade": "Poissonnier", "area": "kitchen", "roles": ["cdp-fish", "commis-fish"], "equipment": ["EQ-BONNET-SAVORY", "EQ-REACHIN-FISH", "EQ-COMBI-KITCHEN"], "src": ["fermag-2017", "est"] },
+    { "id": "WC-MEAT", "name": "Meat", "brigade": "Rôtisseur / saucier", "area": "kitchen", "roles": ["cdp-meat", "commis-meat"], "equipment": ["EQ-BONNET-SAVORY", "EQ-HEARTH", "EQ-ROTISSERIE", "EQ-SALAMANDER-1", "EQ-REACHIN-MEAT"], "src": ["fermag-2017", "archrecord-2018", "est"] },
+    { "id": "WC-GARNISH", "name": "Garnish", "brigade": "Entremetier (vegetables, purées, garnishes)", "area": "kitchen", "roles": ["cdp-garnish"], "equipment": ["EQ-BONNET-SAVORY", "EQ-HESTAN-RANGE", "EQ-REACHIN-GARNISH"], "src": ["fermag-2017", "est"] },
+    { "id": "WC-PASTRY", "name": "Pastry", "brigade": "Pâtissier", "area": "kitchen", "roles": ["cdp-pastry", "commis-pastry"], "equipment": ["EQ-BONNET-PASTRY", "EQ-FRY-KETTLE", "EQ-PACOJET", "EQ-MIXER", "EQ-ESPRESSO-STEAMER", "EQ-FREEZER-PASTRY", "EQ-STONE-OVEN"], "src": ["fermag-2017"] },
+    { "id": "WC-STOCK", "name": "Stocks and Sauces", "brigade": "Saucier (mise en place)", "area": "kitchen", "roles": ["sous-chef"], "equipment": ["EQ-STOCKPOT-RANGE", "EQ-COMBI-KITCHEN"], "src": ["fermag-2017"] },
+    { "id": "WC-ANNEX-BUTCHERY", "name": "Annex Butchery", "brigade": "Boucher", "area": "annex", "roles": ["butcher"], "equipment": ["EQ-MEAT-AGING", "EQ-GRINDER", "EQ-CRYOVAC"], "src": ["fermag-2017", "snohetta"] },
+    { "id": "WC-ANNEX-PREP", "name": "Annex Prep and Produce Breakdown", "brigade": "Prep (commis)", "area": "annex", "roles": ["prep-cook"], "equipment": ["EQ-COMBI-ANNEX", "EQ-INDUCTION-ANNEX", "EQ-CRYOVAC"], "src": ["fermag-2017", "snohetta"] },
+    { "id": "WC-DISH", "name": "Dish and Pot Wash", "brigade": "Plongeur", "area": "kitchen", "roles": ["dishwasher"], "equipment": ["EQ-DISHMACHINE"], "src": ["est"] }
+  ],
+
+  "equipment": [
+    { "id": "EQ-BONNET-SAVORY", "name": "Savory island cooking suite", "maker": "Bonnet", "type": "cooking-suite", "energy": "gas+electric",
+      "features": ["solid tops", "planchas", "range burners", "ovens"],
+      "capacity": { "slots": 12, "note": "2 solid tops x 3 pans, 2 planchas x 2 zones, 2 ovens" }, "dimsM": [6.0, 2.2, 0.92], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-BONNET-PASTRY", "name": "Pastry and garde manger island suite", "maker": "Bonnet", "type": "cooking-suite", "energy": "electric",
+      "features": ["induction plates", "induction generator cabinet"],
+      "capacity": { "slots": 6 }, "dimsM": [4.8, 1.8, 0.92], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-HESTAN-RANGE", "name": "Range with ovens", "maker": "Hestan", "type": "range", "energy": "gas", "capacity": { "slots": 6 }, "dimsM": [1.8, 0.9, 0.92], "src": ["fermag-2017", "archrecord-2018", "est"] },
+    { "id": "EQ-STOCKPOT-RANGE", "name": "Stock pot ranges", "maker": "Imperial", "type": "stockpot-range", "energy": "gas", "count": 2, "capacity": { "slots": 2, "litersPerPot": 60 }, "dimsM": [1.0, 0.6, 0.6], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-COMBI-KITCHEN", "name": "Combi oven (kitchen)", "maker": "RATIONAL", "type": "combi-oven", "energy": "electric", "capacity": { "slots": 10, "unit": "GN 1/1 racks", "tempRangeC": [30, 300] }, "dimsM": [0.85, 0.85, 1.05], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-COMBI-ANNEX", "name": "Combi oven (annex)", "maker": "RATIONAL", "type": "combi-oven", "energy": "electric", "capacity": { "slots": 10, "unit": "GN 1/1 racks", "tempRangeC": [30, 300] }, "dimsM": [0.85, 0.85, 1.05], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-HEARTH", "name": "Wood-burning hearth", "maker": "Custom fabricated", "type": "grill", "energy": "wood", "capacity": { "slots": 8, "unit": "portions on the grate" }, "dimsM": [1.6, 0.9, 1.0], "src": ["fermag-2017", "archrecord-2018", "est"] },
+    { "id": "EQ-STONE-OVEN", "name": "Stone hearth oven", "maker": null, "type": "deck-oven", "energy": "gas", "capacity": { "slots": 4, "unit": "sheet trays" }, "dimsM": [1.4, 1.2, 1.6], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-ROTISSERIE", "name": "Infrared rotisserie", "maker": "Rotisol", "type": "rotisserie", "energy": "electric", "capacity": { "slots": 5, "unit": "spits" }, "dimsM": [1.2, 0.7, 1.4], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-SALAMANDER-1", "name": "Finishing salamander (savory)", "maker": "Sodir / Equipex", "type": "salamander", "energy": "electric", "capacity": { "slots": 2 }, "dimsM": [0.6, 0.45, 0.5], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-SALAMANDER-2", "name": "Finishing salamander (garde manger)", "maker": "Sodir / Equipex", "type": "salamander", "energy": "electric", "capacity": { "slots": 2 }, "dimsM": [0.6, 0.45, 0.5], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-FRY-KETTLE", "name": "Induction fry kettle (pastry suite)", "maker": "Bonnet", "type": "fryer", "energy": "electric", "capacity": { "slots": 1, "unitsPerLoad": 12 }, "dimsM": [0.4, 0.6, 0.92], "src": ["fermag-2017", "est"], "note": "The equipment schedule lists no standalone fryer; frying is modelled as a pot on the pastry induction suite." },
+    { "id": "EQ-PACOJET", "name": "PacoJet", "maker": "PacoJet", "type": "batch-freezer", "energy": "electric", "capacity": { "slots": 1, "portionsPerBeaker": 10 }, "dimsM": [0.2, 0.35, 0.5], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-MIXER", "name": "Stand mixers", "maker": "KitchenAid", "type": "mixer", "energy": "electric", "count": 2, "capacity": { "slots": 2 }, "dimsM": [0.4, 0.3, 0.45], "src": ["fermag-2017"] },
+    { "id": "EQ-ESPRESSO-STEAMER", "name": "Espresso machine / milk steamer", "maker": null, "type": "steamer", "energy": "electric", "capacity": { "slots": 2 }, "dimsM": [0.7, 0.55, 0.5], "src": ["recipe-coffee-doughnuts", "est"] },
+    { "id": "EQ-ROBOT-COUPE", "name": "Food processor", "maker": "Robot Coupe", "type": "processor", "energy": "electric", "capacity": { "slots": 1 }, "dimsM": [0.35, 0.3, 0.5], "src": ["fermag-2017"] },
+    { "id": "EQ-VITAMIX", "name": "Blenders", "maker": "Vitamix", "type": "blender", "energy": "electric", "count": 3, "capacity": { "slots": 3 }, "dimsM": [0.25, 0.25, 0.45], "src": ["fermag-2017"] },
+    { "id": "EQ-INDUCTION-ANNEX", "name": "Induction burners (annex)", "maker": "CookTek / Middleby", "type": "induction", "energy": "electric", "count": 4, "capacity": { "slots": 4 }, "dimsM": [0.35, 0.45, 0.12], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-CRYOVAC", "name": "Chamber vacuum sealer", "maker": "Koch", "type": "vacuum-sealer", "energy": "electric", "capacity": { "slots": 1 }, "dimsM": [0.6, 0.5, 0.45], "src": ["fermag-2017"] },
+    { "id": "EQ-SLICER", "name": "Slicer", "maker": "Berkel", "type": "slicer", "energy": "electric", "capacity": { "slots": 1 }, "dimsM": [0.6, 0.5, 0.45], "src": ["fermag-2017"] },
+    { "id": "EQ-GRINDER", "name": "Meat grinder", "maker": "Omcan", "type": "grinder", "energy": "electric", "capacity": { "slots": 1 }, "dimsM": [0.5, 0.3, 0.5], "src": ["fermag-2017"] },
+    { "id": "EQ-PASS-TABLE", "name": "Pass table", "maker": null, "type": "pass", "energy": null, "capacity": { "slots": 16, "unit": "plates staged" }, "dimsM": [3.0, 0.8, 0.95], "src": ["archrecord-2018", "est"] },
+    { "id": "EQ-HEAT-LAMP", "name": "Plate warmers / heat lamps at the pass", "maker": null, "type": "warmer", "energy": "electric", "capacity": { "slots": 16 }, "dimsM": [3.0, 0.4, 0.3], "src": ["est"] },
+    { "id": "EQ-DISHMACHINE", "name": "Dish machine", "maker": null, "type": "dishwasher", "energy": "electric", "capacity": { "slots": 1, "racksPerHour": 55 }, "dimsM": [1.8, 0.8, 1.9], "src": ["est"] },
+    { "id": "EQ-REACHIN-GM", "name": "Reach-in refrigerator (garde manger)", "maker": "Traulsen", "type": "reach-in", "energy": "electric", "capacity": { "liters": 1300 }, "tempC": 2, "dimsM": [1.5, 0.85, 2.6], "src": ["fermag-2017", "est"], "note": "Custom 102-inch-tall reach-ins per the equipment schedule." },
+    { "id": "EQ-REACHIN-FISH", "name": "Reach-in refrigerator (fish)", "maker": "Traulsen", "type": "reach-in", "energy": "electric", "capacity": { "liters": 650 }, "tempC": 1, "dimsM": [0.75, 0.85, 2.6], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-REACHIN-MEAT", "name": "Reach-in refrigerator (meat)", "maker": "Traulsen", "type": "reach-in", "energy": "electric", "capacity": { "liters": 650 }, "tempC": 2, "dimsM": [0.75, 0.85, 2.6], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-REACHIN-GARNISH", "name": "Reach-in refrigerator (garnish)", "maker": "Traulsen", "type": "reach-in", "energy": "electric", "capacity": { "liters": 650 }, "tempC": 3, "dimsM": [0.75, 0.85, 2.6], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-FREEZER-PASTRY", "name": "Reach-in freezer (pastry)", "maker": "Traulsen", "type": "freezer", "energy": "electric", "capacity": { "liters": 650 }, "tempC": -20, "dimsM": [0.75, 0.85, 2.6], "src": ["fermag-2017", "est"] },
+    { "id": "EQ-CHEESE-HUMIDOR", "name": "Cheese humidor", "maker": null, "type": "humidor", "energy": "electric", "capacity": { "liters": 500 }, "tempC": 11, "dimsM": [0.9, 0.7, 2.0], "src": ["archrecord-2018", "est"] },
+    { "id": "EQ-MEAT-AGING", "name": "Meat aging cooler", "maker": "Traulsen", "type": "aging-cooler", "energy": "electric", "capacity": { "liters": 650 }, "tempC": 2, "dimsM": [0.75, 0.85, 2.1], "src": ["fermag-2017"] },
+    { "id": "EQ-ICE", "name": "Ice machine", "maker": "Scotsman", "type": "ice", "energy": "electric", "capacity": { "kgPerDay": 250 }, "dimsM": [0.8, 0.8, 1.9], "src": ["fermag-2017", "est"] }
+  ],
+
+  "storageLocations": [
+    { "id": "SL-DRY", "name": "Dry store", "tempC": 18, "equipment": null, "src": ["est"] },
+    { "id": "SL-REACHIN-GM", "name": "Garde manger reach-in", "tempC": 2, "equipment": "EQ-REACHIN-GM" },
+    { "id": "SL-REACHIN-FISH", "name": "Fish reach-in", "tempC": 1, "equipment": "EQ-REACHIN-FISH" },
+    { "id": "SL-REACHIN-MEAT", "name": "Meat reach-in", "tempC": 2, "equipment": "EQ-REACHIN-MEAT" },
+    { "id": "SL-REACHIN-GARNISH", "name": "Garnish reach-in", "tempC": 3, "equipment": "EQ-REACHIN-GARNISH" },
+    { "id": "SL-FREEZER", "name": "Pastry freezer", "tempC": -20, "equipment": "EQ-FREEZER-PASTRY" },
+    { "id": "SL-HUMIDOR", "name": "Cheese humidor", "tempC": 11, "equipment": "EQ-CHEESE-HUMIDOR" },
+    { "id": "SL-AGING", "name": "Meat aging cooler", "tempC": 2, "equipment": "EQ-MEAT-AGING" },
+    { "id": "SL-LIVE-TANK", "name": "Shellfish holding (ice / wet storage)", "tempC": 4, "equipment": null, "src": ["est"] },
+    { "id": "SL-GARDEN", "name": "Culinary garden (harvested same day)", "tempC": null, "equipment": null, "src": ["foxnews-2012"] }
+  ],
+
+  "laborRoles": [
+    { "id": "chef-de-cuisine", "name": "Chef de cuisine (expediter)", "headcount": 1, "shift": "service" },
+    { "id": "sous-chef", "name": "Sous chef", "headcount": 2, "shift": "prep+service" },
+    { "id": "cdp-garde-manger", "name": "Chef de partie, garde manger", "headcount": 1, "shift": "prep+service" },
+    { "id": "commis-garde-manger", "name": "Commis, garde manger", "headcount": 1, "shift": "prep+service" },
+    { "id": "cdp-fish", "name": "Chef de partie, fish", "headcount": 1, "shift": "prep+service" },
+    { "id": "commis-fish", "name": "Commis, fish", "headcount": 1, "shift": "prep+service" },
+    { "id": "cdp-meat", "name": "Chef de partie, meat", "headcount": 1, "shift": "prep+service" },
+    { "id": "commis-meat", "name": "Commis, meat", "headcount": 1, "shift": "prep+service" },
+    { "id": "cdp-garnish", "name": "Chef de partie, garnish", "headcount": 1, "shift": "prep+service" },
+    { "id": "cdp-pastry", "name": "Chef de partie, pastry", "headcount": 1, "shift": "prep+service" },
+    { "id": "commis-pastry", "name": "Commis, pastry", "headcount": 2, "shift": "prep+service" },
+    { "id": "dishwasher", "name": "Dishwasher / porter", "headcount": 2, "shift": "service" },
+    { "id": "butcher", "name": "Butcher", "headcount": 1, "shift": "prep" },
+    { "id": "prep-cook", "name": "Prep cook", "headcount": 3, "shift": "prep" }
+  ],
+  "laborNote": "Kitchen headcount per shift is not published. This brigade is an estimate (src 'est') following the classic partie system and a reviewer's count of 'at least a dozen' cooks visible during service (review-tinyurban). It gives 15 people on the floor at service, 13 of them cooks.",
+
+  "shifts": [
+    { "id": "prep", "name": "Mise en place", "start": "09:00", "end": "16:30", "src": ["est"] },
+    { "id": "service", "name": "Dinner service", "start": "16:30", "end": "00:30", "src": ["est"] }
+  ]
+}

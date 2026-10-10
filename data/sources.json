@@ -1,0 +1,103 @@
+{
+  "$comment": "Bibliography. Every fact in the data files carries a `src` list pointing at ids here. `est` marks a modelling estimate with no single published source; the reasoning is in docs/data-model.md.",
+  "sources": [
+    {
+      "id": "fermag-2017",
+      "title": "Clean Slate (The French Laundry kitchen renovation)",
+      "publisher": "Foodservice Equipment & Supplies (FE&S)",
+      "url": "https://www.fermag.com/articles/8550-clean-slate/",
+      "used_for": "Kitchen area (1,980 sq ft), annex area (2,450 sq ft), 62 dining seats, two Bonnet island suites (savory; pastry/garde manger), full equipment schedule, no walk-ins, design team."
+    },
+    {
+      "id": "archrecord-2018",
+      "title": "The French Laundry by Snøhetta and Envelope A+D",
+      "publisher": "Architectural Record, January 2018",
+      "url": "https://www.architecturalrecord.com/articles/13230-the-french-laundry-by-snøhetta-and-envelope-ad",
+      "used_for": "Ribbon window to the garden, curved ventilated GFRG ceiling replacing hoods, terrazzo floor, Cosentino surfaces, Hestan workstations, LED colour temperature matched to the dining room, new hearth, rotisserie and cheese humidor, pass table, staff of 100+."
+    },
+    {
+      "id": "snohetta",
+      "title": "The French Laundry Kitchen Expansion and Courtyard Renovation",
+      "publisher": "Snøhetta",
+      "url": "https://snohetta.com/projects/the-french-laundry-kitchen-expansion-and-courtyard-renovation",
+      "used_for": "Annex functions (butchery, produce breakdown, wine), project dates 2014–2017."
+    },
+    {
+      "id": "wikipedia",
+      "title": "The French Laundry",
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/The_French_Laundry",
+      "used_for": "Address, history, 3 Michelin stars since 2006 guide, two nine-course menus daily (Chef's Tasting Menu and Tasting of Vegetables), 60 seats."
+    },
+    {
+      "id": "tastingtable",
+      "title": "13 Facts You Should Know About The Iconic French Laundry",
+      "publisher": "Tasting Table",
+      "url": "https://tastingtable.com/1495893/facts-about-french-laundry-restaurant",
+      "used_for": "60 seats, nine-course menu changing daily, 16,000-bottle cellar, renovation cost."
+    },
+    {
+      "id": "pressdemocrat-2017",
+      "title": "French Laundry's Thomas Keller, an exacting chef at a crossroads",
+      "publisher": "The Press Democrat, 3 May 2017",
+      "url": "https://www.pressdemocrat.com/2017/05/03/french-laundrys-thomas-keller-an-exacting-chef-at-a-crossroads/",
+      "used_for": "Tasting menus of nine or more courses served over three to four hours; counters raised a few inches in the new kitchen."
+    },
+    {
+      "id": "review-chihuo",
+      "title": "The French Laundry review (Chef's Tasting Menu, course by course)",
+      "publisher": "The Chihuo",
+      "url": "https://en.thechihuo.com/article/sf-french-laundry-review",
+      "used_for": "Course sequence: cornets, gougères, Oysters and Pearls with Kaluga caviar supplement, foie gras supplement, slow-cooked yellowtail, duck with Bing cherries and Périgourdine, calotte de boeuf or veal tongue, six salts with two butters; ~3.5 h meal."
+    },
+    {
+      "id": "review-tinyurban",
+      "title": "French Laundry",
+      "publisher": "Tiny Urban Kitchen",
+      "url": "https://tinyurbankitchen.com/french-laundry/",
+      "used_for": "Course sequence: garden carrot salad with Madras curry yogurt, butter-poached lobster with Jurançon-apricot emulsion, calotte de boeuf with bordelaise, Comté with panisse and piperade, steel-cut oat sherbet, pretzel bread, mignardises; ~3 h meal; 'at least a dozen' people working the kitchen during service."
+    },
+    {
+      "id": "foxnews-2012",
+      "title": "The French Laundry airs its secrets",
+      "publisher": "Fox News / AP, 2012",
+      "url": "https://www.foxnews.com/food-drink/the-french-laundry-airs-its-secrets.amp",
+      "used_for": "Garden across the street supplies about 30% of vegetables; diver scallops delivered within 24 h of harvest; live video feed to the Per Se kitchen."
+    },
+    {
+      "id": "recipe-oysters-pearls",
+      "title": "Oysters and Pearls from The French Laundry (adapted from The French Laundry Cookbook)",
+      "publisher": "Sporting Road",
+      "url": "https://sportingroad.com/starters-2/oysters-and-pearls/",
+      "used_for": "Full ingredient quantities (4 servings), tapioca soak 1 h, cook 7–8 + 5–7 min, sabayon 2–3 min, bake 350°F 4–5 min, sauce reduction and finishing."
+    },
+    {
+      "id": "recipe-cornets",
+      "title": "Tuiles/cornets from The French Laundry (Daring Bakers)",
+      "publisher": "The Italian Dish",
+      "url": "https://www.theitaliandishblog.com/imported-20090913150324/2009/1/26/daring-bakers-tuilescornets-from-the-french-laundry.html",
+      "used_for": "Cornet batter quantities, 4-inch stencil, bake 400°F 4–6 min, roll on 4½-inch molds, bake 3–4 min more."
+    },
+    {
+      "id": "recipe-coffee-doughnuts",
+      "title": "Coffee and Doughnuts: Cappuccino Semifreddo with Cinnamon-Sugar Doughnuts (recipe courtesy of Thomas Keller)",
+      "publisher": "Food Network",
+      "url": "https://www.foodnetwork.com/recipes/coffee-and-doughnuts-cappuccino-semifreddo-with-cinnamon-sugar-doughnuts-recipe-1955614",
+      "used_for": "Semifreddo (serves 6, 12 min whip, freeze 6–8 h), doughnut sponge and dough, overnight chill, 2-inch cutter, proof, fry at 325°F for 2 min, cinnamon sugar, steamed milk."
+    },
+    {
+      "id": "recipe-lobster",
+      "title": "Butter Poached Lobster Tail (after Thomas Keller, The French Laundry Cookbook, 1999)",
+      "publisher": "What's Cooking America",
+      "url": "https://whatscookingamerica.net/LobsterTailPoached.htm",
+      "used_for": "Beurre monté held at 160–190°F, poach 5–7 min to 140–145°F core."
+    },
+    {
+      "id": "tflcookbook",
+      "title": "The French Laundry Cookbook",
+      "publisher": "Thomas Keller with Susie Heller and Michael Ruhlman, Artisan, 1999 (ISBN 978-1-57965-126-0)",
+      "url": null,
+      "used_for": "Origin of the signature recipes (cornets, Oysters and Pearls, butter-poached lobster, Coffee and Doughnuts) and of techniques such as beurre monté; quantities here come from the reproductions listed above."
+    }
+  ]
+}

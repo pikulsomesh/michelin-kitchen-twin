@@ -1,0 +1,70 @@
+{
+  "$comment": "The plant: facts about the restaurant the twin models. Each fact cites ids from sources.json.",
+  "id": "the-french-laundry",
+  "name": "The French Laundry",
+  "chef": "Thomas Keller",
+  "address": { "value": "6640 Washington St, Yountville, CA 94599, USA", "src": ["wikipedia"] },
+  "michelinStars": { "value": 3, "since": "2006 guide", "src": ["wikipedia"] },
+  "diningSeats": {
+    "value": 62,
+    "note": "Post-renovation trade press says 62; Wikipedia and Tasting Table say 60. The model uses 62 as physical capacity.",
+    "src": ["fermag-2017", "wikipedia", "tastingtable"]
+  },
+  "menusOffered": {
+    "value": ["chefs-tasting-menu", "tasting-of-vegetables"],
+    "note": "Two nine-course menus daily; both change daily. This twin models one representative Chef's Tasting Menu built from documented courses and the restaurant's signature dishes.",
+    "src": ["wikipedia", "tastingtable"]
+  },
+  "mealDurationHours": { "value": [3.0, 3.5], "src": ["pressdemocrat-2017", "review-chihuo", "review-tinyurban"] },
+  "kitchen": {
+    "areaSqFt": { "value": 1980, "src": ["fermag-2017", "archrecord-2018"] },
+    "areaM2": { "value": 184, "note": "1,980 sq ft converted." },
+    "growthVsPrevious": { "value": "25% larger than the old U-shaped kitchen", "src": ["fermag-2017", "archrecord-2018"] },
+    "concept": {
+      "value": "Open plan, one flowing work area; low walls keep stations in sight of each other; two Bonnet island suites anchor the room, one savory and one pastry/garde manger.",
+      "src": ["fermag-2017"]
+    },
+    "ceiling": {
+      "value": "Curved, skylit, ventilated GFRG ceiling replaces conventional hoods; ~20 ft at the peak, 9 ft over the cooking suites.",
+      "src": ["fermag-2017", "archrecord-2018"]
+    },
+    "floor": { "value": "Terrazzo, with stainless equipment that appears to float above it", "src": ["archrecord-2018"] },
+    "surfaces": { "value": "White antimicrobial Cosentino walls and counters", "src": ["archrecord-2018"] },
+    "glazing": {
+      "value": "Fritted ribbon window with layered swooping curves wrapping the garden-facing corner; guests in the courtyard can look in.",
+      "src": ["archrecord-2018"]
+    },
+    "lighting": { "value": "LED, colour temperature tuned so food reads the same as in the dining room", "src": ["archrecord-2018"] },
+    "refrigerationStrategy": { "value": "No walk-in coolers; reach-ins throughout, including custom 102-inch-tall units", "src": ["fermag-2017"] },
+    "energy": { "value": "Geothermal wells for refrigeration, heating and cooling; PV on the annex roof covers up to half of demand", "src": ["archrecord-2018"] }
+  },
+  "annex": {
+    "areaSqFt": { "value": 2450, "src": ["fermag-2017"] },
+    "functions": { "value": ["prep", "butchery", "produce breakdown", "offices", "wine cellar"], "src": ["fermag-2017", "snohetta"] },
+    "wineBottles": { "value": 16000, "note": "Snøhetta says 15,000.", "src": ["fermag-2017", "tastingtable", "snohetta"] }
+  },
+  "garden": {
+    "value": "Culinary garden across the street supplies about 30% of the vegetables",
+    "src": ["foxnews-2012"]
+  },
+  "staff": {
+    "totalEmployees": { "value": "100+", "src": ["archrecord-2018"] },
+    "kitchenDuringService": {
+      "value": 15,
+      "note": "Not published. A reviewer counted 'at least a dozen' in the kitchen during service; the brigade in resources.json adds up to 15 including two dishwashers.",
+      "src": ["review-tinyurban", "est"]
+    }
+  },
+  "designTeam": {
+    "value": {
+      "designArchitect": "Snøhetta (Craig Dykers)",
+      "executiveArchitect": "Envelope Architecture + Design",
+      "foodserviceConsultant": "Tim Harrison, Harrison Koellner LLC",
+      "interiors": "Kallos Turin",
+      "lighting": "George Sexton Associates",
+      "ventilation": "Halton",
+      "contractor": "Wright Contracting"
+    },
+    "src": ["fermag-2017"]
+  }
+}
