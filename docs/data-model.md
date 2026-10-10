@@ -63,6 +63,8 @@ Every record has a `src` list pointing at [`sources.json`](../data/sources.json)
 - Operation times not stated in a recipe come from professional practice.
 - Brigade size and shifts. The restaurant does not publish them; 15 people at service (13 cooks, 2 dishwashers) matches a diner's count of "at least a dozen" in the kitchen.
 - Equipment positions and slot counts. The layout follows the published concept but is a reconstruction, not a survey.
+- Ingredient prices (`costUSDPerKg`, `costUSDEach`) are typical US wholesale prices for 2025-26, and `seasons` gives when produce is at its best in Northern California. Together they set food cost and let the menu change with the season.
+- How long guests spend on each course (`eatMin` in `menu.json`).
 - Reservation pattern, party sizes, course pacing within the published 3 to 3.5 hour meal, and option and supplement mixes.
 - Labor load counts only routed operations. Tasting, cleaning down, family meal and the chef's walkthrough are not modelled, so real utilization is higher.
 
