@@ -39,12 +39,21 @@ import { injectStyles } from './styles.js';
 import { TOUR_SHOTS, OVERVIEW, stationShot } from './tour.js';
 import { exportUSDA } from './usd.js';
 import { buildSky } from './sky.js';
-import { TIERS, tierName, detectQuality, AccumulatePass, Jitter } from './quality.js';
+import { TIERS, tierName, detectQuality, AutoQuality, AccumulatePass, Jitter } from './quality.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 export { STATE_COLORS };
 
 const BOUNDS = { x0: -7, x1: 19.5, z0: -16.5, z1: 11.5 };
+
+const SANITIZE = {
+  uniforms: { tDiffuse: { value: null } },
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv;
+    void main() { vec4 c = texture2D(tDiffuse, vUv); if (any(isnan(c)) || any(isinf(c))) c = vec4(0.0, 0.0, 0.0, 1.0); gl_FragColor = min(c, vec4(64.0)); }`,
+};
 
 export async function createKitchenScene(container, options = {}) {
   const opts = {
@@ -59,7 +68,8 @@ export async function createKitchenScene(container, options = {}) {
 
   // ------------------------------------------------------------ renderer
   const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!options.preserveDrawingBuffer });
-  opts.quality = opts.quality === 'auto' ? detectQuality(renderer) : tierName(opts.quality);
+  let auto = opts.quality === 'auto' ? new AutoQuality(detectQuality(renderer)) : null;
+  opts.quality = auto ? auto.level : tierName(opts.quality);
   let tier = TIERS[opts.quality];
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, tier.pixelRatio));
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -697,8 +707,13 @@ export async function createKitchenScene(container, options = {}) {
       bokeh = new BokehPass(scene, camera, { focus: 10, aperture: 0.00035, maxblur: 0.0045 });
       composer.addPass(bokeh);
     }
+    // Without MSAA's resolve a stray NaN/Inf texel (a half-float specular
+    // overflow) reaches the bloom blur and spreads over the whole frame.
+    if (tier.bloom && !tier.msaa) composer.addPass(new ShaderPass(SANITIZE));
     if (tier.bloom) composer.addPass(new UnrealBloomPass(new THREE.Vector2(w, h), 0.16, 0.35, 4.0));
     composer.addPass(new OutputPass());
+    // Low has no MSAA; smooth edges on the final, tone-mapped image instead
+    if (tier.fxaa) composer.addPass(new FXAAPass());
   };
   const applyTier = (q) => {
     opts.quality = tierName(q);
@@ -819,6 +834,8 @@ export async function createKitchenScene(container, options = {}) {
     }
     controls.update();
     frameHook?.(rawDt, t);
+    const stepDown = auto?.frame(rawDt);
+    if (stepDown) { applyTier(stepDown); emit('quality', { quality: opts.quality, auto: true, steppedDown: true }); }
     if (accum) {
       // Pro Max: restart accumulation whenever the view changes.
       camera.updateMatrixWorld();
@@ -1129,8 +1146,14 @@ export async function createKitchenScene(container, options = {}) {
     exportUSD() { return exportUSDA(usdSource(), { plan, cooks: [...cooks.values()] }); },
 
     // Rendering
-    setQuality(q) { applyTier(q); emit('quality', { quality: opts.quality }); },
+    // 'auto' picks a level for this device and steps down if frames stay slow; a named level stays put.
+    setQuality(q) {
+      auto = q === 'auto' ? new AutoQuality(detectQuality(renderer)) : null;
+      applyTier(auto ? auto.level : q);
+      emit('quality', { quality: opts.quality, auto: !!auto });
+    },
     get quality() { return opts.quality; },
+    get autoQuality() { return !!auto; },
     qualityTiers: Object.entries(TIERS).map(([id, t]) => ({ id, label: t.label })),
     onFrame(fn) { frameHook = fn; },
     on(ev, fn) { (listeners[ev] ||= []).push(fn); return () => { listeners[ev] = listeners[ev].filter((f) => f !== fn); }; },

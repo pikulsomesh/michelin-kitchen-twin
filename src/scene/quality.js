@@ -1,26 +1,40 @@
-// Render quality tiers and the Pro Max progressive renderer.
+// Render quality levels and the Pro Max progressive renderer.
 //
-//   mobile    1x pixels, no MSAA, no bloom, small shadow maps
-//   balanced  up to 1.25x, MSAA, bloom
-//   high      up to 2x, MSAA, ground-truth AO, bloom, 4K shadows
-//   ultra     "Pro Max": native pixels, GTAO, 4K shadows, plus progressive
-//             accumulation while the camera rests: sub-pixel jitter
-//             (supersampling) and a jittered sun and key light (soft area
-//             shadows) converge over ~1-2 s into a still that reads like an
-//             offline render, and a gentle depth of field.
+//   Every level keeps the same look: the same materials and textures, the
+//   in-kitchen reflections, filmic tone mapping, the glow on flames and
+//   lamps, and soft shadows from both the evening sun and the vault lights.
+//   Higher levels add sharpness and depth, not a different picture.
+//
+//   Low (mobile)       phones, tablets and older laptops: 1x pixels with
+//                      FXAA edge smoothing in place of MSAA, 2K sun shadows
+//   Medium (balanced)  everyday laptops (MacBook Air, integrated GPUs): up to
+//                      1.5x pixels, MSAA
+//   High (high)        the best for moving around, on a stronger GPU (Apple
+//                      Pro/Max, discrete cards): up to 2x pixels, MSAA,
+//                      ground-truth ambient occlusion, 4K shadows
+//   Pro Max (ultra)    stills, not navigation: native pixels, GTAO, 4K shadows,
+//                      plus progressive accumulation while the camera rests:
+//                      sub-pixel jitter (supersampling) and a jittered sun and
+//                      key light (soft area shadows) converge over ~1-2 s into
+//                      a still that reads like an offline render, and a gentle
+//                      depth of field. Never picked automatically.
+//
+// Auto picks a level from the GPU the browser reports, then steps down a
+// level if the frame rate stays low (see AutoQuality).
 import * as THREE from 'three';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 
 export const TIERS = {
-  mobile: { label: 'Mobile', pixelRatio: 1, msaa: 0, bloom: false, ao: false, shadow: 1024, keyShadow: false, accumulate: false },
-  balanced: { label: 'Balanced', pixelRatio: 1.25, msaa: 4, bloom: true, ao: false, shadow: 2048, keyShadow: true, accumulate: false },
+  mobile: { label: 'Low', pixelRatio: 1, msaa: 0, fxaa: true, bloom: true, ao: false, shadow: 2048, keyShadow: true, accumulate: false },
+  balanced: { label: 'Medium', pixelRatio: 1.5, msaa: 4, bloom: true, ao: false, shadow: 2048, keyShadow: true, accumulate: false },
   high: { label: 'High', pixelRatio: 2, msaa: 4, bloom: true, ao: true, shadow: 4096, keyShadow: true, accumulate: false },
-  ultra: { label: 'Pro Max', pixelRatio: 2.5, msaa: 4, bloom: true, ao: true, shadow: 4096, keyShadow: true, accumulate: true, dof: true },
+  ultra: { label: 'Pro Max (stills)', pixelRatio: 2.5, msaa: 4, bloom: true, ao: true, shadow: 4096, keyShadow: true, accumulate: true, dof: true },
 };
-const ALIAS = { low: 'mobile', medium: 'balanced', 'pro-max': 'ultra', promax: 'ultra', max: 'ultra' };
+export const LADDER = ['mobile', 'balanced', 'high', 'ultra'];
+const ALIAS = { low: 'mobile', medium: 'balanced', med: 'balanced', 'pro-max': 'ultra', promax: 'ultra', max: 'ultra' };
 export const tierName = (q) => (TIERS[q] ? q : ALIAS[q] || 'balanced');
 
-// Picks a default from what the browser reports. Pro Max is opt-in.
+// Picks a starting level from what the browser reports. Pro Max is opt-in.
 export function detectQuality(renderer) {
   const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
   const mem = navigator.deviceMemory || 8;
@@ -32,8 +46,33 @@ export function detectQuality(renderer) {
   } catch { /* privacy mode */ }
   if (/swiftshader|llvmpipe|software|mali-[4t]|adreno \(tm\) [3-5]/i.test(gpu)) return 'mobile';
   if (coarse || mem <= 4) return 'mobile';
-  if (/apple m\d|rtx|radeon rx|radeon pro|arc a/i.test(gpu)) return 'high';
+  // older laptops: pre-Iris Intel graphics, or anything with little memory
+  if (/intel.*(hd graphics|uhd graphics [56]\d\d)/i.test(gpu)) return 'mobile';
+  // Apple's Pro/Max/Ultra chips and discrete GPUs take High; a base M chip
+  // (MacBook Air, 13" Pro) runs smoother on Medium.
+  if (/apple m\d+ (pro|max|ultra)|rtx|radeon rx|radeon pro|arc a/i.test(gpu)) return 'high';
   return 'balanced';
+}
+
+// Auto mode's safety net: if frames stay slow for a few seconds while the
+// view is in use, step down one level (never below Low, never from a level
+// the viewer picked). Call frame(dt) every frame; it returns the new level
+// name when it decides to step down.
+export class AutoQuality {
+  constructor(level) { this.level = level; this.t = 0; this.n = 0; this.grace = 4; }
+  reset(level) { this.level = level; this.t = 0; this.n = 0; this.grace = 3; }
+  frame(dt) {
+    if (dt <= 0 || dt > 0.5) return null; // tab was hidden or a one-off hitch
+    if (this.grace > 0) { this.grace -= dt; return null; } // shaders warming up, intro starting
+    this.t += dt; this.n++;
+    if (this.t < 3) return null;
+    const fps = this.n / this.t;
+    this.t = 0; this.n = 0;
+    const i = LADDER.indexOf(this.level);
+    if (fps >= 28 || i <= 0 || this.level === 'ultra') return null;
+    this.reset(LADDER[i - 1]);
+    return this.level;
+  }
 }
 
 const HALTON = (i, b) => { let f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; };
