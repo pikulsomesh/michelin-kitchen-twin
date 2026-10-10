@@ -1,7 +1,7 @@
 // Brigade members: articulated figures in chef whites that walk the nav grid,
 // face their work, and gesture while busy.
 import * as THREE from 'three';
-import { hash01, lerp } from './kit.js';
+import { hash01, lerp, batchGroup } from './kit.js';
 
 const SKIN = [0xf1c8a8, 0xe0ac86, 0xc68a62, 0x9c6a48, 0x6e4a33, 0xf6d4bc];
 const HAIR = [0x1b1410, 0x3b2a1c, 0x6b4a2b, 0x2a2a2a, 0xb08850, 0x101010];
@@ -199,6 +199,10 @@ export class Cook {
     pick.userData.pick = { type: 'cook', id };
     root.add(pick);
     this.pick = pick;
+    // Merge each rigid part (body, head, limbs) by material: ~40 draws per cook become ~20.
+    // The torso stays separate because it breathes.
+    batchGroup(body, { keep: [torso] });
+    for (const g of [head, this.legL, this.legR, this.armL, this.armR, this.armL.elbow, this.armR.elbow]) batchGroup(g);
 
     this.path = null;
     this.pathIndex = 0;

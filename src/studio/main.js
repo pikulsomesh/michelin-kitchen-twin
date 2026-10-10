@@ -29,10 +29,15 @@ const twin = await createKitchenScene(document.getElementById('stage'), { data: 
 const stage = createStage({ twin, layout: siteData.layout, quality: twin.quality });
 
 const qualitySel = document.getElementById('quality');
-qualitySel.innerHTML = twin.qualityTiers.map((t) => `<option value="${t.id}">${t.label}</option>`).join('');
-qualitySel.value = twin.quality;
+const qualityLabel = Object.fromEntries(twin.qualityTiers.map((t) => [t.id, t.label]));
+const paintQuality = () => {
+  qualitySel.innerHTML = `<option value="auto">Auto${twin.autoQuality ? ` (${qualityLabel[twin.quality]})` : ''}</option>`
+    + twin.qualityTiers.map((t) => `<option value="${t.id}">${t.label}</option>`).join('');
+  qualitySel.value = twin.autoQuality ? 'auto' : twin.quality;
+};
+paintQuality();
 qualitySel.onchange = () => twin.setQuality(qualitySel.value);
-twin.on('quality', ({ quality }) => { qualitySel.value = quality; });
+twin.on('quality', paintQuality);
 
 const v3 = (v) => [v.x, v.y, v.z];
 const VIEWS = {

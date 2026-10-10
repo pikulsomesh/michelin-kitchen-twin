@@ -6,7 +6,7 @@ A photoreal, browser-only Three.js model of The French Laundry's kitchen (the 20
 import { createKitchenScene } from './scene/index.js';
 import { bindSim } from './scene/bind.js';
 
-const twin = await createKitchenScene(el, { quality: 'auto' });   // 'mobile' | 'balanced' | 'high' | 'ultra' (Pro Max)
+const twin = await createKitchenScene(el, { quality: 'auto' });   // 'auto' | 'mobile' (Low) | 'balanced' (Medium) | 'high' | 'ultra' (Pro Max, for stills)
 const binding = bindSim(twin, sim);                                // src/sim drives it; the sim owns the clock
 twin.onFrame((dt) => { sim.tick(dt); binding.update(dt); });
 ```
@@ -39,7 +39,7 @@ The scene uses the data ids directly, so the sim, the dashboard and the OpenUSD 
 
 **Look** (for the studio): `setLook({ sun: { azimuthDeg, elevationDeg, color, intensity }, sky: { top, horizon }, interior: { kelvin, intensity }, accent: { kelvin, intensity }, exposure, haze, season, foliage })`, `setDining([{ id, seats, shape: 'round'|'rect', x, z, rotY }])` (x < 0 is the dining room). Azimuth 0° looks from the garden side (+z), 90° from the east (+x).
 
-**Render**: `setQuality(tier)`, `quality`, `qualityTiers`, `renderOnce()`, `exportUSD()` (OpenUSD `.usda` for NVIDIA Omniverse and Isaac Sim), `on('select'|'appliance'|'inventory'|'tour'|'follow'|'quality', fn)`, `dispose()`. The container also fires a `twin:ready` DOM event with the API as `detail`; `scene`, `camera`, `renderer` and `controls` are exposed for add-ons.
+**Render**: `setQuality(tier)` (`'auto'` picks a level for the device and steps down one if frames stay under ~28 fps), `quality`, `autoQuality`, `qualityTiers`, `renderOnce()`, `exportUSD()` (OpenUSD `.usda` for NVIDIA Omniverse and Isaac Sim), `on('select'|'appliance'|'inventory'|'tour'|'follow'|'quality', fn)`, `dispose()`. The container also fires a `twin:ready` DOM event with the API as `detail`; `scene`, `camera`, `renderer` and `controls` are exposed for add-ons.
 
 ## Quality tiers
 

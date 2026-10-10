@@ -145,13 +145,23 @@ $$('[data-tab]').forEach((b) => b.addEventListener('click', () => {
 }));
 $('[data-overlay]').onchange = (e) => twin.setOverlay(e.target.value);
 const qualSel = $('[data-quality]');
-qualSel.innerHTML = twin.qualityTiers.map((t) => `<option value="${t.id}">${t.label}</option>`).join('');
-qualSel.value = twin.quality;
+const qualLabel = Object.fromEntries(twin.qualityTiers.map((t) => [t.id, t.label]));
+const paintQuality = () => {
+  qualSel.innerHTML = `<option value="auto">Auto${twin.autoQuality ? ` (${qualLabel[twin.quality]})` : ''}</option>`
+    + twin.qualityTiers.map((t) => `<option value="${t.id}">${t.label}</option>`).join('');
+  qualSel.value = twin.autoQuality ? 'auto' : twin.quality;
+};
+paintQuality();
 qualSel.onchange = () => {
   twin.setQuality(qualSel.value);
   store.set('quality', qualSel.value);
-  if (qualSel.value === 'ultra') say('Pro Max: hold the camera still and the frame refines into a soft-shadowed, supersampled still.', 5000);
+  if (qualSel.value === 'ultra') say('Pro Max is for stills: hold the camera still and the frame refines into a soft-shadowed, supersampled image. Use High or lower to move around.', 5000);
+  if (qualSel.value === 'mobile') say('Low: for phones and older laptops. Same look, fewer pixels, so it stays smooth.', 3200);
 };
+twin.on('quality', (e) => {
+  paintQuality();
+  if (e.steppedDown) say(`Running slow here, so Auto switched to ${qualLabel[e.quality]}. Pick a level in the quality menu to keep one.`, 4500);
+});
 twin.on('tour', (e) => {
   $('[data-act="tour"]').classList.toggle('on', !!e.playing);
   if (e.shot) say(e.shot, 2600);

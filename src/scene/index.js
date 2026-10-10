@@ -34,17 +34,26 @@ import { Cook } from './cooks.js';
 import { Item } from './items.js';
 import { buildClock, buildPerSeScreen } from './clock.js';
 import { buildContainer } from './ingredients.js';
-import { smooth, lerp } from './kit.js';
+import { smooth, lerp, batchGroup } from './kit.js';
 import { injectStyles } from './styles.js';
 import { TOUR_SHOTS, OVERVIEW, stationShot } from './tour.js';
 import { exportUSDA } from './usd.js';
 import { buildSky } from './sky.js';
-import { TIERS, tierName, detectQuality, AccumulatePass, Jitter } from './quality.js';
+import { TIERS, tierName, detectQuality, AutoQuality, AccumulatePass, Jitter } from './quality.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 export { STATE_COLORS };
 
 const BOUNDS = { x0: -7, x1: 19.5, z0: -16.5, z1: 11.5 };
+
+const SANITIZE = {
+  uniforms: { tDiffuse: { value: null } },
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv;
+    void main() { vec4 c = texture2D(tDiffuse, vUv); if (any(isnan(c)) || any(isinf(c))) c = vec4(0.0, 0.0, 0.0, 1.0); gl_FragColor = min(c, vec4(64.0)); }`,
+};
 
 export async function createKitchenScene(container, options = {}) {
   const opts = {
@@ -59,7 +68,8 @@ export async function createKitchenScene(container, options = {}) {
 
   // ------------------------------------------------------------ renderer
   const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!options.preserveDrawingBuffer });
-  opts.quality = opts.quality === 'auto' ? detectQuality(renderer) : tierName(opts.quality);
+  let auto = opts.quality === 'auto' ? new AutoQuality(detectQuality(renderer)) : null;
+  opts.quality = auto ? auto.level : tierName(opts.quality);
   let tier = TIERS[opts.quality];
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, tier.pixelRatio));
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -155,6 +165,10 @@ export async function createKitchenScene(container, options = {}) {
 
   const site = buildSite(M, plan, nav);
   world.add(site.group);
+  // The canopies and the dining room stay separate objects (hidden from
+  // above, replaceable from Studio) but each draws in a few merged calls.
+  for (const c of site.canopies) if (c.isGroup) batchGroup(c, { deep: true });
+  batchGroup(site.dining, { deep: true });
 
   // Equipment from the layout
   const appliances = new Map();
@@ -362,9 +376,24 @@ export async function createKitchenScene(container, options = {}) {
     crt.dispose(); eq.dispose(); quad.geometry.dispose(); quad.material.dispose();
     return env;
   };
+  // Compile every shader up front, in parallel where the browser supports it
+  // (KHR_parallel_shader_compile), instead of linking them one by one inside
+  // the first renders. Programs depend on the target's colour space and tone
+  // mapping, so compile against an offscreen target like the composer's.
+  const warmTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const precompile = () => {
+    const prev = renderer.getRenderTarget();
+    renderer.setRenderTarget(warmTarget);
+    const ready = renderer.compileAsync(scene, camera);
+    renderer.setRenderTarget(prev);
+    return ready;
+  };
   const studioEnv = scene.environment;
+  await precompile();
   scene.environment = captureProbe();
   scene.environmentIntensity = 0.85;
+  // the probe's environment map has a different size, which is a different program
+  await precompile();
 
   // ------------------------------------------------------------ overlays
   // Utilization aura under each machine (OEE-style heat colouring).
@@ -678,8 +707,13 @@ export async function createKitchenScene(container, options = {}) {
       bokeh = new BokehPass(scene, camera, { focus: 10, aperture: 0.00035, maxblur: 0.0045 });
       composer.addPass(bokeh);
     }
+    // Without MSAA's resolve a stray NaN/Inf texel (a half-float specular
+    // overflow) reaches the bloom blur and spreads over the whole frame.
+    if (tier.bloom && !tier.msaa) composer.addPass(new ShaderPass(SANITIZE));
     if (tier.bloom) composer.addPass(new UnrealBloomPass(new THREE.Vector2(w, h), 0.16, 0.35, 4.0));
     composer.addPass(new OutputPass());
+    // Low has no MSAA; smooth edges on the final, tone-mapped image instead
+    if (tier.fxaa) composer.addPass(new FXAAPass());
   };
   const applyTier = (q) => {
     opts.quality = tierName(q);
@@ -800,6 +834,8 @@ export async function createKitchenScene(container, options = {}) {
     }
     controls.update();
     frameHook?.(rawDt, t);
+    const stepDown = auto?.frame(rawDt);
+    if (stepDown) { applyTier(stepDown); emit('quality', { quality: opts.quality, auto: true, steppedDown: true }); }
     if (accum) {
       // Pro Max: restart accumulation whenever the view changes.
       camera.updateMatrixWorld();
@@ -1093,7 +1129,7 @@ export async function createKitchenScene(container, options = {}) {
     // Replace the dining-room glimpse: [{ id, seats, shape: 'round'|'rect', x, z, rotY (deg) }], x < 0.
     setDining(tables = []) {
       const g = site.dining;
-      for (const c of [...g.children]) g.remove(c);
+      for (const c of [...g.children]) { g.remove(c); if (c.userData.batched) c.geometry.dispose(); }
       for (const t of tables) {
         const m = diningTable(M, t);
         m.position.set(t.x, 0, t.z);
@@ -1101,6 +1137,7 @@ export async function createKitchenScene(container, options = {}) {
         m.userData.table = t.id;
         g.add(m);
       }
+      batchGroup(g, { deep: true });
       return api;
     },
 
@@ -1109,8 +1146,14 @@ export async function createKitchenScene(container, options = {}) {
     exportUSD() { return exportUSDA(usdSource(), { plan, cooks: [...cooks.values()] }); },
 
     // Rendering
-    setQuality(q) { applyTier(q); emit('quality', { quality: opts.quality }); },
+    // 'auto' picks a level for this device and steps down if frames stay slow; a named level stays put.
+    setQuality(q) {
+      auto = q === 'auto' ? new AutoQuality(detectQuality(renderer)) : null;
+      applyTier(auto ? auto.level : q);
+      emit('quality', { quality: opts.quality, auto: !!auto });
+    },
     get quality() { return opts.quality; },
+    get autoQuality() { return !!auto; },
     qualityTiers: Object.entries(TIERS).map(([id, t]) => ({ id, label: t.label })),
     onFrame(fn) { frameHook = fn; },
     on(ev, fn) { (listeners[ev] ||= []).push(fn); return () => { listeners[ev] = listeners[ev].filter((f) => f !== fn); }; },

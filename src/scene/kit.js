@@ -1,6 +1,7 @@
 // Small geometry toolkit shared by every builder in the scene.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { worldUV } from './materials.js';
 
 // Rounded box whose origin sits at the centre of its bottom face.
@@ -113,6 +114,64 @@ export function markStatic(obj) {
 export function markDynamic(obj) {
   obj.traverse((o) => { o.userData.dynamic = true; });
   return obj;
+}
+
+// Merges a group's opaque meshes by material in place, so it looks the same
+// but draws in a handful of calls instead of one per part. `deep` also
+// merges nested static meshes (into the group's own space); otherwise only
+// direct, childless mesh children are merged, which keeps animated sub-groups
+// (a cook's arms and head) moving. Dynamic, pickable, transparent, instanced
+// and multi-material meshes, and anything in `keep`, are left alone.
+export function batchGroup(group, { deep = false, keep = [] } = {}) {
+  const skip = new Set(keep);
+  const buckets = new Map();
+  group.updateMatrixWorld(true);
+  const toGroup = new THREE.Matrix4().copy(group.matrixWorld).invert();
+  const candidate = (o) => o.isMesh && !o.isInstancedMesh && !o.isSkinnedMesh && !skip.has(o) && !o.userData.dynamic && !o.userData.pick
+    && o.children.length === 0 && o.material && !Array.isArray(o.material) && o.material.visible !== false
+    && !o.material.transparent && !o.material.transmission && o.visible && !Object.keys(o.geometry.morphAttributes).length;
+  const take = (o) => {
+    const attrs = Object.keys(o.geometry.attributes).sort().map((n) => `${n}${o.geometry.attributes[n].itemSize}`).join(',');
+    const key = [o.material.uuid, o.castShadow, o.receiveShadow, o.renderOrder, o.frustumCulled, o.layers.mask, attrs].join('|');
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(o);
+  };
+  const visit = (o) => {
+    for (const c of o.children) {
+      if (c.userData.dynamic || skip.has(c)) continue;
+      if (candidate(c)) take(c);
+      else if (deep && c.visible) visit(c);
+    }
+  };
+  visit(group);
+  const m = new THREE.Matrix4();
+  for (const parts of buckets.values()) {
+    if (parts.length < 2) continue;
+    const geos = parts.map((o) => {
+      const g = o.geometry.clone();
+      if (!g.index) g.setIndex([...Array(g.attributes.position.count).keys()]);
+      g.clearGroups();
+      g.applyMatrix4(m.multiplyMatrices(toGroup, o.matrixWorld));
+      // a mirrored part keeps its facing: the renderer flips culling for negative scale, a merged buffer can't
+      if (m.determinant() < 0) { const ix = g.index.array; for (let i = 0; i < ix.length; i += 3) [ix[i + 1], ix[i + 2]] = [ix[i + 2], ix[i + 1]]; }
+      return g;
+    });
+    const merged = mergeGeometries(geos, false);
+    geos.forEach((g) => g.dispose());
+    if (!merged) continue;
+    const src = parts[0];
+    const mesh = new THREE.Mesh(merged, src.material);
+    mesh.name = `${group.name || 'group'}:batched`;
+    mesh.castShadow = src.castShadow;
+    mesh.receiveShadow = src.receiveShadow;
+    mesh.renderOrder = src.renderOrder;
+    mesh.frustumCulled = src.frustumCulled;
+    mesh.layers.mask = src.layers.mask;
+    mesh.userData.batched = true;
+    for (const o of parts) o.removeFromParent();
+    group.add(mesh);
+  }
+  return group;
 }
 
 // Soft round sprite used by steam, smoke and bubbles.
