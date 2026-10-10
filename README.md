@@ -4,7 +4,7 @@ A browser-based 3D digital twin of **The French Laundry** (Yountville, Californi
 
 The number of covers is the build plan. From it the twin works out every plate, every sub-assembly in the mise en place, every gram of ingredient, and the load on each cook and appliance. Later stages render the kitchen in realistic 3D and simulate the service minute by minute: tickets firing, stations working, food moving to the pass, inventory draining.
 
-**Live site:** https://pikulsomesh.github.io/michelin-kitchen-twin/
+**Live site:** https://pikulsomesh.github.io/michelin-kitchen-twin/ · **Studio:** https://pikulsomesh.github.io/michelin-kitchen-twin/studio.html (customize the dining room, menu, season, and light; see [docs/studio.md](docs/studio.md))
 
 ## Status
 

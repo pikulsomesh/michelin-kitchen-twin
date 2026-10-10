@@ -1,7 +1,11 @@
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 // GitHub Pages serves the site from /<repo>/; `vite` dev serves from /.
 export default defineConfig(({ command, isPreview }) => ({
   base: command === 'build' || isPreview ? '/michelin-kitchen-twin/' : '/',
-  build: { target: 'es2022', chunkSizeWarningLimit: 1500 },
+  build: {
+    target: 'es2022', chunkSizeWarningLimit: 1500,
+    rollupOptions: { input: { main: resolve(import.meta.dirname, 'index.html'), studio: resolve(import.meta.dirname, 'studio.html') } },
+  },
 }));
