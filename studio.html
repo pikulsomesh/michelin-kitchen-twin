@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitchen Twin Studio</title>
+    <meta name="description" content="Customize the restaurant behind the kitchen digital twin: dining room, tasting or à la carte menu, season, and light and mood, then watch the 3D scene and the dinner-service simulation follow." />
+    <link rel="stylesheet" href="/src/dashboard/dashboard.css" />
+    <link rel="stylesheet" href="/src/studio/studio.css" />
+  </head>
+  <body>
+    <div id="studio">
+      <header class="st-top">
+        <a class="st-brand" href="./">Kitchen Twin <span>Studio</span></a>
+        <nav class="st-views" aria-label="Camera">
+          <button data-view="dining">Dining room</button><button data-view="kitchen">Kitchen</button><button data-view="window">Garden window</button><button data-view="all">Whole restaurant</button>
+        </nav>
+        <div class="st-actions"><button id="reset">Reset</button><button id="share" class="primary">Share this setup</button></div>
+      </header>
+      <aside id="panel" aria-label="Studio settings"></aside>
+      <main class="st-view">
+        <canvas id="stage" aria-label="3D view of the dining room and kitchen"></canvas>
+        <section class="st-impact" id="impact" aria-live="polite"></section>
+        <footer class="st-timeline">
+          <button id="play">Play</button>
+          <output id="clock">--:--</output>
+          <input id="scrub" type="range" step="30" aria-label="Service time" />
+          <select id="speed" aria-label="Speed"><option value="60">60×</option><option value="300" selected>300×</option><option value="900">900×</option></select>
+          <span id="room"></span>
+          <button id="open-dash" class="primary">Operations dashboard</button>
+        </footer>
+      </main>
+      <div id="sheet" hidden>
+        <button id="close-dash" class="st-close">Back to the studio</button>
+        <div data-dash></div>
+      </div>
+    </div>
+    <script type="module" src="/src/studio/main.js"></script>
+  </body>
+</html>
