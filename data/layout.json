@@ -1,0 +1,75 @@
+{
+  "$comment": "Placements and benches give the centre point of each object; zones and footprints give their south-west corner. Floor plan for the 3D scene, in metres. x runs along the kitchen's length (west to east), z across it (south to north), y is up; the origin is the kitchen's south-west corner. The footprint matches the published areas (1,980 sq ft kitchen, 2,450 sq ft annex) and the published concept (two island suites, pass toward the dining room, ribbon window on the garden corner, no walk-ins). Exact positions are not published: this arrangement is an informed reconstruction for the twin, not a survey.",
+  "units": "m",
+  "kitchen": {
+    "footprint": { "x": 0, "z": 0, "width": 17.0, "depth": 10.8 },
+    "areaM2": 183.6,
+    "ceiling": { "type": "curved-vault", "springHeight": 2.75, "peakHeight": 6.1, "overSuitesHeight": 2.75, "src": ["fermag-2017", "archrecord-2018"] },
+    "floor": "terrazzo",
+    "walls": "white-solid-surface",
+    "openings": [
+      { "id": "door-dining", "wall": "west", "at": 5.4, "width": 1.6, "height": 2.4, "leadsTo": "Dining room" },
+      { "id": "door-annex", "wall": "south", "at": 1.6, "width": 1.4, "height": 2.4, "leadsTo": "Courtyard path to the annex" },
+      { "id": "window-garden-north", "wall": "north", "from": 4.0, "to": 17.0, "sill": 1.35, "head": 2.45, "glass": "fritted", "src": ["archrecord-2018"] },
+      { "id": "window-garden-east", "wall": "east", "from": 5.8, "to": 10.8, "sill": 1.35, "head": 2.45, "glass": "fritted", "src": ["archrecord-2018"] }
+    ]
+  },
+  "annex": {
+    "footprint": { "x": 0, "z": -16.0, "width": 19.0, "depth": 12.0 },
+    "areaM2": 228,
+    "zones": [
+      { "id": "WC-ANNEX-BUTCHERY", "x": 0.5, "z": -15.5, "width": 6.0, "depth": 5.0 },
+      { "id": "WC-ANNEX-PREP", "x": 7.0, "z": -15.5, "width": 8.0, "depth": 6.0 },
+      { "id": "wine-cellar", "x": 0.5, "z": -9.8, "width": 9.0, "depth": 5.4 },
+      { "id": "offices", "x": 15.5, "z": -15.5, "width": 3.0, "depth": 6.0 }
+    ]
+  },
+  "zones": [
+    { "id": "WC-PASS", "x": 1.6, "z": 3.4, "width": 2.0, "depth": 4.0 },
+    { "id": "WC-FISH", "x": 4.5, "z": 6.5, "width": 6.0, "depth": 2.0 },
+    { "id": "WC-MEAT", "x": 6.5, "z": 1.2, "width": 5.0, "depth": 3.1 },
+    { "id": "WC-GARNISH", "x": 3.6, "z": 1.2, "width": 2.9, "depth": 3.1 },
+    { "id": "WC-STOCK", "x": 11.6, "z": 1.2, "width": 3.2, "depth": 3.1 },
+    { "id": "WC-GM", "x": 10.8, "z": 6.3, "width": 5.0, "depth": 4.4 },
+    { "id": "WC-PASTRY", "x": 10.8, "z": 1.2, "width": 5.8, "depth": 5.1 },
+    { "id": "WC-DISH", "x": 0.1, "z": 7.8, "width": 2.4, "depth": 2.9 }
+  ],
+  "placements": [
+    { "equipment": "EQ-PASS-TABLE", "x": 2.6, "z": 5.4, "rotY": 90 },
+    { "equipment": "EQ-HEAT-LAMP", "x": 2.6, "z": 5.4, "y": 1.55, "rotY": 90 },
+    { "equipment": "EQ-BONNET-SAVORY", "x": 7.5, "z": 5.4, "rotY": 0 },
+    { "equipment": "EQ-BONNET-PASTRY", "x": 13.2, "z": 5.4, "rotY": 0 },
+    { "equipment": "EQ-FRY-KETTLE", "x": 15.35, "z": 5.4, "y": 0.0, "rotY": 0, "embeddedIn": "EQ-BONNET-PASTRY" },
+    { "equipment": "EQ-REACHIN-GARNISH", "x": 2.9, "z": 0.43, "rotY": 0 },
+    { "equipment": "EQ-HESTAN-RANGE", "x": 4.6, "z": 0.45, "rotY": 0 },
+    { "equipment": "EQ-SALAMANDER-1", "x": 4.6, "z": 0.3, "y": 1.55, "rotY": 0 },
+    { "equipment": "EQ-HEARTH", "x": 7.4, "z": 0.45, "rotY": 0 },
+    { "equipment": "EQ-ROTISSERIE", "x": 9.1, "z": 0.35, "rotY": 0 },
+    { "equipment": "EQ-REACHIN-MEAT", "x": 10.3, "z": 0.43, "rotY": 0 },
+    { "equipment": "EQ-REACHIN-FISH", "x": 11.15, "z": 0.43, "rotY": 0 },
+    { "equipment": "EQ-STOCKPOT-RANGE", "x": 12.4, "z": 0.4, "rotY": 0 },
+    { "equipment": "EQ-COMBI-KITCHEN", "x": 13.6, "z": 0.43, "rotY": 0 },
+    { "equipment": "EQ-REACHIN-GM", "x": 15.4, "z": 0.43, "rotY": 0 },
+    { "equipment": "EQ-STONE-OVEN", "x": 16.4, "z": 2.0, "rotY": -90 },
+    { "equipment": "EQ-FREEZER-PASTRY", "x": 16.58, "z": 3.4, "rotY": -90 },
+    { "equipment": "EQ-CHEESE-HUMIDOR", "x": 16.6, "z": 4.5, "rotY": -90 },
+    { "equipment": "EQ-PACOJET", "x": 16.5, "z": 7.0, "y": 0.92, "rotY": -90 },
+    { "equipment": "EQ-ESPRESSO-STEAMER", "x": 16.45, "z": 8.2, "y": 0.92, "rotY": -90 },
+    { "equipment": "EQ-MIXER", "x": 14.6, "z": 10.4, "y": 0.92, "rotY": 180 },
+    { "equipment": "EQ-SALAMANDER-2", "x": 13.2, "z": 10.3, "y": 1.2, "rotY": 180 },
+    { "equipment": "EQ-SLICER", "x": 11.8, "z": 10.4, "y": 0.92, "rotY": 180 },
+    { "equipment": "EQ-ROBOT-COUPE", "x": 10.4, "z": 10.45, "y": 0.92, "rotY": 180 },
+    { "equipment": "EQ-VITAMIX", "x": 9.4, "z": 10.5, "y": 0.92, "rotY": 180 },
+    { "equipment": "EQ-ICE", "x": 0.42, "z": 2.0, "rotY": 90 },
+    { "equipment": "EQ-DISHMACHINE", "x": 0.42, "z": 9.2, "rotY": 90 },
+    { "equipment": "EQ-MEAT-AGING", "x": 1.0, "z": -15.55, "rotY": 0 },
+    { "equipment": "EQ-GRINDER", "x": 3.0, "z": -15.6, "y": 0.92, "rotY": 0 },
+    { "equipment": "EQ-CRYOVAC", "x": 4.6, "z": -15.6, "y": 0.92, "rotY": 0 },
+    { "equipment": "EQ-COMBI-ANNEX", "x": 8.0, "z": -15.55, "rotY": 0 },
+    { "equipment": "EQ-INDUCTION-ANNEX", "x": 10.5, "z": -15.6, "y": 0.92, "rotY": 0 }
+  ],
+  "benches": [
+    { "id": "bench-north", "x": 10.2, "z": 10.45, "width": 11.6, "depth": 0.7, "height": 0.95, "note": "Prep counters under the ribbon window" },
+    { "id": "bench-east", "x": 16.45, "z": 7.9, "width": 0.7, "depth": 4.6, "height": 0.95 }
+  ]
+}

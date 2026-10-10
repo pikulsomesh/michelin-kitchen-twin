@@ -1,0 +1,3608 @@
+{
+  "$comment": "Make items: intermediates (sub-assemblies, made during mise en place) and finished goods (plates, made à la minute). Each carries its bill of materials (`bom`, quantities per `batchYield` of the parent) and its routing (`routing`: ordered operations). Operation fields: workCenter, equipment (machine occupied, or null), role (labor), setupMin, runMin, per ('unit' = runMin per unit, 'batch' = runMin per batch), laborFraction (share of the operation a cook is hands-on), wait (passive time such as proofing, curing, freezing), maxBatch (largest service batch), tempC. Recipe-sourced operations cite their recipe; the rest are estimates from professional practice.",
+  "products": [
+    {
+      "id": "INT-TUILE-BATTER",
+      "name": "Cornet tuile batter",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 280,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 48,
+      "src": [
+        "recipe-cornets",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "RM-FLOUR-AP",
+          "qty": 65
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 17
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 4
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 114
+        },
+        {
+          "item": "RM-EGG",
+          "qty": 2
+        },
+        {
+          "item": "RM-SESAME-BLACK",
+          "qty": 18
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Cream butter, blend in dry and whites",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-ROBOT-COUPE",
+          "role": "commis-pastry",
+          "setupMin": 3,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Rest batter, chilled",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        }
+      ]
+    },
+    {
+      "id": "INT-CORNET-SHELL",
+      "name": "Cornet shells",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 24,
+      "phase": "prep",
+      "storage": "SL-DRY",
+      "shelfLifeHours": 48,
+      "src": [
+        "recipe-cornets",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "INT-TUILE-BATTER",
+          "qty": 276
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Stencil 4-inch rounds on silicone mats",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 0.4,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Bake until set and rippling",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-STONE-OVEN",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 5,
+          "per": "batch",
+          "laborFraction": 0.2,
+          "tempC": 204
+        },
+        {
+          "seq": 30,
+          "name": "Roll around 4.5-inch cornet molds",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.3,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Bake to set seams and colour",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-STONE-OVEN",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 0.2,
+          "tempC": 204
+        },
+        {
+          "seq": 50,
+          "name": "Cool, unmold, store airtight",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.1,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-SALMON-TARTARE",
+      "name": "Salmon tartare",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 240,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 8,
+      "src": [
+        "review-chihuo",
+        "tflcookbook",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-SALMON",
+          "qty": 220
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 6
+        },
+        {
+          "item": "RM-SHALLOT",
+          "qty": 6
+        },
+        {
+          "item": "RM-CHIVES",
+          "qty": 6
+        },
+        {
+          "item": "RM-LEMON",
+          "qty": 4
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 2
+        },
+        {
+          "item": "RM-BLACK-PEPPER",
+          "qty": 0.5
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Skin, pin-bone and fine-dice salmon",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 3,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Season and hold over ice",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-RED-ONION-CREME",
+      "name": "Sweet red onion crème fraîche",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 200,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 24,
+      "src": [
+        "review-chihuo",
+        "tflcookbook",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CREME-FRAICHE",
+          "qty": 160
+        },
+        {
+          "item": "RM-RED-ONION",
+          "qty": 40
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 1
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Brunoise red onion, rinse and dry",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "commis-garde-manger",
+          "setupMin": 2,
+          "runMin": 8,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Whip crème fraîche, fold onion, fill piping bag",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "commis-garde-manger",
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-GOUGERE-PIPED",
+      "name": "Gougères, piped and frozen",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 60,
+      "phase": "prep",
+      "storage": "SL-FREEZER",
+      "shelfLifeHours": 168,
+      "src": [
+        "review-chihuo",
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 100
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 5
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 2
+        },
+        {
+          "item": "RM-FLOUR-AP",
+          "qty": 156
+        },
+        {
+          "item": "RM-EGG",
+          "qty": 4
+        },
+        {
+          "item": "RM-GRUYERE",
+          "qty": 110
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Cook pâte à choux panade",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Beat in eggs and Gruyère",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-MIXER",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 30,
+          "name": "Pipe onto trays",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.15,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Freeze on trays",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-FREEZER-PASTRY",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 120,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        }
+      ]
+    },
+    {
+      "id": "FG-C0-CANAPES",
+      "name": "Canapés: salmon cornet and Gruyère gougères",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo",
+        "review-tinyurban",
+        "recipe-cornets"
+      ],
+      "bom": [
+        {
+          "item": "INT-CORNET-SHELL",
+          "qty": 1
+        },
+        {
+          "item": "INT-SALMON-TARTARE",
+          "qty": 9
+        },
+        {
+          "item": "INT-RED-ONION-CREME",
+          "qty": 5
+        },
+        {
+          "item": "RM-CHIVES",
+          "qty": 0.2
+        },
+        {
+          "item": "INT-GOUGERE-PIPED",
+          "qty": 2
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Bake gougères from frozen",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-COMBI-KITCHEN",
+          "role": "commis-garde-manger",
+          "setupMin": 0,
+          "runMin": 12,
+          "per": "batch",
+          "laborFraction": 0.1,
+          "tempC": 190,
+          "maxBatch": 30
+        },
+        {
+          "seq": 20,
+          "name": "Pipe crème fraîche, scoop tartare, chive tip",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 0.4,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 30,
+          "name": "Plate cornet in holder with gougères",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "commis-garde-manger",
+          "setupMin": 0,
+          "runMin": 0.3,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C0B-BREAD",
+      "name": "Bread and butter service",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo",
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "RM-PRETZEL-ROLL",
+          "qty": 1
+        },
+        {
+          "item": "RM-BUTTER-SALTED",
+          "qty": 12
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 12
+        },
+        {
+          "item": "RM-SALT-FINISHING",
+          "qty": 3
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Warm rolls",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-STONE-OVEN",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 0.1,
+          "tempC": 180,
+          "maxBatch": 24
+        },
+        {
+          "seq": 20,
+          "name": "Plate butters and salts",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.3,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-OYSTER-SHUCKED",
+      "name": "Oysters, shucked and trimmed (liquor and trim reserved)",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 40,
+      "phase": "prep",
+      "storage": "SL-REACHIN-FISH",
+      "shelfLifeHours": 8,
+      "src": [
+        "recipe-oysters-pearls"
+      ],
+      "bom": [
+        {
+          "item": "RM-OYSTER",
+          "qty": 40
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Shuck, separate liquor, trim bellies from frills",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "commis-fish",
+          "setupMin": 2,
+          "runMin": 0.5,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Rinse and hold in liquor, chilled",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "commis-fish",
+          "setupMin": 0,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-TAPIOCA-BASE",
+      "name": "Tapioca sabayon base, portioned in bowls",
+      "type": "intermediate",
+      "uom": "portion",
+      "batchYield": 20,
+      "phase": "prep",
+      "storage": "SL-REACHIN-FISH",
+      "shelfLifeHours": 8,
+      "src": [
+        "recipe-oysters-pearls",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "RM-TAPIOCA-PEARL",
+          "qty": 150
+        },
+        {
+          "item": "RM-MILK",
+          "qty": 990
+        },
+        {
+          "item": "RM-CREAM",
+          "qty": 710
+        },
+        {
+          "item": "RM-CREME-FRAICHE",
+          "qty": 140
+        },
+        {
+          "item": "RM-EGG",
+          "qty": 10
+        },
+        {
+          "item": "RM-BLACK-PEPPER",
+          "qty": 3
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 3
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Soak tapioca in warm milk",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 60,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Whip cream to soft peaks",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-MIXER",
+          "role": "commis-fish",
+          "setupMin": 1,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 30,
+          "name": "Infuse oyster trim in milk and cream, strain",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "commis-fish",
+          "setupMin": 2,
+          "runMin": 8,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 40,
+          "name": "Cook tapioca to a trail, then until tender",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "commis-fish",
+          "setupMin": 0,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 0.6,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 50,
+          "name": "Whisk yolk sabayon over water bath",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 60,
+          "name": "Fold, season, portion into bowls",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 0.4,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "INT-OP-SAUCE",
+      "name": "Vermouth beurre blanc for Oysters and Pearls",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 515,
+      "phase": "prep",
+      "shelfLifeHours": 4,
+      "src": [
+        "recipe-oysters-pearls"
+      ],
+      "bom": [
+        {
+          "item": "RM-VERMOUTH",
+          "qty": 125
+        },
+        {
+          "item": "RM-SHALLOT",
+          "qty": 50
+        },
+        {
+          "item": "RM-WINE-VINEGAR",
+          "qty": 50
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 285
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Reduce vermouth, liquor, shallot and vinegar au sec",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-fish",
+          "setupMin": 1,
+          "runMin": 10,
+          "per": "batch",
+          "laborFraction": 0.3,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Mount with cold butter",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 5,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 30,
+          "name": "Hold warm in bain-marie",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 0,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        }
+      ]
+    },
+    {
+      "id": "FG-C1-OYSTERS-PEARLS",
+      "name": "Oysters and Pearls: pearl tapioca sabayon, Island Creek oysters, white sturgeon caviar",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo",
+        "review-tinyurban",
+        "recipe-oysters-pearls"
+      ],
+      "bom": [
+        {
+          "item": "INT-TAPIOCA-BASE",
+          "qty": 1
+        },
+        {
+          "item": "INT-OYSTER-SHUCKED",
+          "qty": 2
+        },
+        {
+          "item": "INT-OP-SAUCE",
+          "qty": 26
+        },
+        {
+          "item": "RM-CHIVES",
+          "qty": 1.75
+        },
+        {
+          "item": "RM-CAVIAR-STURGEON",
+          "qty": 14
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Bake tapioca bowls until puffed",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-COMBI-KITCHEN",
+          "role": "commis-fish",
+          "setupMin": 0,
+          "runMin": 5,
+          "per": "batch",
+          "laborFraction": 0.1,
+          "tempC": 177,
+          "maxBatch": 12,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Warm oysters in sauce, add chives",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 1,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "maxBatch": 8,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 30,
+          "name": "Spoon oysters and sauce, quenelle caviar",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 0.6,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-oysters-pearls"
+          ]
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-S1-KALUGA",
+      "name": "Supplement: Royal Kaluga caviar",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "note": "Simplified: the published supplement also carries lobster en gelée and a tofu bavarois.",
+      "src": [
+        "review-chihuo"
+      ],
+      "bom": [
+        {
+          "item": "RM-CAVIAR-KALUGA",
+          "qty": 30
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Quenelle caviar and plate",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 0.5,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-GARDEN-VEG",
+      "name": "Garden vegetables, cleaned, blanched and shocked",
+      "type": "intermediate",
+      "uom": "portion",
+      "batchYield": 30,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 10,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CARROT-BABY",
+          "qty": 1350
+        },
+        {
+          "item": "RM-PEAS",
+          "qty": 450
+        },
+        {
+          "item": "RM-RADISH",
+          "qty": 300
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 30
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Wash, peel and trim carrots; shell peas; slice radish",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": null,
+          "role": "prep-cook",
+          "setupMin": 5,
+          "runMin": 45,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Blanch and shock carrots and peas",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 3,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 0.7
+        }
+      ]
+    },
+    {
+      "id": "INT-CURRY-YOGURT",
+      "name": "Madras curry yogurt",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 300,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 48,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-YOGURT",
+          "qty": 280
+        },
+        {
+          "item": "RM-CURRY-MADRAS",
+          "qty": 4
+        },
+        {
+          "item": "RM-LEMON",
+          "qty": 15
+        },
+        {
+          "item": "RM-HONEY",
+          "qty": 5
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 2
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Bloom curry, whisk into yogurt, season",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "commis-garde-manger",
+          "setupMin": 1,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C2-CARROT-SALAD",
+      "name": "Salad of garden carrots: English peas, red radish, mint, Madras curry yogurt",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "INT-GARDEN-VEG",
+          "qty": 1
+        },
+        {
+          "item": "INT-CURRY-YOGURT",
+          "qty": 15
+        },
+        {
+          "item": "RM-MINT",
+          "qty": 1
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 4
+        },
+        {
+          "item": "RM-SALT-FINISHING",
+          "qty": 0.3
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Dress vegetables, swoosh yogurt, compose",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 1.5,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-FOIE-TORCHON",
+      "name": "Foie gras au torchon",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 1000,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 120,
+      "src": [
+        "review-chihuo",
+        "review-tinyurban",
+        "tflcookbook",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-FOIE-GRAS",
+          "qty": 1000
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 14
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 6
+        },
+        {
+          "item": "RM-BLACK-PEPPER",
+          "qty": 2
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Temper and devein lobes",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 5,
+          "runMin": 25,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Cure overnight",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-REACHIN-GM",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 1440,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        },
+        {
+          "seq": 30,
+          "name": "Roll tightly in cloth",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Poach 90 seconds, shock",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "cdp-garde-manger",
+          "setupMin": 2,
+          "runMin": 2,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 50,
+          "name": "Hang and chill to set",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-REACHIN-GM",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 1440,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        }
+      ]
+    },
+    {
+      "id": "INT-CELERY-RELISH",
+      "name": "Celery relish",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 200,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 24,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CELERY",
+          "qty": 160
+        },
+        {
+          "item": "RM-SHALLOT",
+          "qty": 15
+        },
+        {
+          "item": "RM-SHERRY-VINEGAR",
+          "qty": 15
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 10
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Brunoise celery and shallot, dress",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "commis-garde-manger",
+          "setupMin": 1,
+          "runMin": 12,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-S2-FOIE-GRAS",
+      "name": "Supplement: Moulard duck foie gras torchon, white honey, walnuts, celery relish, toasted brioche",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo",
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "INT-FOIE-TORCHON",
+          "qty": 55
+        },
+        {
+          "item": "RM-HONEY",
+          "qty": 5
+        },
+        {
+          "item": "RM-WALNUT",
+          "qty": 5
+        },
+        {
+          "item": "INT-CELERY-RELISH",
+          "qty": 10
+        },
+        {
+          "item": "RM-BRIOCHE",
+          "qty": 25
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Slice torchon",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-SLICER",
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 0.5,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Toast brioche",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-SALAMANDER-2",
+          "role": "commis-garde-manger",
+          "setupMin": 0,
+          "runMin": 1.5,
+          "per": "batch",
+          "laborFraction": 0.3,
+          "maxBatch": 6
+        },
+        {
+          "seq": 30,
+          "name": "Compose plate",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 1,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-YELLOWTAIL-PORTION",
+      "name": "Yellowtail, portioned 50 g",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 30,
+      "phase": "prep",
+      "storage": "SL-REACHIN-FISH",
+      "shelfLifeHours": 8,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-YELLOWTAIL",
+          "qty": 1500
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Skin, bloodline-trim and portion loins",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "cdp-fish",
+          "setupMin": 3,
+          "runMin": 0.6,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-CORN-FAVA",
+      "name": "Sweet corn and fava bean ragoût",
+      "type": "intermediate",
+      "uom": "portion",
+      "batchYield": 30,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 10,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CORN",
+          "qty": 900
+        },
+        {
+          "item": "RM-FAVA",
+          "qty": 450
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 60
+        },
+        {
+          "item": "RM-SHALLOT",
+          "qty": 30
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 6
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Shuck and cut corn; shell, blanch and double-peel favas",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": "EQ-INDUCTION-ANNEX",
+          "role": "prep-cook",
+          "setupMin": 5,
+          "runMin": 60,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Sweat shallot, warm corn and favas, cool",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 2,
+          "runMin": 10,
+          "per": "batch",
+          "laborFraction": 0.6
+        }
+      ]
+    },
+    {
+      "id": "INT-TOMATO-CONFIT",
+      "name": "Tomato confit",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 500,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 72,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-TOMATO-CHERRY",
+          "qty": 500
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 150
+        },
+        {
+          "item": "RM-GARLIC",
+          "qty": 10
+        },
+        {
+          "item": "RM-THYME",
+          "qty": 3
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 3
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Score, blanch and peel tomatoes",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": "EQ-INDUCTION-ANNEX",
+          "role": "prep-cook",
+          "setupMin": 3,
+          "runMin": 25,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Confit slowly in oil",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": "EQ-COMBI-ANNEX",
+          "role": "prep-cook",
+          "setupMin": 1,
+          "runMin": 120,
+          "per": "batch",
+          "laborFraction": 0.05,
+          "tempC": 95
+        }
+      ]
+    },
+    {
+      "id": "INT-TARRAGON-OIL",
+      "name": "Tarragon-infused olive oil",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 250,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 120,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-TARRAGON",
+          "qty": 60
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 250
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Blanch tarragon, blend with oil",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": "EQ-VITAMIX",
+          "role": "prep-cook",
+          "setupMin": 2,
+          "runMin": 5,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Steep and strain through cloth",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 720,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        }
+      ]
+    },
+    {
+      "id": "FG-C3-YELLOWTAIL",
+      "name": "Slow-cooked fillet of Pacific yellowtail: sweet white corn, fava beans, tomato confit, tarragon oil",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo"
+      ],
+      "bom": [
+        {
+          "item": "INT-YELLOWTAIL-PORTION",
+          "qty": 1
+        },
+        {
+          "item": "INT-CORN-FAVA",
+          "qty": 1
+        },
+        {
+          "item": "INT-TOMATO-CONFIT",
+          "qty": 15
+        },
+        {
+          "item": "INT-TARRAGON-OIL",
+          "qty": 3
+        },
+        {
+          "item": "RM-SALT-FINISHING",
+          "qty": 0.3
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Slow-cook yellowtail in combi",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-COMBI-KITCHEN",
+          "role": "commis-fish",
+          "setupMin": 0,
+          "runMin": 9,
+          "per": "batch",
+          "laborFraction": 0.1,
+          "tempC": 60,
+          "maxBatch": 12
+        },
+        {
+          "seq": 20,
+          "name": "Warm corn and favas",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 2,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "maxBatch": 6
+        },
+        {
+          "seq": 30,
+          "name": "Plate garnish, fish, oil",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 1.2,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-LOBSTER-SHELLED",
+      "name": "Maine lobster, par-cooked and shelled (tail and claws)",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 20,
+      "phase": "prep",
+      "storage": "SL-REACHIN-FISH",
+      "shelfLifeHours": 12,
+      "src": [
+        "review-tinyurban",
+        "tflcookbook",
+        "recipe-lobster"
+      ],
+      "bom": [
+        {
+          "item": "RM-LOBSTER",
+          "qty": 20
+        },
+        {
+          "item": "RM-WINE-VINEGAR",
+          "qty": 200
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Steep tails 2 min, claws 5 min in boiling acidulated water",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "commis-fish",
+          "setupMin": 10,
+          "runMin": 8,
+          "per": "batch",
+          "laborFraction": 0.5,
+          "tempC": 100
+        },
+        {
+          "seq": 20,
+          "name": "Shock and shell",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "commis-fish",
+          "setupMin": 0,
+          "runMin": 2,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-BEURRE-MONTE",
+      "name": "Beurre monté",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 2000,
+      "phase": "prep",
+      "shelfLifeHours": 6,
+      "src": [
+        "recipe-lobster",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 2000
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Emulsify butter into a little boiling water",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "commis-fish",
+          "setupMin": 1,
+          "runMin": 10,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-lobster"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Hold between 71 and 88 °C",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 0,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "tempC": 80,
+          "src": [
+            "recipe-lobster"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "INT-APRICOT-EMULSION",
+      "name": "Jurançon-apricot emulsion",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 600,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 24,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-APRICOT",
+          "qty": 400
+        },
+        {
+          "item": "RM-JURANCON",
+          "qty": 150
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 100
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 20
+        },
+        {
+          "item": "RM-LEMON",
+          "qty": 10
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Pit and poach apricots in Jurançon",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 3,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 0.5
+        },
+        {
+          "seq": 20,
+          "name": "Purée and strain",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-VITAMIX",
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 5,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C4-LOBSTER",
+      "name": "Sweet butter-poached Maine lobster: Belgian endive, Sicilian pistachios, watercress, Jurançon-apricot emulsion, black truffle",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-tinyurban",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "INT-LOBSTER-SHELLED",
+          "qty": 0.5
+        },
+        {
+          "item": "INT-BEURRE-MONTE",
+          "qty": 30
+        },
+        {
+          "item": "RM-ENDIVE",
+          "qty": 20
+        },
+        {
+          "item": "RM-PISTACHIO",
+          "qty": 4
+        },
+        {
+          "item": "RM-WATERCRESS",
+          "qty": 4
+        },
+        {
+          "item": "INT-APRICOT-EMULSION",
+          "qty": 20
+        },
+        {
+          "item": "RM-BLACK-TRUFFLE",
+          "qty": 2
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Poach lobster in beurre monté to 60 °C core",
+          "workCenter": "WC-FISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 0.3,
+          "tempC": 80,
+          "maxBatch": 6,
+          "src": [
+            "recipe-lobster"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Caramelize endive",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 0.5,
+          "maxBatch": 6
+        },
+        {
+          "seq": 30,
+          "name": "Froth emulsion, shave truffle, plate",
+          "workCenter": "WC-FISH",
+          "equipment": null,
+          "role": "cdp-fish",
+          "setupMin": 0,
+          "runMin": 1.5,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-VEAL-STOCK",
+      "name": "Veal stock",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 20000,
+      "phase": "prep",
+      "storage": "SL-REACHIN-MEAT",
+      "shelfLifeHours": 96,
+      "src": [
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-VEAL-BONES",
+          "qty": 12000
+        },
+        {
+          "item": "RM-ONION-YELLOW",
+          "qty": 1200
+        },
+        {
+          "item": "RM-CARROT-CHANTENAY",
+          "qty": 800
+        },
+        {
+          "item": "RM-CELERY",
+          "qty": 600
+        },
+        {
+          "item": "RM-TOMATO-PASTE",
+          "qty": 200
+        },
+        {
+          "item": "RM-THYME",
+          "qty": 10
+        },
+        {
+          "item": "RM-GARLIC",
+          "qty": 60
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Blanch and rinse bones",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "sous-chef",
+          "setupMin": 10,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 0.3
+        },
+        {
+          "seq": 20,
+          "name": "Simmer with aromatics, skim",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "sous-chef",
+          "setupMin": 5,
+          "runMin": 480,
+          "per": "batch",
+          "laborFraction": 0.05
+        },
+        {
+          "seq": 30,
+          "name": "Strain, cool, reduce",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "sous-chef",
+          "setupMin": 0,
+          "runMin": 60,
+          "per": "batch",
+          "laborFraction": 0.2
+        }
+      ]
+    },
+    {
+      "id": "INT-DUCK-JUS",
+      "name": "Duck jus",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 1500,
+      "phase": "prep",
+      "storage": "SL-REACHIN-MEAT",
+      "shelfLifeHours": 96,
+      "src": [
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-DUCK-BONES",
+          "qty": 3000
+        },
+        {
+          "item": "INT-VEAL-STOCK",
+          "qty": 3000
+        },
+        {
+          "item": "RM-SHALLOT",
+          "qty": 150
+        },
+        {
+          "item": "RM-THYME",
+          "qty": 5
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Roast duck bones",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-COMBI-KITCHEN",
+          "role": "sous-chef",
+          "setupMin": 2,
+          "runMin": 45,
+          "per": "batch",
+          "laborFraction": 0.05,
+          "tempC": 220
+        },
+        {
+          "seq": 20,
+          "name": "Simmer with stock, strain, reduce to nappe",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "sous-chef",
+          "setupMin": 5,
+          "runMin": 150,
+          "per": "batch",
+          "laborFraction": 0.1
+        }
+      ]
+    },
+    {
+      "id": "INT-SAUCE-PERIGOURDINE",
+      "name": "Sauce Périgourdine",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 1000,
+      "phase": "prep",
+      "shelfLifeHours": 8,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "INT-DUCK-JUS",
+          "qty": 900
+        },
+        {
+          "item": "RM-MADEIRA",
+          "qty": 120
+        },
+        {
+          "item": "RM-BLACK-TRUFFLE",
+          "qty": 30
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 50
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Reduce Madeira, add jus and chopped truffle",
+          "workCenter": "WC-MEAT",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-meat",
+          "setupMin": 2,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 0.4
+        }
+      ]
+    },
+    {
+      "id": "INT-DUCK-BREAST-SCORED",
+      "name": "Duck breasts, trimmed and scored",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 3000,
+      "phase": "prep",
+      "storage": "SL-REACHIN-MEAT",
+      "shelfLifeHours": 48,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-DUCK-BREAST",
+          "qty": 3000
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 20
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Trim silverskin, score fat cap, season",
+          "workCenter": "WC-ANNEX-BUTCHERY",
+          "equipment": null,
+          "role": "butcher",
+          "setupMin": 3,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-POACHED-CHERRIES",
+      "name": "Poached Bing cherries",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 600,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 48,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CHERRY-BING",
+          "qty": 600
+        },
+        {
+          "item": "RM-RED-WINE",
+          "qty": 150
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 50
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Pit cherries",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": null,
+          "role": "prep-cook",
+          "setupMin": 2,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Poach gently in spiced wine syrup",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 1,
+          "runMin": 10,
+          "per": "batch",
+          "laborFraction": 0.3
+        }
+      ]
+    },
+    {
+      "id": "FG-C5-DUCK",
+      "name": "Liberty Farm Pekin duck: poached Bing cherries, toasted brioche, Sicilian pistachios, Sauce Périgourdine",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo"
+      ],
+      "bom": [
+        {
+          "item": "INT-DUCK-BREAST-SCORED",
+          "qty": 75
+        },
+        {
+          "item": "INT-POACHED-CHERRIES",
+          "qty": 25
+        },
+        {
+          "item": "RM-BRIOCHE",
+          "qty": 10
+        },
+        {
+          "item": "RM-PISTACHIO",
+          "qty": 4
+        },
+        {
+          "item": "INT-SAUCE-PERIGOURDINE",
+          "qty": 20
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Render and sear breast skin-side down",
+          "workCenter": "WC-MEAT",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-meat",
+          "setupMin": 0,
+          "runMin": 8,
+          "per": "batch",
+          "laborFraction": 0.3,
+          "maxBatch": 4
+        },
+        {
+          "seq": 20,
+          "name": "Rest",
+          "workCenter": "WC-MEAT",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        },
+        {
+          "seq": 30,
+          "name": "Toast brioche croutons",
+          "workCenter": "WC-MEAT",
+          "equipment": "EQ-SALAMANDER-1",
+          "role": "commis-meat",
+          "setupMin": 0,
+          "runMin": 1.5,
+          "per": "batch",
+          "laborFraction": 0.3,
+          "maxBatch": 8
+        },
+        {
+          "seq": 40,
+          "name": "Slice and plate, sauce",
+          "workCenter": "WC-MEAT",
+          "equipment": null,
+          "role": "cdp-meat",
+          "setupMin": 0,
+          "runMin": 1.3,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 50,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-SAUCE-BORDELAISE",
+      "name": "Sauce bordelaise",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 1000,
+      "phase": "prep",
+      "shelfLifeHours": 8,
+      "src": [
+        "review-tinyurban",
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-RED-WINE",
+          "qty": 750
+        },
+        {
+          "item": "RM-SHALLOT",
+          "qty": 100
+        },
+        {
+          "item": "RM-THYME",
+          "qty": 3
+        },
+        {
+          "item": "INT-VEAL-STOCK",
+          "qty": 1500
+        },
+        {
+          "item": "RM-BONE-MARROW",
+          "qty": 80
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Reduce red wine and shallots",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "sous-chef",
+          "setupMin": 2,
+          "runMin": 40,
+          "per": "batch",
+          "laborFraction": 0.1
+        },
+        {
+          "seq": 20,
+          "name": "Add stock, reduce to sauce, finish with marrow",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "sous-chef",
+          "setupMin": 0,
+          "runMin": 45,
+          "per": "batch",
+          "laborFraction": 0.15
+        }
+      ]
+    },
+    {
+      "id": "INT-BEEF-CALOTTE-TRIMMED",
+      "name": "Wagyu calotte, cleaned and tied",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 2000,
+      "phase": "prep",
+      "storage": "SL-REACHIN-MEAT",
+      "shelfLifeHours": 48,
+      "src": [
+        "review-chihuo",
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "RM-BEEF-CALOTTE",
+          "qty": 2000
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 15
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Clean, tie and season calotte",
+          "workCenter": "WC-ANNEX-BUTCHERY",
+          "equipment": null,
+          "role": "butcher",
+          "setupMin": 3,
+          "runMin": 25,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C6A-BEEF",
+      "name": "Charcoal-grilled Snake River Farms calotte de boeuf: Chantenay carrots, Oregon cèpes, arrowleaf spinach, sauce bordelaise",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo",
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "INT-BEEF-CALOTTE-TRIMMED",
+          "qty": 70
+        },
+        {
+          "item": "RM-CARROT-CHANTENAY",
+          "qty": 30
+        },
+        {
+          "item": "RM-CEPES",
+          "qty": 20
+        },
+        {
+          "item": "RM-SPINACH-ARROWLEAF",
+          "qty": 15
+        },
+        {
+          "item": "INT-SAUCE-BORDELAISE",
+          "qty": 20
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 8
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Grill over the wood hearth",
+          "workCenter": "WC-MEAT",
+          "equipment": "EQ-HEARTH",
+          "role": "cdp-meat",
+          "setupMin": 0,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 0.4,
+          "maxBatch": 8
+        },
+        {
+          "seq": 20,
+          "name": "Rest",
+          "workCenter": "WC-MEAT",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        },
+        {
+          "seq": 30,
+          "name": "Glaze carrots, sauté cèpes, wilt spinach",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 0.7,
+          "maxBatch": 6
+        },
+        {
+          "seq": 40,
+          "name": "Slice and plate, sauce",
+          "workCenter": "WC-MEAT",
+          "equipment": null,
+          "role": "cdp-meat",
+          "setupMin": 0,
+          "runMin": 1.5,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 50,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-CORNED-TONGUE",
+      "name": "Corned veal tongue, cooked and peeled",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 2000,
+      "phase": "prep",
+      "storage": "SL-REACHIN-MEAT",
+      "shelfLifeHours": 96,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-VEAL-TONGUE",
+          "qty": 2000
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 200
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 100
+        },
+        {
+          "item": "RM-GARLIC",
+          "qty": 20
+        },
+        {
+          "item": "RM-THYME",
+          "qty": 5
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Brine",
+          "workCenter": "WC-ANNEX-BUTCHERY",
+          "equipment": "EQ-MEAT-AGING",
+          "role": "butcher",
+          "setupMin": 10,
+          "runMin": 4320,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        },
+        {
+          "seq": 20,
+          "name": "Simmer until tender",
+          "workCenter": "WC-STOCK",
+          "equipment": "EQ-STOCKPOT-RANGE",
+          "role": "sous-chef",
+          "setupMin": 5,
+          "runMin": 180,
+          "per": "batch",
+          "laborFraction": 0.05
+        },
+        {
+          "seq": 30,
+          "name": "Peel while warm, press and chill",
+          "workCenter": "WC-MEAT",
+          "equipment": null,
+          "role": "commis-meat",
+          "setupMin": 0,
+          "runMin": 20,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-POTATO-PUREE",
+      "name": "La Ratte potato purée",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 1500,
+      "phase": "prep",
+      "shelfLifeHours": 6,
+      "src": [
+        "review-chihuo",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-POTATO-LARATTE",
+          "qty": 1000
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 350
+        },
+        {
+          "item": "RM-CREAM",
+          "qty": 200
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 10
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Simmer potatoes in skins",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 3,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 0.1
+        },
+        {
+          "seq": 20,
+          "name": "Peel, pass through tamis, mount with butter and cream",
+          "workCenter": "WC-GARNISH",
+          "equipment": null,
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 20,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C6B-VEAL-TONGUE",
+      "name": "Corned Marcho Farms veal tongue: La Ratte potato purée, morels, crispy cipollini, sauce bordelaise",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo"
+      ],
+      "bom": [
+        {
+          "item": "INT-CORNED-TONGUE",
+          "qty": 50
+        },
+        {
+          "item": "INT-POTATO-PUREE",
+          "qty": 40
+        },
+        {
+          "item": "RM-MORELS",
+          "qty": 10
+        },
+        {
+          "item": "RM-CIPOLLINI",
+          "qty": 15
+        },
+        {
+          "item": "INT-SAUCE-BORDELAISE",
+          "qty": 20
+        },
+        {
+          "item": "RM-CANOLA-OIL",
+          "qty": 5
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Sear tongue slices on the plancha",
+          "workCenter": "WC-MEAT",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-meat",
+          "setupMin": 0,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 0.4,
+          "maxBatch": 6
+        },
+        {
+          "seq": 20,
+          "name": "Sauté morels, crisp cipollini, warm purée",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-BONNET-SAVORY",
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 4,
+          "per": "batch",
+          "laborFraction": 0.7,
+          "maxBatch": 6
+        },
+        {
+          "seq": 30,
+          "name": "Plate and sauce",
+          "workCenter": "WC-MEAT",
+          "equipment": null,
+          "role": "cdp-meat",
+          "setupMin": 0,
+          "runMin": 1.3,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-PANISSE",
+      "name": "Panisse (chickpea fritter), cut",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 40,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 48,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CHICKPEA-FLOUR",
+          "qty": 250
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 30
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 5
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Cook chickpea batter, stirring",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 2,
+          "runMin": 20,
+          "per": "batch",
+          "laborFraction": 0.8
+        },
+        {
+          "seq": 20,
+          "name": "Set in tray",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-REACHIN-GARNISH",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 240,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        },
+        {
+          "seq": 30,
+          "name": "Cut batons",
+          "workCenter": "WC-GARNISH",
+          "equipment": null,
+          "role": "cdp-garnish",
+          "setupMin": 0,
+          "runMin": 0.2,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-PIPERADE",
+      "name": "Piperade",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 800,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GARNISH",
+      "shelfLifeHours": 72,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-PEPPER-RED",
+          "qty": 600
+        },
+        {
+          "item": "RM-ONION-YELLOW",
+          "qty": 200
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 50
+        },
+        {
+          "item": "RM-GARLIC",
+          "qty": 10
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 5
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Roast, peel and julienne peppers",
+          "workCenter": "WC-ANNEX-PREP",
+          "equipment": "EQ-COMBI-ANNEX",
+          "role": "prep-cook",
+          "setupMin": 3,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 0.5
+        },
+        {
+          "seq": 20,
+          "name": "Stew with onion and garlic",
+          "workCenter": "WC-GARNISH",
+          "equipment": "EQ-HESTAN-RANGE",
+          "role": "cdp-garnish",
+          "setupMin": 1,
+          "runMin": 40,
+          "per": "batch",
+          "laborFraction": 0.2
+        }
+      ]
+    },
+    {
+      "id": "FG-C7-COMTE",
+      "name": "Comté: panisse, piperade, arugula, Lucques olive vinaigrette",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "RM-COMTE",
+          "qty": 25
+        },
+        {
+          "item": "INT-PANISSE",
+          "qty": 1
+        },
+        {
+          "item": "INT-PIPERADE",
+          "qty": 20
+        },
+        {
+          "item": "RM-ARUGULA",
+          "qty": 5
+        },
+        {
+          "item": "RM-OLIVES-LUCQUES",
+          "qty": 5
+        },
+        {
+          "item": "RM-OLIVE-OIL",
+          "qty": 4
+        },
+        {
+          "item": "RM-SHERRY-VINEGAR",
+          "qty": 2
+        },
+        {
+          "item": "RM-CANOLA-OIL",
+          "qty": 4
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Fry panisse",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "commis-garde-manger",
+          "setupMin": 0,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 0.5,
+          "maxBatch": 8
+        },
+        {
+          "seq": 20,
+          "name": "Slice Comté from the humidor",
+          "workCenter": "WC-GM",
+          "equipment": "EQ-SLICER",
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 0.4,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 30,
+          "name": "Compose plate",
+          "workCenter": "WC-GM",
+          "equipment": null,
+          "role": "cdp-garde-manger",
+          "setupMin": 0,
+          "runMin": 1,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-OAT-SHERBET",
+      "name": "Steel-cut oat sherbet base, frozen in PacoJet beaker",
+      "type": "intermediate",
+      "uom": "portion",
+      "batchYield": 10,
+      "phase": "prep",
+      "storage": "SL-FREEZER",
+      "shelfLifeHours": 72,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-OATS-STEELCUT",
+          "qty": 60
+        },
+        {
+          "item": "RM-MILK",
+          "qty": 500
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 90
+        },
+        {
+          "item": "RM-GLUCOSE",
+          "qty": 30
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Toast oats, steep in hot milk, strain, sweeten",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 0.3
+        },
+        {
+          "seq": 20,
+          "name": "Freeze in beaker",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-FREEZER-PASTRY",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 720,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "tempC": -20
+        }
+      ]
+    },
+    {
+      "id": "INT-GRANOLA",
+      "name": "Granola",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 600,
+      "phase": "prep",
+      "storage": "SL-DRY",
+      "shelfLifeHours": 168,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-OATS-ROLLED",
+          "qty": 300
+        },
+        {
+          "item": "RM-HONEY",
+          "qty": 100
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 50
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 60
+        },
+        {
+          "item": "RM-WALNUT",
+          "qty": 80
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 3
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Mix and spread",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 8,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Bake, stirring",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-STONE-OVEN",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 25,
+          "per": "batch",
+          "laborFraction": 0.15,
+          "tempC": 160
+        }
+      ]
+    },
+    {
+      "id": "INT-RUM-RAISIN-COULIS",
+      "name": "Rum raisin coulis",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 300,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 96,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-RAISINS",
+          "qty": 150
+        },
+        {
+          "item": "RM-RUM",
+          "qty": 80
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 40
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Simmer raisins in rum syrup",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "commis-pastry",
+          "setupMin": 1,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 0.2
+        },
+        {
+          "seq": 20,
+          "name": "Blend smooth",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-VITAMIX",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 3,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C8-OAT-SHERBET",
+      "name": "Steel-cut oat sherbet: granola, Granny Smith apple, rum raisin coulis",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "INT-OAT-SHERBET",
+          "qty": 1
+        },
+        {
+          "item": "INT-GRANOLA",
+          "qty": 10
+        },
+        {
+          "item": "RM-APPLE-GRANNY",
+          "qty": 15
+        },
+        {
+          "item": "INT-RUM-RAISIN-COULIS",
+          "qty": 10
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Pacotize beaker",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-PACOJET",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 2,
+          "per": "batch",
+          "laborFraction": 0.2,
+          "maxBatch": 10
+        },
+        {
+          "seq": 20,
+          "name": "Brunoise apple",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.3,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 30,
+          "name": "Quenelle sherbet, garnish",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "cdp-pastry",
+          "setupMin": 0,
+          "runMin": 0.8,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 40,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-SEMIFREDDO-CUP",
+      "name": "Cappuccino semifreddo, frozen in cups",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 36,
+      "phase": "prep",
+      "storage": "SL-FREEZER",
+      "shelfLifeHours": 72,
+      "src": [
+        "recipe-coffee-doughnuts",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "RM-EGG",
+          "qty": 30
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 900
+        },
+        {
+          "item": "RM-VANILLA-BEAN",
+          "qty": 3
+        },
+        {
+          "item": "RM-ESPRESSO",
+          "qty": 180
+        },
+        {
+          "item": "RM-CREAM",
+          "qty": 720
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Whip yolks, sugar and vanilla until tripled",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-MIXER",
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 12,
+          "per": "batch",
+          "laborFraction": 0.3,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Whip cream, fold into yolk base over ice",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-MIXER",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 30,
+          "name": "Whip whites to soft peaks, fold",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-MIXER",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 40,
+          "name": "Fill coffee cups, tap level",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.3,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 50,
+          "name": "Freeze",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-FREEZER-PASTRY",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 480,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "tempC": -20,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "INT-DOUGHNUT-SHAPED",
+      "name": "Doughnuts and holes, cut and par-proofed",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 48,
+      "phase": "prep",
+      "storage": "SL-REACHIN-GM",
+      "shelfLifeHours": 24,
+      "src": [
+        "recipe-coffee-doughnuts",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "RM-YEAST-FRESH",
+          "qty": 56
+        },
+        {
+          "item": "RM-FLOUR-AP",
+          "qty": 816
+        },
+        {
+          "item": "RM-SUGAR",
+          "qty": 150
+        },
+        {
+          "item": "RM-SALT-KOSHER",
+          "qty": 12
+        },
+        {
+          "item": "RM-EGG",
+          "qty": 12
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 112
+        },
+        {
+          "item": "RM-MILK",
+          "qty": 120
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Mix sponge",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-MIXER",
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 5,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Proof sponge until doubled",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 90,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 30,
+          "name": "Mix and knead dough",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-MIXER",
+          "role": "commis-pastry",
+          "setupMin": 1,
+          "runMin": 6,
+          "per": "batch",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 40,
+          "name": "Chill overnight",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-REACHIN-GM",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 720,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 50,
+          "name": "Roll 1/2 inch, cut 2-inch rings and holes",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 3,
+          "runMin": 0.3,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 60,
+          "name": "Hold covered, refrigerated",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-REACHIN-GM",
+          "role": null,
+          "setupMin": 0,
+          "runMin": 0,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        }
+      ]
+    },
+    {
+      "id": "INT-CINNAMON-SUGAR",
+      "name": "Cinnamon sugar",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 500,
+      "phase": "prep",
+      "storage": "SL-DRY",
+      "shelfLifeHours": 720,
+      "src": [
+        "recipe-coffee-doughnuts"
+      ],
+      "bom": [
+        {
+          "item": "RM-SUGAR",
+          "qty": 485
+        },
+        {
+          "item": "RM-CINNAMON",
+          "qty": 15
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Mix",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 2,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C9-COFFEE-DOUGHNUTS",
+      "name": "Coffee and Doughnuts: cappuccino semifreddo, cinnamon-sugar doughnut",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "recipe-coffee-doughnuts",
+        "tflcookbook"
+      ],
+      "bom": [
+        {
+          "item": "INT-SEMIFREDDO-CUP",
+          "qty": 1
+        },
+        {
+          "item": "INT-DOUGHNUT-SHAPED",
+          "qty": 1
+        },
+        {
+          "item": "INT-CINNAMON-SUGAR",
+          "qty": 8
+        },
+        {
+          "item": "RM-CANOLA-OIL",
+          "qty": 8
+        },
+        {
+          "item": "RM-MILK",
+          "qty": 60
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Final proof at room temperature",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 15,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true,
+          "maxBatch": 12,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 20,
+          "name": "Fry at 163 °C, turning twice",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-FRY-KETTLE",
+          "role": "cdp-pastry",
+          "setupMin": 0,
+          "runMin": 2,
+          "per": "batch",
+          "laborFraction": 0.8,
+          "tempC": 163,
+          "maxBatch": 12,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 30,
+          "name": "Toss in cinnamon sugar",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.2,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 40,
+          "name": "Steam milk, spoon foam over semifreddo",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-ESPRESSO-STEAMER",
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.5,
+          "per": "unit",
+          "laborFraction": 1.0,
+          "src": [
+            "recipe-coffee-doughnuts"
+          ]
+        },
+        {
+          "seq": 50,
+          "name": "Plate cup and doughnut",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "cdp-pastry",
+          "setupMin": 0,
+          "runMin": 0.4,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 60,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-BONBON",
+      "name": "Chocolate bonbons",
+      "type": "intermediate",
+      "uom": "ea",
+      "batchYield": 120,
+      "phase": "prep",
+      "storage": "SL-DRY",
+      "shelfLifeHours": 240,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-CHOCOLATE-DARK",
+          "qty": 1500
+        },
+        {
+          "item": "RM-CREAM",
+          "qty": 300
+        },
+        {
+          "item": "RM-BUTTER-UNSALTED",
+          "qty": 60
+        },
+        {
+          "item": "RM-GLUCOSE",
+          "qty": 40
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Temper chocolate, shell moulds",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "cdp-pastry",
+          "setupMin": 10,
+          "runMin": 60,
+          "per": "batch",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Make ganache, fill shells",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "cdp-pastry",
+          "setupMin": 5,
+          "runMin": 45,
+          "per": "batch",
+          "laborFraction": 0.8
+        },
+        {
+          "seq": 30,
+          "name": "Crystallize overnight",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": null,
+          "setupMin": 0,
+          "runMin": 720,
+          "per": "batch",
+          "laborFraction": 0,
+          "wait": true
+        },
+        {
+          "seq": 40,
+          "name": "Cap and unmould",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "cdp-pastry",
+          "setupMin": 0,
+          "runMin": 30,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "INT-MACADAMIA-DRAGEE",
+      "name": "Chocolate-covered macadamia nuts",
+      "type": "intermediate",
+      "uom": "g",
+      "batchYield": 1000,
+      "phase": "prep",
+      "storage": "SL-DRY",
+      "shelfLifeHours": 336,
+      "src": [
+        "review-tinyurban",
+        "est"
+      ],
+      "bom": [
+        {
+          "item": "RM-MACADAMIA",
+          "qty": 600
+        },
+        {
+          "item": "RM-CHOCOLATE-DARK",
+          "qty": 350
+        },
+        {
+          "item": "RM-COCOA",
+          "qty": 50
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Toast and caramelize nuts",
+          "workCenter": "WC-PASTRY",
+          "equipment": "EQ-BONNET-PASTRY",
+          "role": "commis-pastry",
+          "setupMin": 2,
+          "runMin": 20,
+          "per": "batch",
+          "laborFraction": 0.7
+        },
+        {
+          "seq": 20,
+          "name": "Pan in tempered chocolate in layers, dust with cocoa",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 40,
+          "per": "batch",
+          "laborFraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "FG-C10-MIGNARDISES",
+      "name": "Mignardises: chocolates and cocoa-dusted macadamia nuts",
+      "type": "finished",
+      "uom": "ea",
+      "batchYield": 1,
+      "phase": "service",
+      "src": [
+        "review-chihuo",
+        "review-tinyurban"
+      ],
+      "bom": [
+        {
+          "item": "INT-BONBON",
+          "qty": 3
+        },
+        {
+          "item": "INT-MACADAMIA-DRAGEE",
+          "qty": 15
+        }
+      ],
+      "routing": [
+        {
+          "seq": 10,
+          "name": "Arrange chocolate box and nut dish",
+          "workCenter": "WC-PASTRY",
+          "equipment": null,
+          "role": "commis-pastry",
+          "setupMin": 0,
+          "runMin": 0.5,
+          "per": "unit",
+          "laborFraction": 1.0
+        },
+        {
+          "seq": 20,
+          "name": "Inspect at the pass and send",
+          "workCenter": "WC-PASS",
+          "equipment": "EQ-PASS-TABLE",
+          "role": "chef-de-cuisine",
+          "setupMin": 0,
+          "runMin": 0.25,
+          "per": "unit",
+          "laborFraction": 1.0
+        }
+      ]
+    }
+  ]
+}
