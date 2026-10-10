@@ -1,4 +1,4 @@
-// Side panel: covers slider driving the BOM explosion, plus details for the picked appliance.
+// Side panel: covers slider driving the BOM explosion and the live service, plus details for the picked appliance.
 import { demandForCovers, explode, loadSummary } from './model/mrp.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -10,7 +10,7 @@ let pickEl;
 // "Supplement: Royal Kaluga caviar" stays whole; "Oysters and Pearls: pearl tapioca..." keeps the dish name.
 const plateName = (name) => (name.startsWith('Supplement:') ? name.split(',')[0] : name.split(':')[0]);
 
-export function renderPanel(index, el) {
+export function renderPanel(index, el, { onCovers, sim } = {}) {
   const { restaurant, menu, service } = index.data;
   const [min, max] = service.coversRange;
   el.innerHTML = `
@@ -55,18 +55,24 @@ export function renderPanel(index, el) {
       .join('');
   };
   input.addEventListener('input', update);
+  // Releasing the slider re-plans the live service; a re-plan from the dashboard moves the slider.
+  input.addEventListener('change', () => onCovers?.(Number(input.value)));
+  sim?.on('reset', ({ config }) => { if (Number(input.value) !== config.covers) { input.value = config.covers; update(); } });
+  if (sim) input.value = sim.config.covers;
   update();
 }
 
-export function showEquipment(index, id) {
+export function showEquipment(index, id, state) {
   if (!pickEl) return;
   if (!id) { pickEl.innerHTML = ''; return; }
   const eq = index.equipment.get(id);
   const stations = [...index.workCenters.values()].filter((w) => w.equipment.includes(id)).map((w) => w.name);
+  const ap = state?.appliances.find((a) => a.id === id);
+  const now = ap ? `<br/><span class="note">Now: ${!ap.up ? '<b class="down">down</b>' : ap.inUse ? `cooking ${ap.inUse} of ${ap.capacity}` : 'idle'} · utilization ${fmt(ap.util * 100)}% · OEE ${fmt(ap.oee * 100)}%</span>` : '';
   const srcs = eq.src.filter((s) => s !== 'est').map((s) => index.sources.get(s));
   pickEl.innerHTML = `<div class="pick">
     <strong>${esc(eq.name)}</strong>${eq.maker ? ` · ${esc(eq.maker)}` : ''}<br/>
-    <span class="note">${esc(stations.join(', ') || 'Shared')} · ${eq.capacity?.slots ?? '-'} slots${eq.tempC != null ? ` · ${eq.tempC} °C` : ''}</span>
+    <span class="note">${esc(stations.join(', ') || 'Shared')} · ${eq.capacity?.slots ?? '-'} slots${eq.tempC != null ? ` · ${eq.tempC} °C` : ''}</span>${now}
     ${eq.note ? `<p class="note">${esc(eq.note)}</p>` : ''}
     <p class="note">Source: ${srcs.map((s) => `<a href="${esc(s.url ?? '#')}" target="_blank" rel="noopener">${esc(s.publisher)}</a>`).join(', ') || 'estimate'}${eq.src.includes('est') ? ' (some values estimated)' : ''}</p>
   </div>`;

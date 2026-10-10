@@ -6,14 +6,16 @@ The number of covers is the build plan. From it the twin works out every plate, 
 
 **Live site:** https://pikulsomesh.github.io/michelin-kitchen-twin/
 
+Press **Run tonight's service** to watch the brigade work the line. Links carry the scenario and the moment, for example [`?covers=120&seating=rush&t=90`](https://pikulsomesh.github.io/michelin-kitchen-twin/?covers=120&seating=rush&t=90) opens a double-booked rush seating 90 minutes after the doors open.
+
 ## Status
 
 | Stage | What it adds | State |
 | --- | --- | --- |
-| 1. Research and data model | Sourced data for the menu, recipes (BOM and routings), stations, equipment, brigade and layout; MRP explosion; site skeleton | This PR |
-| 2. Realistic 3D kitchen | Physically based models of the suites, hearth, combis and reach-ins; lighting and materials | Planned |
-| 3. Dinner service simulation | Discrete-event simulation of N covers, live inventory, ticket times, OEE and bottlenecks | Planned |
-| 4. Polish and publish | Camera tours, timeline scrubber, docs | Planned |
+| 1. Research and data model | Sourced data for the menu, recipes (BOM and routings), stations, equipment, brigade and layout; MRP explosion; site skeleton | Done |
+| 2. Realistic 3D kitchen | Physically based models of the suites, hearth, combis and reach-ins; lighting and materials | In progress |
+| 3. Dinner service simulation | Discrete-event simulation of N covers, live inventory, ticket times, OEE and bottlenecks, driving the 3D view and the operations dashboard | Done |
+| 4. Polish and publish | Opening shot, shareable links, guided tour, build story | In progress |
 
 ## The data
 

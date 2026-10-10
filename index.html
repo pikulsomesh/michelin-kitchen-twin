@@ -6,12 +6,23 @@
     <title>Michelin Kitchen Twin</title>
     <meta name="description" content="A 3D digital twin of The French Laundry's kitchen running a dinner service, modeled like a manufacturing plant." />
     <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/dashboard/dashboard.css" />
   </head>
   <body>
     <div id="app">
       <canvas id="scene" aria-label="3D view of the kitchen"></canvas>
+      <div id="hud"></div>
       <aside id="panel" aria-label="Production plan"></aside>
     </div>
+    <div id="ops"></div>
+    <footer id="foot">
+      <p>Built with Claude: sourced data model, Three.js scene and a discrete-event simulation, all running in your browser.
+        <a href="https://github.com/pikulsomesh/michelin-kitchen-twin">Code</a> ·
+        <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/data-model.md">How the data was built</a> ·
+        <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/simulation.md">How the simulation works</a> ·
+        <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/nvidia.md">Path to NVIDIA Omniverse and Isaac Sim</a></p>
+      <p class="note">An independent portfolio project, not affiliated with The French Laundry, Thomas Keller Restaurant Group or the Michelin Guide.</p>
+    </footer>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

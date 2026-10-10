@@ -1,5 +1,5 @@
-// Site skeleton: draws the kitchen floor plan from data/layout.json and shows the production plan for N covers.
-// Step 2 replaces the block models with detailed, physically based equipment; step 3 adds the live service simulation.
+// The site: the kitchen in 3D from data/layout.json, driven live by the dinner-service simulation,
+// with the production plan in the side panel and the operations dashboard below.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -7,6 +7,11 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { data } from './data.js';
 import { buildIndex } from './model/mrp.js';
 import { renderPanel, showEquipment } from './panel.js';
+import { adaptKitchenData } from './sim/adapter.js';
+import { createSim } from './sim/sim.js';
+import { mountDashboard } from './dashboard/dashboard.js';
+import { bindLive } from './live.js';
+import { mountHud, readParams, writeParams } from './hud.js';
 
 const index = buildIndex(data);
 const { layout } = data;
@@ -23,6 +28,7 @@ const labels = new CSS2DRenderer();
 labels.domElement.style.position = 'absolute';
 labels.domElement.style.inset = '0';
 labels.domElement.style.pointerEvents = 'none';
+labels.domElement.style.zIndex = '1';
 document.getElementById('app').appendChild(labels.domElement);
 
 const scene = new THREE.Scene();
@@ -126,6 +132,7 @@ const typeColor = {
 };
 const steel = (type) => new THREE.MeshStandardMaterial({ color: typeColor[type] ?? 0xb4b8bc, metalness: 0.85, roughness: 0.32 });
 const pickables = [];
+const equipmentMeshes = new Map();
 for (const pl of layout.placements) {
   if (pl.embeddedIn) continue;
   const eq = index.equipment.get(pl.equipment);
@@ -137,6 +144,7 @@ for (const pl of layout.placements) {
   mesh.userData.equipment = eq.id;
   scene.add(mesh);
   pickables.push(mesh);
+  equipmentMeshes.set(eq.id, mesh);
 }
 for (const b of layout.benches) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(b.width, b.height, b.depth), steel('bench'));
@@ -157,11 +165,54 @@ canvas.addEventListener('click', (e) => {
   pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
   const hit = raycaster.intersectObjects(pickables)[0]?.object;
-  if (selected) selected.material.emissive.setHex(0x000000);
-  selected = hit ?? null;
-  if (selected) selected.material.emissive.setHex(0x3a2e10);
-  showEquipment(index, selected?.userData.equipment ?? null);
+  select(hit?.userData.equipment ?? null);
 });
+function select(id) {
+  if (selected) selected.userData.selected = false;
+  selected = equipmentMeshes.get(id) ?? null;
+  if (selected) {
+    selected.userData.selected = true;
+    selected.material.emissive.setHex(0xd6b46a);
+    selected.material.emissiveIntensity = 0.35;
+  }
+  showEquipment(index, id, live.state);
+}
+
+// ---------- Live service ----------
+const params = readParams();
+const sim = createSim({ data: adaptKitchenData(data), covers: params.covers ?? data.service.defaultCovers.value, seed: params.seed ?? 1, ...(params.seating ? { seating: params.seating } : {}) });
+sim.setSpeed(params.speed ?? 60);
+sim.seek(params.t != null ? sim.config.doorsOpen + params.t * 60 : sim.config.doorsOpen - 600);
+const live = bindLive({ scene, sim, equipmentMeshes });
+const dash = mountDashboard(document.getElementById('ops'), sim, {
+  onSelect: (s) => { if (s?.type === 'appliance') { select(s.id); document.getElementById('app').scrollIntoView({ behavior: 'smooth' }); } },
+});
+dash.start();
+mountHud(document.getElementById('hud'), sim, { onRun: () => flyIn() });
+sim.on('reset', () => writeParams(sim));
+sim.on('seek', () => writeParams(sim));
+window.kitchenTwin = { sim, dash, scene, camera };
+if (params.play) sim.play();
+
+// Opening shot: start high over the garden, then glide down to the working view when service starts.
+const restPos = camera.position.clone();
+const restTarget = controls.target.clone();
+let flight = null;
+if (!params.play && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  camera.position.set(KW / 2 + 9, 30, KD + 26);
+}
+function flyIn() {
+  flight = { t0: performance.now(), from: camera.position.clone(), fromT: controls.target.clone() };
+}
+function fly(now) {
+  if (!flight) return;
+  const k = Math.min(1, (now - flight.t0) / 3200);
+  const e = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
+  camera.position.lerpVectors(flight.from, restPos, e);
+  controls.target.lerpVectors(flight.fromT, restTarget, e);
+  if (k === 1) flight = null;
+}
+controls.addEventListener('start', () => { flight = null; });
 
 // ---------- Loop ----------
 function resize() {
@@ -169,14 +220,23 @@ function resize() {
   renderer.setSize(w, h, false);
   labels.setSize(w, h);
   camera.aspect = w / h;
+  camera.fov = w < h ? 64 : 40; // portrait phones need a wider lens to fit the whole kitchen
   camera.updateProjectionMatrix();
 }
 window.addEventListener('resize', resize);
 resize();
-renderer.setAnimationLoop(() => {
+let prev = performance.now();
+renderer.setAnimationLoop((now) => {
+  const dt = Math.min(0.1, (now - prev) / 1000);
+  prev = now;
+  fly(now);
+  live.update(now, dt);
   controls.update();
   renderer.render(scene, camera);
   labels.render(scene, camera);
 });
 
-renderPanel(index, document.getElementById('panel'));
+renderPanel(index, document.getElementById('panel'), {
+  onCovers: (covers) => { sim.reset({ covers }); sim.seek(sim.config.doorsOpen - 600); sim.play(); },
+  sim,
+});
