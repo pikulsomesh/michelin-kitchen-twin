@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen Twin — Operations Dashboard</title>
+<link rel="stylesheet" href="src/dashboard/dashboard.css">
+<style>html,body{margin:0;background:#0d0d0d}</style>
+</head>
+<body>
+<div id="dashboard"></div>
+<script type="module">
+import { createSim } from './src/sim/sim.js';
+import { buildFallbackData } from './src/sim/data/fallback.js';
+import { loadKitchenData, fetchReader } from './src/sim/data/load.js';
+import { mountDashboard } from './src/dashboard/dashboard.js';
+
+const q = new URLSearchParams(location.search);
+// default: the sourced French Laundry model in data/; ?data=fallback uses the built-in illustrative menu
+const data = q.get('data') === 'fallback' ? buildFallbackData() : await loadKitchenData(fetchReader('./data/'));
+const sim = createSim({ data, ...(q.get('covers') ? { covers: +q.get('covers') } : {}), seed: +q.get('seed') || 1, ...(q.get('seating') ? { seating: q.get('seating') } : {}) });
+sim.setSpeed(+q.get('speed') || 60);
+sim.seek(sim.config.doorsOpen - 600);
+const dash = mountDashboard(document.getElementById('dashboard'), sim);
+window.kitchenTwin = { sim, dash };
+if (q.get('t')) sim.seek(sim.config.doorsOpen + 3600 * +q.get('t'));
+if (q.get('play') !== '0') sim.play();
+dash.start();
+</script>
+</body>
+</html>
