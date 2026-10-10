@@ -150,3 +150,12 @@ test('stock override and arrival window are honoured', () => {
   const w = createSim({ data, covers: 40, arrival: { shape: 'bell', start: 19 * 3600, end: 21 * 3600 } });
   assert.equal(w.config.doorsOpen, 19 * 3600);
 });
+
+test('adapter prefers sourced prices and per-course eating times; food cost lands near the published plan', () => {
+  const butter = real.ingredients.find((i) => i.id === 'RM-BUTTER-UNSALTED');
+  assert.equal(butter.cost, 18 / 1000);
+  assert.equal(butter.costEstimated, false);
+  assert.ok(real.courses.some((c) => c.eatSec !== real.courses[0].eatSec), 'courses differ in eating time');
+  const k = runHeadless(real, { seed: 1 }).kpis;
+  assert.ok(k.foodCostPct > 0.15 && k.foodCostPct < 0.4, `food cost ${k.foodCostPct}`);
+});

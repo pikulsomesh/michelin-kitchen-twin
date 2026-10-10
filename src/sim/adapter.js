@@ -27,12 +27,15 @@ export function adaptKitchenData({ items, products, menu, resources, service, la
   const equipBy = Object.fromEntries(resources.equipment.map((e) => [e.id, e]));
   const walkSpeed = service.travel?.walkSpeedMps ?? 1.1;
 
+  // price per sim unit: data gives $/kg for g items and $ each for ea items (null when the data has no price)
+  const sourcedCost = (i) => (i.uom === 'g' && i.costUSDPerKg != null ? i.costUSDPerKg / 1000 : i.costUSDEach != null ? i.costUSDEach : null);
+
   // ---- ingredients & components ------------------------------------------------------------------
   const ingredients = [];
   for (const i of itemList) {
     const over = COST_OVERRIDES.find(([re]) => re.test(i.id + i.name));
     ingredients.push({ id: i.id, name: i.name, unit: i.uom, storage: i.storage, kind: 'raw', yieldPct: i.yieldPct ?? 1, shelfLifeDays: i.shelfLifeDays,
-      cost: over ? over[1] : COST_BY_CATEGORY[i.category] ?? 0.015, costEstimated: true, par: 0, onHand: 0 });
+      cost: sourcedCost(i) ?? (over ? over[1] : COST_BY_CATEGORY[i.category] ?? 0.015), costEstimated: sourcedCost(i) === null, seasons: i.seasons, par: 0, onHand: 0 });
   }
   const grossUse = (bom) => {
     const uses = {};
@@ -95,7 +98,7 @@ export function adaptKitchenData({ items, products, menu, resources, service, la
     const parts = [c.options.map((o) => ({ dish: o.product, weight: o.share }))];
     for (const inc of c.includes || []) parts.push([{ dish: inc.product, weight: 1 }]);
     for (const sup of c.supplements || []) parts.push([{ dish: sup.product, weight: sup.uptake }, { dish: null, weight: 1 - sup.uptake }]);
-    return { id: c.id, name: c.name, eatSec: Math.max(300, target / nCourses - 330), parts };
+    return { id: c.id, name: c.name, eatSec: c.eatMin ? c.eatMin * MIN : Math.max(300, target / nCourses - 330), parts };
   });
 
   // ---- stations (work centres) with layout geometry -------------------------------------------------
