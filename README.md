@@ -27,6 +27,10 @@ The number of covers is the build plan. From it the twin works out every plate, 
 
 See [docs/data-model.md](docs/data-model.md) for how kitchen concepts map to manufacturing ones, and for what is published versus estimated.
 
+## NVIDIA ecosystem
+
+The twin runs in the browser on GitHub Pages, with no NVIDIA software. Its model has the same shape as an industrial twin, so [docs/nvidia.md](docs/nvidia.md) maps it to OpenUSD and Omniverse, Isaac Sim and Isaac Lab for robotic stations, the Mega blueprint for facility-scale twins, and cuOpt for schedule optimization. The page is explicit about what runs here today and what would need Omniverse.
+
 ## Run it
 
 ```sh
