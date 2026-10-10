@@ -110,3 +110,43 @@ test('data-driven what-ifs (full house, short-staffed, combi down, lobster short
   const lob = runHeadless(real, { ...cfg, ...sc.find((s) => s.id === 'supply-shock').apply(cfg) });
   assert.ok(lob.kpis.stockoutCount + lob.kpis.comps + lob.kpis.subs > 0, 'lobster short bites');
 });
+
+// ------------------------------------------------------------------ guest-side controls
+const run = (cfg) => runHeadless(data, { seed: 2, ...cfg });
+
+test('guest line KPIs are reported and balance', () => {
+  const s = run({ covers: 40 });
+  const g = s.guests;
+  assert.ok(g.meals > 0 && g.mealAvg > 0 && g.gapAvg > 0);
+  assert.equal(g.inHouse, 0);
+  assert.equal(s.covers.finished + g.balked, s.covers.booked - s.covers.noShows);
+});
+
+test('impatient guests walk away when the room is full; patient ones wait', () => {
+  const cfg = { covers: 120, seating: 'rush', patienceMin: 5 };
+  const impatient = run(cfg), patient = run({ ...cfg, patienceMin: 600 });
+  assert.ok(impatient.guests.balked > patient.guests.balked);
+  assert.ok(impatient.guests.lostRevenue >= 0);
+});
+
+test('slower eaters stay longer at the table', () => {
+  const base = run({ covers: 30 }), slow = run({ covers: 30, eatScale: 1.5 });
+  assert.ok(slow.guests.mealAvg > base.guests.mealAvg);
+});
+
+test('a skewed order mix with a fixed forecast runs short; re-forecasting prevents it', () => {
+  const part = data.courses.map((c) => c.parts.find((p) => p.filter((o) => o.dish).length > 1)).find(Boolean);
+  assert.ok(part, 'fallback menu has a choice');
+  const [a, b] = part.filter((o) => o.dish);
+  const weights = { [a.dish]: 1, [b.dish]: 0 };
+  const blind = run({ covers: 60, mix: { weights } }), aware = run({ covers: 60, mix: { weights, planFollows: true } });
+  assert.ok(blind.kpis.stockoutCount >= aware.kpis.stockoutCount);
+});
+
+test('stock override and arrival window are honoured', () => {
+  const ing = data.ingredients.find((i) => i.kind !== 'component');
+  const s = createSim({ data, covers: 40, stockOverride: { [ing.id]: 1 } });
+  assert.equal(s.forecast.snapshot.inventory.find((i) => i.id === ing.id).start, 1);
+  const w = createSim({ data, covers: 40, arrival: { shape: 'bell', start: 19 * 3600, end: 21 * 3600 } });
+  assert.equal(w.config.doorsOpen, 19 * 3600);
+});

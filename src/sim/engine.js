@@ -10,6 +10,15 @@ export const DEFAULT_CFG = {
   seating: 'twoTurn',   // 'twoTurn' (5:30 + 8:00) | 'bell' | 'rush' (everyone within 30 min)
   staffOut: [],         // staff ids removed from the schedule (short-staffed what-if)
   faults: [],           // [{ appliance: id|type, at: seconds, durationSec }] forced breakdowns
+  // ---- guest-side controls (all optional; null = take the dataset's own value)
+  arrival: null,        // { start, end, shape: 'uniform' | 'bell' | 'waves' } seconds since midnight; overrides the seating scenario
+  partyMix: null,       // [{ size, share }]
+  mix: null,            // { weights: { productId: weight | uptake }, planFollows: false } what guests order
+  courseGapMin: null,   // minutes from one course being cleared to the next being called (eat + talk), overrides the data
+  eatScale: 1,          // diner pace multiplier (1.2 = 20% slower eaters)
+  paceCv: 0.25,         // course-to-course variation in eating time
+  patienceMin: 60,      // a party that waits longer than this for a table walks away
+  stockOverride: null,  // { itemId: quantity } starting stock for raw items, overrides the purchasing plan
   purchasing: 'plan',   // 'plan': stock bought for booked covers x purchaseFactor | 'fixed': use data on-hand as delivered
   purchaseFactor: 1.15,
   supply: {},           // { ingredientId: factor } scales starting stock (supply shock what-if)
@@ -56,15 +65,19 @@ export class Engine {
     this.costs = unitCosts(data);
     this.walkSpeed = data.dining?.walkSpeed ?? 1.2;
     this.dishById = Object.fromEntries(data.dishes.map((d) => [d.id, d]));
+    // what guests actually order (cfg.mix) vs what the kitchen forecast (data weights) are separate: forecast error is real
+    this.courses = applyMix(data.courses, c.mix?.weights);
+    const planData = c.mix?.planFollows ? { ...data, courses: this.courses } : data;
     this.stationDef = Object.fromEntries(data.stations.map((s) => [s.id, s]));
 
     // ---- resources -------------------------------------------------------------------------
-    const planRaw = c.purchasing === 'plan' ? explodeRequirements(data, c.covers * c.purchaseFactor, 1.08).raw : null;
-    const carryNeed = data.prep.some((r) => r.carryover) ? explodeRequirements(data, c.covers * (1 - c.noShowRate * 0.5), c.prepSafety).need : {};
+    const planRaw = c.purchasing === 'plan' ? explodeRequirements(planData, c.covers * c.purchaseFactor, 1.08).raw : null;
+    const carryNeed = data.prep.some((r) => r.carryover) ? explodeRequirements(planData, c.covers * (1 - c.noShowRate * 0.5), c.prepSafety).need : {};
     const yieldOf = {}; for (const r of data.prep) for (const [k, v] of Object.entries(r.yields)) yieldOf[k] = v;
     const stockOf = (i) => {
       let q = i.onHand ?? 0;
       if (i.carryover) q = Math.ceil((carryNeed[i.id] || 0) / yieldOf[i.id]) * yieldOf[i.id]; // pre-made on a previous day
+      if (c.stockOverride && i.kind !== 'component' && c.stockOverride[i.id] !== undefined) return c.stockOverride[i.id] * (c.supply[i.id] ?? 1);
       if (planRaw && i.kind !== 'component') { const step = i.unit === 'ea' ? 1 : 100; q = Math.ceil((planRaw[i.id] || 0) / step) * step; }
       return q * (c.supply[i.id] ?? 1);
     };
@@ -96,7 +109,7 @@ export class Engine {
     // ---- metrics -------------------------------------------------------------------------------
     this.m = {
       ticketTimes: Object.fromEntries(data.courses.map((cc) => [cc.id, []])),
-      guestWaits: [], passHold: [], tableTurn: [], washTimes: [],
+      guestWaits: [], passHold: [], tableTurn: [], washTimes: [], tableWaits: [], courseGaps: [], gapByCourse: this.data.courses.map(() => []), eatTimes: [], firstCourse: [], valueAdded: [], balkedGuests: 0,
       served: 0,            // dish portions delivered to the table
       coursesServed: 0,     // table-courses delivered
       guestCourses: 0,      // guest-courses delivered
@@ -126,7 +139,11 @@ export class Engine {
     for (let t = c.doorsOpen; t <= c.lastSeating; t += interval) slots.push(t);
     const peak = (t, m, sd) => Math.exp(-0.5 * ((t - m) / sd) ** 2);
     const hm = (v) => (typeof v === 'string' ? (+v.split(':')[0] + (+v.split(':')[1] || 0) / 60) * 3600 : v);
-    const weight = scen?.waves
+    const shape = c.arrival ? c.arrival.shape || 'uniform' : null;
+    const weight = shape === 'uniform' ? () => 1
+      : shape === 'bell' ? (t) => peak(t, (c.doorsOpen + c.lastSeating) / 2, (c.lastSeating - c.doorsOpen) / 5) + 0.02
+      : shape === 'waves' ? (t) => peak(t, c.doorsOpen + (c.lastSeating - c.doorsOpen) * 0.2, (c.lastSeating - c.doorsOpen) / 12) + 0.8 * peak(t, c.doorsOpen + (c.lastSeating - c.doorsOpen) * 0.8, (c.lastSeating - c.doorsOpen) / 12) + 0.02
+      : scen?.waves
       ? (t) => scen.waves.reduce((a, w) => a + w.share * peak(t, hm(w.at), Math.max(300, (w.spreadMin ?? 30) * 30)), 0) + 1e-4
       : scen ? () => 1
         : {
@@ -134,13 +151,13 @@ export class Engine {
           bell: (t) => peak(t, (c.doorsOpen + c.lastSeating) / 2 + 600, 3300) + 0.05,
           rush: (t) => (t <= c.doorsOpen + 1800 ? 1 : 0.0001),
         }[c.seating] || (() => 1);
-    const sizes = this.data.reservations?.partySizeMix?.map((x) => [x.size, x.share]) ?? [[1, 0.03], [2, 0.57], [3, 0.08], [4, 0.2], [5, 0.04], [6, 0.08]];
+    const sizes = (c.partyMix || this.data.reservations?.partySizeMix)?.map((x) => [x.size, x.share]) ?? [[1, 0.03], [2, 0.57], [3, 0.08], [4, 0.2], [5, 0.04], [6, 0.08]];
     let left = c.covers; let n = 0;
     while (left > 0) {
       let size = r.pick(sizes, (s) => s[1])[0]; size = Math.min(size, left);
       const slot = r.pick(slots, weight);
       const at = slot + (scen ? r.int(0, Math.max(0, interval / 300 - 1)) * 300 : r.int(0, 2) * 300) + Math.max(-120, Math.round(r.normal() * 150));
-      out.push({ id: `R${++n}`, size, at, noShow: r.next() < c.noShowRate, status: 'booked', table: null, course: -1 });
+      out.push({ id: `R${++n}`, size, at, noShow: r.next() < c.noShowRate, status: 'booked', table: null, course: -1, pace: Math.max(0.75, Math.min(1.3, r.jitter(0.18))), eatSum: 0 });
       left -= size;
     }
     out.sort((a, b) => a.at - b.at);
@@ -196,7 +213,7 @@ export class Engine {
   // ====================================================================================== prep
   #startPrep() {
     this.phase = 'prep';
-    const plan = explodeRequirements(this.data, this.cfg.covers * (1 - this.cfg.noShowRate * 0.5), this.cfg.prepSafety);
+    const plan = explodeRequirements(this.cfg.mix?.planFollows ? { ...this.data, courses: this.courses } : this.data, this.cfg.covers * (1 - this.cfg.noShowRate * 0.5), this.cfg.prepSafety);
     this.prepPlan = plan;
     const byRecipe = {};
     for (const r of this.data.prep) {
@@ -240,8 +257,21 @@ export class Engine {
   // ====================================================================================== guests
   #arrive(p) {
     const tbl = this.#findTable(p.size);
-    if (!tbl) { this.waitlist.push(p); p.status = 'waiting'; this.m.waitlisted++; this.#log('res', `${p.id} (${p.size}) waits for a table`); return; }
+    if (!tbl) {
+      this.waitlist.push(p); p.status = 'waiting'; this.m.waitlisted++; this.#log('res', `${p.id} (${p.size}) waits for a table`);
+      this.at(this.now + this.cfg.patienceMin * 60, () => this.#balk(p));
+      return;
+    }
     this.#seat(p, tbl);
+  }
+
+  #balk(p) {
+    if (p.status !== 'waiting') return;
+    this.waitlist.splice(this.waitlist.indexOf(p), 1);
+    p.status = 'balked'; this.m.balkedGuests += p.size; this.m.tableWaits.push(this.now - p.at);
+    this.#log('res', `${p.id} (${p.size}) gave up waiting for a table after ${Math.round((this.now - p.at) / 60)} min`);
+    this.emit('guest:balked', { party: p.id, size: p.size });
+    this.#checkDone();
   }
 
   #findTable(size) {
@@ -252,7 +282,7 @@ export class Engine {
 
   #seat(p, tbl) {
     tbl.state = 'seated'; tbl.party = p; p.table = tbl.id; p.status = 'seated'; p.seatedAt = this.now; p.course = -1;
-    this.m.seatedGuests += p.size;
+    this.m.seatedGuests += p.size; this.m.tableWaits.push(this.now - p.at);
     this.#log('seat', `${p.id} (${p.size}) seated at ${tbl.id}`);
     this.emit('table:seated', { table: tbl.id, party: p.id, size: p.size });
     const ready = this.now + this.cfg.settleSec * this.rng.jitter(0.2);
@@ -262,13 +292,13 @@ export class Engine {
   #callCourse(p, idx, readyAt) {
     p.nextReady = readyAt; p.course = idx;
     // expo fires early by the planned lead time of the slowest dish on this course (JIT / offset scheduling)
-    const course = this.data.courses[idx]; let lead = 0;
+    const course = this.courses[idx]; let lead = 0;
     for (const part of course.parts) for (const o of part) if (o.dish) lead = Math.max(lead, this.#critical(this.dishById[o.dish], Math.max(1, Math.round(p.size / part.length))));
     this.at(Math.max(this.now, readyAt - lead * 0.9 - this.cfg.leadSec), () => this.#fireTicket(p, idx, readyAt));
   }
 
   #fireTicket(p, idx, readyAt) {
-    const course = this.data.courses[idx];
+    const course = this.courses[idx];
     const tk = {
       id: `K${this.tickets.length + 1}`, party: p, table: p.table, course: idx, courseId: course.id, courseName: course.name,
       fireAt: this.now, readyAt, lines: [], pending: 0, status: 'open', servedAt: null, run: null, passAt: null,
@@ -424,8 +454,8 @@ export class Engine {
     const tk = line.ticket; const remade = line.qty - line.good;
     tk.pending--;
     // swap to another dish in the same course part that can still be built, else comp
-    const part = this.data.courses[tk.course].parts.find((pt) => pt.some((o) => o.dish === line.dish.id));
-    const alt = part?.map((o) => this.dishById[o.dish]).find((d) => d.id !== line.dish.id && this.#feasible(d, remade));
+    const part = this.courses[tk.course].parts.find((pt) => pt.some((o) => o.dish === line.dish.id));
+    const alt = part?.filter((o) => o.dish).map((o) => this.dishById[o.dish]).find((d) => d.id !== line.dish.id && this.#feasible(d, remade));
     this.m.wasteCost += this.#lineCost(line) * 0.6;
     if (alt) {
       this.m.subs++;
@@ -616,8 +646,15 @@ export class Engine {
       cls: CLASS.wash, due: this.now, ticket: tk });
     this.#makeReady(w);
     // next course or leave
-    const eat = this.data.courses[tk.course].eatSec * (1 + 0.06 * (p.size - 1)) * this.rng.jitter(0.25);
-    if (tk.course + 1 < this.data.courses.length) this.#callCourse(p, tk.course + 1, this.now + eat + this.cfg.clearSec);
+    if (!comped) {
+      if (tk.course === 0) this.m.firstCourse.push(this.now - p.seatedAt);
+      if (p.lastServed !== undefined) { const g = this.now - p.lastServed; this.m.courseGaps.push(g); this.m.gapByCourse[tk.course].push(g); }
+      p.lastServed = this.now;
+    }
+    const gapSec = this.cfg.courseGapMin ? Math.max(120, this.cfg.courseGapMin * 60 - this.cfg.clearSec - 240) : this.courses[tk.course].eatSec;
+    const eat = gapSec * (1 + 0.03 * (p.size - 1)) * p.pace * this.cfg.eatScale * this.rng.jitter(this.cfg.paceCv);
+    p.eatSum += eat; this.m.eatTimes.push(eat);
+    if (tk.course + 1 < this.courses.length) this.#callCourse(p, tk.course + 1, this.now + eat + this.cfg.clearSec);
     else this.at(this.now + eat, () => this.#leave(p));
   }
 
@@ -625,6 +662,7 @@ export class Engine {
     const tbl = this.tables.find((t) => t.id === p.table);
     p.status = 'left'; p.leftAt = this.now; tbl.state = 'dirty';
     this.m.finishedGuests += p.size; this.m.tableTurn.push(this.now - p.seatedAt);
+    this.m.valueAdded.push(p.eatSum / Math.max(1, this.now - p.seatedAt));
     this.emit('table:left', { table: tbl.id });
     this.#log('seat', `${p.id} leaves ${tbl.id} after ${Math.round((this.now - p.seatedAt) / 60)} min`);
     this.at(this.now + this.cfg.resetSec, () => {
@@ -637,7 +675,7 @@ export class Engine {
 
   #checkDone() {
     if (this.serviceDone) return;
-    if (this.parties.every((p) => p.status === 'left' || p.status === 'noshow') && this.openTickets.size === 0) {
+    if (this.parties.every((p) => p.status === 'left' || p.status === 'noshow' || p.status === 'balked') && this.openTickets.size === 0) {
       this.serviceDone = true; this.endT = this.now + 600; this.phase = 'closed';
       this.#log('service', 'Service complete — kitchen closes');
       this.emit('phase', { phase: 'closed' });
@@ -683,6 +721,7 @@ export class Engine {
     return {
       t: this.now, seated: this.m.seatedGuests, finished: this.m.finishedGuests, served: this.m.served, courses: this.m.coursesServed,
       openTickets: open.length, wip, queued: this.ready.length, stockouts: this.m.stockouts.length,
+      inHouse: this.m.seatedGuests - this.m.finishedGuests, waiting: this.waitlist.reduce((a, w) => a + w.size, 0), balked: this.m.balkedGuests,
       foodCost: this.#consumedCost(), wasteCost: this.m.wasteCost,
       utilLine: this.#lineUtil(),
       p90: pct(Object.values(this.m.ticketTimes).flat(), 90), avg: avg(Object.values(this.m.ticketTimes).flat()),
@@ -763,7 +802,7 @@ export class Engine {
       t: now, clock: fmtClock(now), phase: this.phase, done: this.serviceDone, endT: this.endT,
       covers: { booked: c.covers, seated: this.m.seatedGuests, finished: this.m.finishedGuests, noShows: this.m.noShowGuests,
         waiting: this.waitlist.reduce((s, w) => s + w.size, 0) },
-      tables, tickets: open, staff, appliances, stations, inventory, kpis, log: this.log.slice(-80), stockouts: this.m.stockouts,
+      guests: this.#guestKpis(), tables, tickets: open, staff, appliances, stations, inventory, kpis, log: this.log.slice(-80), stockouts: this.m.stockouts,
       prep: { done: this.m.prepDone, total: this.m.prepTotal, skipped: this.m.prepSkipped, finishedAt: this.m.prepFinishedAt },
     };
   }
@@ -803,6 +842,27 @@ export class Engine {
     return { key: top.key, kind, id, label: cap(label), factory, text: cap(text), waitSec: top.wait, n: top.n, util, queue };
   }
 
+  /** the dining-room side of the line: arrivals, queue for a table, pacing between courses, eating time, meal cycle time */
+  #guestKpis() {
+    const m = this.m; const c = this.cfg; const price = this.data.meta?.menuPricePerCover ?? 0;
+    const seats = this.tables.reduce((a, t) => a + t.seats, 0);
+    const inHouse = m.seatedGuests - m.finishedGuests;
+    const target = (this.data.pacing?.targetMealMinutes ?? 195) * 60;
+    const gapTarget = c.courseGapMin ? c.courseGapMin * 60 : target / this.data.courses.length;
+    const arrived = this.parties.filter((p) => p.at <= this.now && p.status !== 'noshow').reduce((a, p) => a + p.size, 0);
+    const last = this.parties.filter((p) => p.at <= this.now && p.at > this.now - 3600 && p.status !== 'noshow').reduce((a, p) => a + p.size, 0);
+    return {
+      booked: c.covers, arrived, arrivalsPerHr: last, inHouse, waiting: this.waitlist.reduce((a, w) => a + w.size, 0), waitingParties: this.waitlist.length,
+      balked: m.balkedGuests, lostRevenue: m.balkedGuests * price, noShows: m.noShowGuests, seats, occupancy: seats ? inHouse / seats : 0,
+      tableWaitAvg: avg(m.tableWaits), tableWaitP90: pct(m.tableWaits, 90), tableWaitMax: m.tableWaits.length ? Math.max(...m.tableWaits) : 0,
+      firstCourseAvg: avg(m.firstCourse), gapAvg: avg(m.courseGaps), gapP90: pct(m.courseGaps, 90), gapTarget,
+      gapByCourse: this.data.courses.map((cc, i) => ({ id: cc.id, name: cc.name, avg: avg(m.gapByCourse[i]), p90: pct(m.gapByCourse[i], 90), n: m.gapByCourse[i].length })),
+      eatAvg: avg(m.eatTimes), mealAvg: avg(m.tableTurn), mealP90: pct(m.tableTurn, 90), mealTarget: target,
+      valueAdded: avg(m.valueAdded), guestWaitAvg: avg(m.guestWaits), guestWaitP90: pct(m.guestWaits, 90),
+      overTarget: m.tableTurn.filter((x) => x > target * 1.15).length, meals: m.tableTurn.length,
+    };
+  }
+
   #kpis(win, inService, staff, appliances) {
     const m = this.m; const now = this.now;
     const all = Object.values(m.ticketTimes).flat();
@@ -836,6 +896,20 @@ export class Engine {
       tableTurnAvg: avg(m.tableTurn), kwh, lineUtil: this.#lineUtil(), lateTickets: [...this.openTickets].filter((tk) => now > tk.readyAt + 120).length,
     };
   }
+}
+
+/** order-mix overrides: weights replace shares; for supplement parts (an option plus a "no thanks" null) the value is the uptake probability */
+function applyMix(courses, weights) {
+  if (!weights) return courses;
+  return courses.map((c) => ({ ...c, parts: c.parts.map((part) => {
+    const out = part.map((o) => ({ ...o }));
+    const hasNull = out.some((o) => !o.dish);
+    for (const o of out) if (o.dish && weights[o.dish] !== undefined) {
+      o.weight = weights[o.dish];
+      if (hasNull) { const nul = out.find((x) => !x.dish); nul.weight = Math.max(0, 1 - Math.min(1, weights[o.dish])); }
+    }
+    return out;
+  }) }));
 }
 
 const avg = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);

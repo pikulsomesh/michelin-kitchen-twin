@@ -25,5 +25,7 @@ export const TERMS = {
   log: ['Kitchen log', 'Event log'],
   prep: ['Prep (mise en place)', 'Pre-production'],
   pass: ['The pass', 'Final inspection'],
+  plan: ['Plan the night', 'Production plan'],
+  guestLine: ['Guests: the dining-room line', 'Customer flow'],
   report: ['Shift report (CSV)', 'Production report (CSV)'],
 };
