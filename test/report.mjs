@@ -1,0 +1,11 @@
+import { createSim } from '../src/sim/sim.js';
+import { buildFallbackData } from '../src/sim/data/fallback.js';
+const covers = +process.argv[2] || 80;
+const sim = createSim({ data: buildFallbackData(), covers, seed: +process.argv[3] || 1 });
+const f = sim.forecast; const s = f.snapshot;
+console.log('end', s.clock, 'covers', s.covers, 'prep', s.prep);
+console.log(JSON.stringify({ ...s.kpis, perCourse: undefined, constraints: s.kpis.constraints.slice(0,5) }, null, 1));
+console.log(s.kpis.perCourse.map(c => `${c.name}: n=${c.n} p50=${c.p50|0} p90=${c.p90|0}`).join('\n'));
+console.log('stockouts', s.stockouts.slice(0,10));
+console.log(s.appliances.map(a => `${a.id} util=${(a.util*100)|0}% oee=${(a.oee*100)|0}% f=${a.failures}`).join('\n'));
+console.log(s.staff.map(a => `${a.id} util=${(a.util*100)|0}%`).join(' | '));
