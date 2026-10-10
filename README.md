@@ -4,16 +4,18 @@ A browser-based 3D digital twin of **The French Laundry** (Yountville, Californi
 
 The number of covers is the build plan. From it the twin works out every plate, every sub-assembly in the mise en place, every gram of ingredient, and the load on each cook and appliance. Later stages render the kitchen in realistic 3D and simulate the service minute by minute: tickets firing, stations working, food moving to the pass, inventory draining.
 
-**Live site:** https://pikulsomesh.github.io/michelin-kitchen-twin/ · **Studio:** https://pikulsomesh.github.io/michelin-kitchen-twin/studio.html (customize the dining room, menu, season, and light; see [docs/studio.md](docs/studio.md))
+**Live site:** https://pikulsomesh.github.io/michelin-kitchen-twin/
+
+Share links replay the same service to the second, for example [`?covers=120&seating=rush&t=1.5`](https://pikulsomesh.github.io/michelin-kitchen-twin/?covers=120&seating=rush&t=1.5) opens a rush seating for 120 covers an hour and a half after the doors open. · **Studio:** https://pikulsomesh.github.io/michelin-kitchen-twin/studio.html (customize the dining room, menu, season, and light; see [docs/studio.md](docs/studio.md))
 
 ## Status
 
 | Stage | What it adds | State |
 | --- | --- | --- |
-| 1. Research and data model | Sourced data for the menu, recipes (BOM and routings), stations, equipment, brigade and layout; MRP explosion; site skeleton | This PR |
-| 2. Realistic 3D kitchen | Physically based models of the suites, hearth, combis and reach-ins; lighting and materials | Planned |
-| 3. Dinner service simulation | Discrete-event simulation of N covers, live inventory, ticket times, OEE and bottlenecks | Planned |
-| 4. Polish and publish | Camera tours, timeline scrubber, docs | Planned |
+| 1. Research and data model | Sourced data for the menu, recipes (BOM and routings), stations, equipment, brigade and layout; MRP explosion; site skeleton | Done |
+| 2. Realistic 3D kitchen | Physically based models of the suites, hearth, combis and reach-ins; lighting and materials; Pro Max render tier; OpenUSD export | Done |
+| 3. Dinner service simulation | Discrete-event simulation of N covers, live inventory, ticket times, OEE and bottlenecks, driving the 3D view and the operations dashboard | Done |
+| 4. Polish and publish | Opening crane shot, guided tour, Studio, shareable links, docs | In progress |
 
 ## The data
 
