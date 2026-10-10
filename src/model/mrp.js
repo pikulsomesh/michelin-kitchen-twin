@@ -180,3 +180,19 @@ export function leadTimeMinutes(index, id, memo = new Map()) {
   memo.set(id, total);
   return total;
 }
+
+/**
+ * Start-of-service stock: the plan for `covers` times the par factor in service.json.
+ * Raw materials are on hand at gross quantity; sub-assemblies are made in whole batches during prep.
+ * Returns { raw: {id: qty}, intermediates: {id: qty} } in each item's uom.
+ */
+export function startingInventory(index, covers) {
+  const { menu, service } = index.data;
+  const parFactor = service.inventoryPolicy?.parFactor ?? 1;
+  const plan = explode(index, demandForCovers(menu, covers), { stockFactor: parFactor });
+  const raw = Object.fromEntries(Object.values(plan.raw).map((r) => [r.id, r.gross]));
+  const intermediates = Object.fromEntries(
+    Object.values(plan.make).filter((m) => m.type === 'intermediate').map((m) => [m.id, m.produced]),
+  );
+  return { raw, intermediates };
+}

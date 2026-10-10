@@ -37,6 +37,16 @@ npm run plan -- 120   # a double turn
 
 At 62 covers every station has headroom. At 120 covers the fish commis needs more prep time than the shift allows (105%), and the fish and meat chefs de partie run at 90 to 93% during service. Those are the bottlenecks step 3's simulation will show live. The stock pot ranges carry about 20 hours of simmering, which is why a real kitchen makes veal stock and corned tongue days ahead; `leadTimeMinutes()` reports those lead times (corned tongue is about 76 hours, foie gras torchon about 49).
 
+## Simulation inputs
+
+These fields feed the discrete-event simulation in `src/sim`:
+
+- `resources.json` `staff`: one record per person (15 at service, plus butcher and prep cooks), each with a role, home station and `skills`, the work centers they can cover. This is the skills matrix.
+- `service.json` `seatingScenarios`: staggered single turn (default), two turns (17:30 and 20:00), and a rush seating.
+- `service.json` `variability`: operation times are means, with lognormal spread (coefficient of variation 0.2 for hands-on work, 0.05 for machine cycles) and a fixed seed, so runs are reproducible.
+- `service.json` `quality.refireRate`, `travel`, and `whatIf`: the one-click scenarios (full house, short-staffed, combi down at 20:15, lobster 40% short, rush seating).
+- `startingInventory(index, covers)` in `src/model/mrp.js`: on-hand stock at the start of service, which is the plan times `inventoryPolicy.parFactor`.
+
 ## What is published and what is estimated
 
 Every record has a `src` list pointing at [`sources.json`](../data/sources.json). `est` marks a modelling estimate.
