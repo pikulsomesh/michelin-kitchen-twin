@@ -1,9 +1,6 @@
 // Studio page: shape the restaurant (dining room, menu, season, light) and watch the 3D stage and the
 // dinner-service simulation follow. Every edit recompiles the KitchenData the sim runs, re-runs the
 // service headlessly against the house baseline, and is kept in the URL so a setup is a shareable link.
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { data as siteData } from '../data.js';
 import { createSim } from '../sim/sim.js';
 import { runHeadless, avgOee } from '../sim/scenarios.js';
@@ -12,6 +9,8 @@ import { mountDashboard } from '../dashboard/dashboard.js';
 import { defaultStudio, seasonForDate, encodeStudio, decodeStudio, mixOf } from './config.js';
 import { compileStudio } from './compile.js';
 import { computeLook } from './look.js';
+import { createKitchenScene } from '../scene/index.js';
+import { bindSim } from '../scene/bind.js';
 import { createStage } from './stage.js';
 import { mountStudioPanel } from './ui.js';
 import { SEASON_LABEL } from './catalog.js';
@@ -23,34 +22,29 @@ const hashState = () => { const m = /[#&]s=([^&]+)/.exec(location.hash); return 
 let state = hashState() ?? defaultStudio(base, { season: seasonForDate() });
 
 // ------------------------------------------------------------------------------------------ 3D
-const quality = new URLSearchParams(location.search).get('quality') ?? (matchMedia('(max-width: 720px)').matches ? 'mobile' : 'high');
-const canvas = document.getElementById('stage');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, quality === 'high' ? 2 : 1.25));
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-const scene = new THREE.Scene();
-scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+// The photoreal twin from src/scene renders the kitchen, garden and sky; the studio stage adds the
+// dining room the viewer lays out, candlelight, guests and weather on top of it.
+const params = new URLSearchParams(location.search);
+const twin = await createKitchenScene(document.getElementById('stage'), { data: siteData, quality: params.get('quality') || 'auto', labels: 'none' });
+const stage = createStage({ twin, layout: siteData.layout, quality: twin.quality });
 
-const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 900);
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 2; controls.maxDistance = 70;
+const qualitySel = document.getElementById('quality');
+qualitySel.innerHTML = twin.qualityTiers.map((t) => `<option value="${t.id}">${t.label}</option>`).join('');
+qualitySel.value = twin.quality;
+qualitySel.onchange = () => twin.setQuality(qualitySel.value);
+twin.on('quality', ({ quality }) => { qualitySel.value = quality; });
 
-const equipment = new Map(siteData.resources.equipment.map((e) => [e.id, e]));
-const stage = createStage({ renderer, scene, layout: siteData.layout, equipment, quality });
-
+const v3 = (v) => [v.x, v.y, v.z];
 const VIEWS = {
-  dining: () => { const f = stage.focus.dining(); return [new THREE.Vector3(f.x + 3, 6.5, f.z - 9), f]; },
-  kitchen: () => { const f = stage.focus.kitchen(); return [new THREE.Vector3(f.x - 2, 13, f.z + 14), f]; },
-  window: () => { const f = stage.focus.kitchen(); return [new THREE.Vector3(f.x + 3, 3.1, f.z + 11), new THREE.Vector3(f.x, 1.0, f.z - 1)]; },
-  all: () => { const f = stage.focus.all(); return [new THREE.Vector3(f.x, 26, f.z + 22), f]; },
+  dining: () => { const f = stage.focus.dining(); const w = -stage.extent.x0; return [[f.x + 3, 4 + 0.45 * w, f.z - 5 - 0.5 * w], [f.x, 0.6, f.z]]; },
+  kitchen: () => { const f = stage.focus.kitchen(); return [[f.x - 2, 11, f.z + 12], [f.x, 0.8, f.z]]; },
+  window: () => { const f = stage.focus.kitchen(); return [[f.x + 3, 2.6, f.z + 11], [f.x, 1.0, f.z - 1]]; },
+  all: () => { const f = stage.focus.all(); const span = 17 - stage.extent.x0; return [[f.x, 6 + 0.75 * span, f.z + 6 + 0.7 * span], v3(f)]; },
 };
-let fly = null;
 function view(name, instant = false) {
   const [pos, target] = VIEWS[name]();
-  if (instant) { camera.position.copy(pos); controls.target.copy(target); return; }
-  fly = { start: performance.now(), p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target };
+  twin.flyTo(pos, target, instant ? 0.01 : 1.4);
+  twin.setLabels(name === 'kitchen' ? 'stations' : 'none');
   document.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('on', b.dataset.view === name));
 }
 
@@ -74,9 +68,12 @@ function baselineSummary(season) {
   return baselineSummaries.get(season);
 }
 
+let binding = null;
 function rebuildSim() {
   const wasPlaying = sim?.playing; const t = sim?.t;
+  binding?.dispose();
   sim = createSim({ data: compiled.data, ...compiled.cfg });
+  binding = bindSim(twin, sim);
   sim.setSpeed(+speedSel.value);
   sim.seek(t != null ? Math.min(Math.max(t, sim.start), sim.end) : compiled.cfg.doorsOpen + 2.5 * 3600);
   if (wasPlaying) sim.play();
@@ -207,26 +204,12 @@ view('dining', true);
 document.querySelector('[data-view="dining"]').classList.add('on');
 setTimeout(renderImpact, 50);
 
-function resize() {
-  const { clientWidth: w, clientHeight: h } = canvas.parentElement;
-  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-}
-new ResizeObserver(resize).observe(canvas.parentElement);
-resize();
-
-const clock = new THREE.Timer();
-renderer.setAnimationLoop(() => {
-  clock.update(); const dt = Math.min(0.1, clock.getDelta());
-  if (fly) {
-    const u = Math.min(1, (performance.now() - fly.start) / 1400); const k = u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2;
-    camera.position.lerpVectors(fly.p0, fly.p1, k); controls.target.lerpVectors(fly.t0, fly.t1, k);
-    if (u >= 1) fly = null;
-  }
+twin.onFrame((dt) => {
+  dt = Math.min(0.1, dt);
   if (!dash && sim.playing) sim.tick(dt); // the dashboard drives the clock while it is open
+  binding.update(dt);
   if (sim.playing || dash) paintSim();
   stage.update(dt);
-  controls.update();
-  renderer.render(scene, camera);
 });
 
-window.kitchenStudio = { get state() { return state; }, get compiled() { return compiled; }, get sim() { return sim; }, stage, renderer, scene, camera, mixOf };
+window.kitchenStudio = { get state() { return state; }, get compiled() { return compiled; }, get sim() { return sim; }, twin, stage, mixOf };
