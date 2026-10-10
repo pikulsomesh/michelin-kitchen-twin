@@ -77,6 +77,25 @@ export function validate(data) {
   }
   for (const e of equipment.values()) checkSrc(`equipment ${e.id}`, e.src);
 
+  const staffIds = new Set();
+  for (const st of data.resources.staff ?? []) {
+    staffIds.add(st.id);
+    if (!roles.has(st.role)) errors.push(`staff ${st.id}: unknown role ${st.role}`);
+    for (const wc of [st.homeStation, ...st.skills]) if (!workCenters.has(wc)) errors.push(`staff ${st.id}: unknown work center ${wc}`);
+  }
+  for (const r of roles.values()) {
+    const n = (data.resources.staff ?? []).filter((st) => st.role === r.id).length;
+    if (data.resources.staff && n !== r.headcount) errors.push(`role ${r.id}: headcount ${r.headcount} but ${n} staff records`);
+  }
+  const scenarios = new Set((data.service.seatingScenarios ?? []).map((x) => x.id));
+  for (const w of data.service.whatIf ?? []) {
+    const c = w.changes;
+    for (const id of c.removeStaff ?? []) if (!staffIds.has(id)) errors.push(`what-if ${w.id}: unknown staff ${id}`);
+    for (const d of c.equipmentDown ?? []) if (!equipment.has(d.equipment)) errors.push(`what-if ${w.id}: unknown equipment ${d.equipment}`);
+    for (const id of Object.keys(c.supplyFactor ?? {})) if (!items.has(id)) errors.push(`what-if ${w.id}: unknown item ${id}`);
+    if (c.seatingScenario && !scenarios.has(c.seatingScenario)) errors.push(`what-if ${w.id}: unknown seating scenario ${c.seatingScenario}`);
+  }
+
   const placed = new Set();
   for (const pl of data.layout.placements) {
     if (!equipment.has(pl.equipment)) errors.push(`layout: unknown equipment ${pl.equipment}`);

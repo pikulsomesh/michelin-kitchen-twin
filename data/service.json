@@ -1,39 +1,221 @@
 {
   "$comment": "The master production schedule for one dinner service. `covers` is the build plan: change it and every downstream requirement (ingredients, intermediates, labor, machine time) scales through the BOM and routings. Values marked 'est' are modelling assumptions, not published figures.",
   "service": "dinner",
-  "defaultCovers": { "value": 62, "note": "One turn of every seat.", "src": ["fermag-2017"] },
-  "coversRange": [1, 400],
+  "defaultCovers": {
+    "value": 62,
+    "note": "One turn of every seat.",
+    "src": [
+      "fermag-2017"
+    ]
+  },
+  "coversRange": [
+    1,
+    400
+  ],
   "reservations": {
     "firstSeating": "17:00",
     "lastSeating": "21:30",
     "intervalMin": 15,
     "partySizeMix": [
-      { "size": 2, "share": 0.62 },
-      { "size": 3, "share": 0.06 },
-      { "size": 4, "share": 0.26 },
-      { "size": 6, "share": 0.06 }
+      {
+        "size": 2,
+        "share": 0.62
+      },
+      {
+        "size": 3,
+        "share": 0.06
+      },
+      {
+        "size": 4,
+        "share": 0.26
+      },
+      {
+        "size": 6,
+        "share": 0.06
+      }
     ],
-    "src": ["est"]
+    "src": [
+      "est"
+    ]
   },
   "pacing": {
     "targetMealMinutes": 195,
-    "courseGapMinutes": { "mean": 17, "sd": 4, "note": "Time from one course being cleared to the next being fired." },
+    "courseGapMinutes": {
+      "mean": 17,
+      "sd": 4,
+      "note": "Time from one course being cleared to the next being fired."
+    },
     "fireLeadMinutes": 6,
     "note": "Fit to the 3 to 3.5 hour meals reported by diners.",
-    "src": ["pressdemocrat-2017", "review-chihuo", "review-tinyurban", "est"]
+    "src": [
+      "pressdemocrat-2017",
+      "review-chihuo",
+      "review-tinyurban",
+      "est"
+    ]
   },
   "inventoryPolicy": {
     "parFactor": 1.15,
     "note": "Start-of-service stock is the BOM explosion for the planned covers times parFactor, rounded up to whole batches for intermediates.",
-    "src": ["est"]
+    "src": [
+      "est"
+    ]
   },
   "kpis": [
-    { "id": "ticket-time", "name": "Ticket time", "manufacturingAnalogue": "Cycle time per work order" },
-    { "id": "course-gap", "name": "Course gap adherence", "manufacturingAnalogue": "Takt adherence" },
-    { "id": "oee", "name": "Equipment utilization (OEE: availability x performance x quality)", "manufacturingAnalogue": "OEE" },
-    { "id": "labor-utilization", "name": "Cook utilization by station", "manufacturingAnalogue": "Labor efficiency" },
-    { "id": "wip", "name": "Plates in progress / waiting at the pass", "manufacturingAnalogue": "Work in process" },
-    { "id": "first-pass-yield", "name": "Plates sent without a refire", "manufacturingAnalogue": "First-pass yield" },
-    { "id": "stockouts", "name": "Ingredient stockouts", "manufacturingAnalogue": "Material shortages" }
+    {
+      "id": "ticket-time",
+      "name": "Ticket time",
+      "manufacturingAnalogue": "Cycle time per work order"
+    },
+    {
+      "id": "course-gap",
+      "name": "Course gap adherence",
+      "manufacturingAnalogue": "Takt adherence"
+    },
+    {
+      "id": "oee",
+      "name": "Equipment utilization (OEE: availability x performance x quality)",
+      "manufacturingAnalogue": "OEE"
+    },
+    {
+      "id": "labor-utilization",
+      "name": "Cook utilization by station",
+      "manufacturingAnalogue": "Labor efficiency"
+    },
+    {
+      "id": "wip",
+      "name": "Plates in progress / waiting at the pass",
+      "manufacturingAnalogue": "Work in process"
+    },
+    {
+      "id": "first-pass-yield",
+      "name": "Plates sent without a refire",
+      "manufacturingAnalogue": "First-pass yield"
+    },
+    {
+      "id": "stockouts",
+      "name": "Ingredient stockouts",
+      "manufacturingAnalogue": "Material shortages"
+    }
+  ],
+  "seatingScenarios": [
+    {
+      "id": "tfl-staggered",
+      "name": "Staggered seatings (one turn)",
+      "default": true,
+      "firstSeating": "17:00",
+      "lastSeating": "21:30",
+      "intervalMin": 15,
+      "note": "One turn of every seat, reservations spread evenly; matches a tasting-menu room that seats each table once.",
+      "src": [
+        "est"
+      ]
+    },
+    {
+      "id": "two-turns",
+      "name": "Two turns",
+      "waves": [
+        {
+          "at": "17:30",
+          "share": 0.5,
+          "spreadMin": 30
+        },
+        {
+          "at": "20:00",
+          "share": 0.5,
+          "spreadMin": 30
+        }
+      ],
+      "note": "Product default in docs/product/PRD.md.",
+      "src": [
+        "est"
+      ]
+    },
+    {
+      "id": "rush",
+      "name": "Rush seating",
+      "waves": [
+        {
+          "at": "18:00",
+          "share": 1.0,
+          "spreadMin": 30
+        }
+      ],
+      "src": [
+        "est"
+      ]
+    }
+  ],
+  "variability": {
+    "distribution": "lognormal",
+    "manualCv": 0.2,
+    "machineCv": 0.05,
+    "waitCv": 0.1,
+    "seed": 20260710,
+    "note": "Operation times in products.json are means. Hands-on work varies more than machine cycles. Seeded so runs are reproducible.",
+    "src": [
+      "est"
+    ]
+  },
+  "quality": {
+    "refireRate": 0.015,
+    "note": "Share of plates rejected at the pass and re-fired.",
+    "src": [
+      "est"
+    ]
+  },
+  "travel": {
+    "walkSpeedMps": 1.1,
+    "kitchenToAnnexMin": 1.5,
+    "src": [
+      "est"
+    ]
+  },
+  "whatIf": [
+    {
+      "id": "full-house",
+      "name": "Full house",
+      "changes": {
+        "covers": 124
+      }
+    },
+    {
+      "id": "short-staffed",
+      "name": "Short-staffed",
+      "changes": {
+        "removeStaff": [
+          "ST-COMMIS-FISH-1"
+        ]
+      }
+    },
+    {
+      "id": "oven-down",
+      "name": "Combi down",
+      "changes": {
+        "equipmentDown": [
+          {
+            "equipment": "EQ-COMBI-KITCHEN",
+            "from": "20:15",
+            "minutes": 30
+          }
+        ]
+      }
+    },
+    {
+      "id": "supply-shock",
+      "name": "Lobster short",
+      "changes": {
+        "supplyFactor": {
+          "RM-LOBSTER": 0.6
+        }
+      }
+    },
+    {
+      "id": "rush-seating",
+      "name": "Rush seating",
+      "changes": {
+        "seatingScenario": "rush"
+      }
+    }
   ]
 }

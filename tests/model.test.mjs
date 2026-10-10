@@ -38,3 +38,17 @@ test('requirements scale with covers', () => {
   const load = loadSummary(index, b);
   assert.ok(load.labor['cdp-fish'].service > 0);
 });
+
+test('starting inventory covers the plan with the par buffer', async () => {
+  const { startingInventory } = await import('../src/model/mrp.js');
+  const stock = startingInventory(index, 62);
+  const need = explode(index, demandForCovers(data.menu, 62)).raw['RM-CAVIAR-STURGEON'].gross;
+  assert.ok(stock.raw['RM-CAVIAR-STURGEON'] >= need * data.service.inventoryPolicy.parFactor - 1e-9);
+  assert.ok(stock.intermediates['INT-BEURRE-MONTE'] >= 2000);
+});
+
+test('staff roster matches role headcounts', () => {
+  for (const r of data.resources.laborRoles) {
+    assert.equal(data.resources.staff.filter((s) => s.role === r.id).length, r.headcount);
+  }
+});
