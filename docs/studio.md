@@ -25,12 +25,12 @@ studio state (config.js) ──compileStudio()──▶ { data: KitchenData, cfg
 - `config.js`: the studio state, dining presets and table layout, the dish pool (house dishes from `/data` plus the catalogue), seasonal swaps, and the share-link encoding.
 - `compile.js`: pure function from studio state plus the adapted `/data` model to the simulation's data and config. Only dishes on the menu (and the prep and ingredients they need) are added.
 - `look.js`: the lighting model. The sun is placed with the NOAA solar-position formulas for Yountville (38.40 N) on a mid-season day, so July is still light at the first seating and January is dark before doors open. Colour temperatures go through a black-body fit.
-- `stage.js`: the studio's Three.js stage: dining room, garden, kitchen shell from `data/layout.json`, sky, sun and moon, ceiling LED field, pin spots, candles, precipitation, and guests seated from the sim's table state.
+- `stage.js`: the studio's layer on the photoreal twin from `src/scene`. The twin renders the kitchen, brigade, garden, sky and sun, and is driven by `bindSim` (cooks, plates, machines, stock) and by its `setLook` and `setDining` hooks. The studio adds the dining room sized to the floor plan (floor, walls, pin spots), candlelight and seasonal flowers, guests seated from the sim's table state, and rain or snow.
 - `ui.js`, `main.js`, `studio.css`: the editor panel and page.
 
 ### Look contract for the 3D scene
 
-`computeLook(look, season)` returns a plain object any renderer can apply; `src/scene` can consume it directly:
+`computeLook(look, season)` returns a plain object any renderer can apply; `stage.js` maps it onto the twin's `setLook`:
 
 ```js
 { hour, season, weather, cloud, daylight,
@@ -48,4 +48,4 @@ npm run dev   # then open http://localhost:5173/studio.html
 npm test      # tests/studio.test.mjs covers compile, seasons, determinism, the dining room, share links and the sun
 ```
 
-Append `?quality=mobile` for smaller shadow maps, fewer candle lights and no glass transmission.
+Render quality uses the twin's tiers (Mobile, Balanced, High, Pro Max), picked from the menu in the top bar or with `?quality=mobile|balanced|high|ultra`; the default is detected from the device.
