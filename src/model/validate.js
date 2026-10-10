@@ -1,6 +1,8 @@
 // Referential-integrity checks for the data model. Returns { errors, warnings }.
 import { buildIndex, EST } from './mrp.js';
 
+const SEASONS = ['spring', 'summer', 'fall', 'winter'];
+
 export function validate(data) {
   const errors = [];
   const warnings = [];
@@ -26,6 +28,9 @@ export function validate(data) {
     if (!['g', 'ea'].includes(it.uom)) errors.push(`item ${it.id}: uom must be g or ea`);
     if (!(it.yieldPct > 0 && it.yieldPct <= 1)) errors.push(`item ${it.id}: yieldPct must be in (0, 1]`);
     if (!storage.has(it.storage)) errors.push(`item ${it.id}: unknown storage ${it.storage}`);
+    const cost = it.uom === 'ea' ? it.costUSDEach : it.costUSDPerKg;
+    if (!(cost > 0)) errors.push(`item ${it.id}: needs ${it.uom === 'ea' ? 'costUSDEach' : 'costUSDPerKg'} > 0`);
+    if (!Array.isArray(it.seasons) || !it.seasons.length || it.seasons.some((x) => !SEASONS.includes(x))) errors.push(`item ${it.id}: seasons must list ${SEASONS.join(', ')}`);
   }
 
   const used = new Set();
@@ -58,6 +63,7 @@ export function validate(data) {
   const onMenu = new Set();
   for (const c of menu.courses) {
     checkSrc(`course ${c.id}`, c.src);
+    if (!(c.eatMin > 0)) errors.push(`course ${c.id}: eatMin must be > 0`);
     if (!workCenters.has(c.fireStation)) errors.push(`course ${c.id}: unknown fire station ${c.fireStation}`);
     const share = c.options.reduce((s, o) => s + o.share, 0);
     if (Math.abs(share - 1) > 1e-9) errors.push(`course ${c.id}: option shares sum to ${share}, expected 1`);
