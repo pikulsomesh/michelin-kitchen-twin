@@ -84,3 +84,29 @@ test('stateAt and PRD event aliases', () => {
   assert.ok(s.tables.some((t) => t.state === 'seated'));
   assert.ok(sim.events.length > 100);
 });
+
+import { readFile } from 'node:fs/promises';
+import { loadKitchenData } from '../src/sim/data/load.js';
+import { scenariosFor } from '../src/sim/scenarios.js';
+
+const real = await loadKitchenData((n) => readFile(new URL(`../data/${n}.json`, import.meta.url), 'utf8').then(JSON.parse));
+
+test('sourced data/ adapts, runs deterministically and serves every guest', () => {
+  const a = createSim({ data: real, seed: 3 }).forecast.snapshot;
+  const b = createSim({ data: real, seed: 3 }).forecast.snapshot;
+  assert.equal(strip(a), strip(b));
+  assert.equal(a.covers.finished + a.covers.noShows, 62);
+  assert.ok(a.done && a.prep.skipped === 0);
+  for (const i of a.inventory) assert.ok(Math.abs(i.start + i.produced - i.used - i.onHand) < 1e-6, i.id);
+  assert.ok(a.kpis.perCourse.every((c) => c.n > 0));
+});
+
+test('data-driven what-ifs (full house, short-staffed, combi down, lobster short, rush)', () => {
+  const sc = scenariosFor(real); assert.equal(sc.length, 5);
+  const cfg = createSim({ data: real }).config;
+  const base = runHeadless(real, cfg);
+  const full = runHeadless(real, { ...cfg, ...sc.find((s) => s.id === 'full-house').apply(cfg) });
+  assert.ok(full.endT > base.endT && full.kpis.ticketP90 > base.kpis.ticketP90);
+  const lob = runHeadless(real, { ...cfg, ...sc.find((s) => s.id === 'supply-shock').apply(cfg) });
+  assert.ok(lob.kpis.stockoutCount + lob.kpis.comps + lob.kpis.subs > 0, 'lobster short bites');
+});

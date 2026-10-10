@@ -7,7 +7,7 @@ export function dishDemand(data, covers) {
   for (const c of data.courses) {
     for (const part of c.parts) {
       const total = part.reduce((s, o) => s + (o.weight ?? 1), 0);
-      for (const o of part) out[o.dish] = (out[o.dish] || 0) + (covers * (o.weight ?? 1)) / total;
+      for (const o of part) if (o.dish) out[o.dish] = (out[o.dish] || 0) + (covers * (o.weight ?? 1)) / total;
     }
   }
   return out;

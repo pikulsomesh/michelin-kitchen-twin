@@ -26,8 +26,10 @@ sim.on('ticket.fired' | 'op.start' | 'op.end' | 'staff.move' | 'machine.state' |
 sim.events; sim.taskLog; sim.forecast;                      // ordered event log, Gantt intervals, full-run result
 ```
 
+Use `loadKitchenData(fetchReader('./data/'))` (browser) or `loadKitchenData(readerFn)` (Node) from `src/sim/data/load.js` to turn the sourced `data/*.json` into sim input via `src/sim/adapter.js`: routings become task chains, `role: null` operations are unattended machine time, intermediates whose lead time cannot fit the prep window (veal stock, corned tongue, foie torchon) are carry-over stock from a previous day, and the data's own seating scenarios and what-ifs are used. Food runners and the dining room are added as estimates, and ingredient costs are category estimates (`meta.estimatedCosts`).
+
 `data` is plain JSON: `ingredients[], prep[], dishes[], courses[], appliances[], stations[], staff[], dining.tables[]` (see `src/sim/data/fallback.js` for the exact shape; the research thread's data can replace it).
 
 Scenarios, comparisons, capacity sweeps and the shift-report CSV are in `src/sim/scenarios.js`. Mount the dashboard with `mountDashboard(el, sim, { onSelect })`; `onSelect` receives `{ type: 'station' | 'ingredient' | 'appliance', id }` so the 3D scene can highlight it.
 
-Run the demo with any static server: `python3 -m http.server` and open `dashboard-demo.html` (query: `covers`, `seed`, `seating`, `speed`, `t`, `play`). Tests: `npm test`; terminal KPI report: `npm run sim:report -- 80`.
+Run the demo with any static server: `python3 -m http.server` and open `dashboard-demo.html` (query: `covers`, `seed`, `seating`, `speed`, `t`, `play`). Tests: `npm test`; terminal KPI report: `npm run sim:report -- 124` (add `1 fallback` for the built-in menu).

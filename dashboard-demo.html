@@ -12,10 +12,13 @@
 <script type="module">
 import { createSim } from './src/sim/sim.js';
 import { buildFallbackData } from './src/sim/data/fallback.js';
+import { loadKitchenData, fetchReader } from './src/sim/data/load.js';
 import { mountDashboard } from './src/dashboard/dashboard.js';
 
 const q = new URLSearchParams(location.search);
-const sim = createSim({ data: buildFallbackData(), covers: +q.get('covers') || 60, seed: +q.get('seed') || 1, seating: q.get('seating') || 'twoTurn' });
+// default: the sourced French Laundry model in data/; ?data=fallback uses the built-in illustrative menu
+const data = q.get('data') === 'fallback' ? buildFallbackData() : await loadKitchenData(fetchReader('./data/'));
+const sim = createSim({ data, ...(q.get('covers') ? { covers: +q.get('covers') } : {}), seed: +q.get('seed') || 1, ...(q.get('seating') ? { seating: q.get('seating') } : {}) });
 sim.setSpeed(+q.get('speed') || 60);
 sim.seek(sim.config.doorsOpen - 600);
 const dash = mountDashboard(document.getElementById('dashboard'), sim);

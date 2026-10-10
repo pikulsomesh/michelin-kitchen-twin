@@ -3,6 +3,7 @@
 import { Engine, DEFAULT_CFG } from './engine.js';
 import { mrpTable, explodeRequirements } from './mrp.js';
 import { fmtClock } from './rng.js';
+import { seatingWindow } from './adapter.js';
 
 export { DEFAULT_CFG, fmtClock, mrpTable, explodeRequirements };
 
@@ -21,7 +22,14 @@ export function createSim({ data, ...cfg } = {}) {
     for (const cb of listeners.get(type) || []) cb(payload);
     for (const cb of listeners.get('*') || []) cb(type, payload);
   };
-  let config = { ...DEFAULT_CFG, ...cfg };
+  /** defaults < data.sim.times/defaultSeating < caller config; times follow the chosen seating scenario */
+  const resolve = (patch, prev = {}) => {
+    const c = { ...DEFAULT_CFG, ...(data.sim ? { covers: data.sim.defaultCovers, seating: data.sim.defaultSeating, prepStart: data.sim.times.prepStart } : {}), ...prev, ...patch };
+    const sc = (data.seatingScenarios || []).find((s) => s.id === c.seating);
+    if (sc) { const [a, b] = seatingWindow(sc); c.doorsOpen = a; c.lastSeating = b; }
+    return c;
+  };
+  let config = resolve(cfg);
   let eng = null; // set below (emit may fire during construction)
   eng = new Engine(data, config, emit);
   let forecast = null;
@@ -79,7 +87,7 @@ export function createSim({ data, ...cfg } = {}) {
     },
     /** re-plan: new cover count / seed / knobs; restarts the service from prep */
     reset(patch = {}) {
-      config = { ...config, ...patch };
+      config = resolve(patch, config);
       muted = true; eng = new Engine(data, config, emit); muted = false;
       computeForecast();
       emit('reset', { config });

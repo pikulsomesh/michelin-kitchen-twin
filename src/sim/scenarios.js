@@ -16,6 +16,21 @@ export const SCENARIOS = [
   { id: 'rush', label: 'Rush seating', blurb: 'Everyone arrives within 30 minutes.', apply: () => ({ seating: 'rush' }) },
 ];
 
+/** Scenario list for a dataset: the data's own what-ifs when present (data.sim.scenarios), else the built-ins. */
+export function scenariosFor(data) {
+  if (!data.sim?.scenarios) return SCENARIOS;
+  return data.sim.scenarios.map((s) => ({
+    id: s.id, label: s.label, blurb: s.blurb,
+    apply: (cfg) => {
+      const p = s.patch; const out = { ...p };
+      if (p.staffOut) out.staffOut = [...new Set([...(cfg.staffOut || []), ...p.staffOut])];
+      if (p.faults) out.faults = [...(cfg.faults || []), ...p.faults];
+      if (p.supply) out.supply = { ...(cfg.supply || {}), ...p.supply };
+      return out;
+    },
+  }));
+}
+
 /** Run a full service headlessly and return its final snapshot (+ series). */
 export function runHeadless(data, cfg) {
   const e = new Engine(data, cfg, () => {});
