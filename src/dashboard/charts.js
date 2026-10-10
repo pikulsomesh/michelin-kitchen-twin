@@ -5,9 +5,21 @@ export const C = {
   good: '#0ca30c', warn: '#fab219', serious: '#ec835a', crit: '#d03b3b',
 };
 
+// Canvas sizes come from a ResizeObserver, so redrawing a chart doesn't
+// force a synchronous layout of the page on every live update.
+const SIZES = new WeakMap();
+const sizer = typeof ResizeObserver === 'function'
+  ? new ResizeObserver((entries) => { for (const e of entries) { const b = e.borderBoxSize?.[0]; SIZES.set(e.target, b ? { width: b.inlineSize, height: b.blockSize } : e.target.getBoundingClientRect()); } })
+  : null;
+function sizeOf(canvas) {
+  let r = SIZES.get(canvas);
+  if (!r) { r = canvas.getBoundingClientRect(); if (sizer) { SIZES.set(canvas, r); sizer.observe(canvas); } }
+  return r;
+}
+
 export function fit(canvas) {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const r = canvas.getBoundingClientRect();
+  const r = sizeOf(canvas);
   const w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
   if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
   const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

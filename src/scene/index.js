@@ -34,7 +34,7 @@ import { Cook } from './cooks.js';
 import { Item } from './items.js';
 import { buildClock, buildPerSeScreen } from './clock.js';
 import { buildContainer } from './ingredients.js';
-import { smooth, lerp } from './kit.js';
+import { smooth, lerp, batchGroup } from './kit.js';
 import { injectStyles } from './styles.js';
 import { TOUR_SHOTS, OVERVIEW, stationShot } from './tour.js';
 import { exportUSDA } from './usd.js';
@@ -155,6 +155,10 @@ export async function createKitchenScene(container, options = {}) {
 
   const site = buildSite(M, plan, nav);
   world.add(site.group);
+  // The canopies and the dining room stay separate objects (hidden from
+  // above, replaceable from Studio) but each draws in a few merged calls.
+  for (const c of site.canopies) if (c.isGroup) batchGroup(c, { deep: true });
+  batchGroup(site.dining, { deep: true });
 
   // Equipment from the layout
   const appliances = new Map();
@@ -362,9 +366,24 @@ export async function createKitchenScene(container, options = {}) {
     crt.dispose(); eq.dispose(); quad.geometry.dispose(); quad.material.dispose();
     return env;
   };
+  // Compile every shader up front, in parallel where the browser supports it
+  // (KHR_parallel_shader_compile), instead of linking them one by one inside
+  // the first renders. Programs depend on the target's colour space and tone
+  // mapping, so compile against an offscreen target like the composer's.
+  const warmTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const precompile = () => {
+    const prev = renderer.getRenderTarget();
+    renderer.setRenderTarget(warmTarget);
+    const ready = renderer.compileAsync(scene, camera);
+    renderer.setRenderTarget(prev);
+    return ready;
+  };
   const studioEnv = scene.environment;
+  await precompile();
   scene.environment = captureProbe();
   scene.environmentIntensity = 0.85;
+  // the probe's environment map has a different size, which is a different program
+  await precompile();
 
   // ------------------------------------------------------------ overlays
   // Utilization aura under each machine (OEE-style heat colouring).
@@ -1093,7 +1112,7 @@ export async function createKitchenScene(container, options = {}) {
     // Replace the dining-room glimpse: [{ id, seats, shape: 'round'|'rect', x, z, rotY (deg) }], x < 0.
     setDining(tables = []) {
       const g = site.dining;
-      for (const c of [...g.children]) g.remove(c);
+      for (const c of [...g.children]) { g.remove(c); if (c.userData.batched) c.geometry.dispose(); }
       for (const t of tables) {
         const m = diningTable(M, t);
         m.position.set(t.x, 0, t.z);
@@ -1101,6 +1120,7 @@ export async function createKitchenScene(container, options = {}) {
         m.userData.table = t.id;
         g.add(m);
       }
+      batchGroup(g, { deep: true });
       return api;
     },
 

@@ -93,6 +93,9 @@ export function mountDashboard(root, sim, opts = {}) {
   root.innerHTML = TEMPLATE;
   const $ = (sel) => root.querySelector(sel);
   const $$ = (sel) => [...root.querySelectorAll(sel)];
+  // view['[data-x]'] = markup: like innerHTML, but skipped when the markup is
+  // the same as last time, which it mostly is between ~9 Hz live updates.
+  const view = new Proxy({}, { set(_, sel, markup) { const el = $(sel); if (el.__markup !== markup) { el.innerHTML = markup; el.__markup = markup; } return true; } });
   const data = sim.data;
   const SCENARIOS = scenariosFor(data);
   const stationName = Object.fromEntries(data.stations.map((s) => [s.id, s.name.replace(/ \(.*\)/, '')]));
@@ -199,12 +202,12 @@ export function mountDashboard(root, sim, opts = {}) {
       ['stockouts', k.stockoutCount, `${k.subs} swapped · ${k.comps} comped`, k.stockoutCount ? ['crit', '✕'] : ['good', '✓']],
       ['wip', k.wip, `${k.openTickets} tickets · ${k.queued} queued · peak ${k.peakWip}`, status(k.queued, 12, 30)],
     ];
-    $('[data-kpis]').innerHTML = tiles.map(([key, val, sub, [lvl, glyph]]) =>
+    view['[data-kpis]'] = tiles.map(([key, val, sub, [lvl, glyph]]) =>
       `<div class="tile ${lvl}"><div class="lbl"><span data-term="${key}">${TERMS[key][state.factory ? 1 : 0]}</span><b class="g">${glyph}</b></div><div class="val">${val}</div><div class="sub">${sub}</div></div>`).join('');
   }
   function renderBanner(st) {
     const b = st.kpis.bottleneck;
-    $('[data-banner]').innerHTML = `<span class="tag"><span data-term="bottleneck">${TERMS.bottleneck[state.factory ? 1 : 0]}</span></span><span class="txt">${esc(state.factory && b.factory && b.key ? b.text.replace(b.label, b.factory) : b.text)}</span>`
+    view['[data-banner]'] = `<span class="tag"><span data-term="bottleneck">${TERMS.bottleneck[state.factory ? 1 : 0]}</span></span><span class="txt">${esc(state.factory && b.factory && b.key ? b.text.replace(b.label, b.factory) : b.text)}</span>`
       + (st.prep.total && st.phase === 'prep' ? `<span class="prep">Prep ${st.prep.done}/${st.prep.total} batches</span>` : '');
   }
 
@@ -256,7 +259,7 @@ export function mountDashboard(root, sim, opts = {}) {
       state.floorHits.push({ x: cx, y: cy, r: Math.max(bw, bh) / 2, rect: [cx - bw / 2, cy - bh / 2, bw, bh], station: s,
         tip: `<b>${esc(s.name)}</b><br>${s.active}/${s.capacity} positions busy · ${s.queue} queued<br>avg wait ${Math.round(s.avgWait)} s · ${s.done} tasks done<br>cooks here: ${crew.map((m) => esc(m.name)).join(', ') || '—'}` });
     }
-    $('[data-floor-legend]').innerHTML = `<i style="background:${C.aqua}"></i>cook working <i style="background:${C.yellow}"></i>walking <i style="background:#5d5c57"></i>idle <i style="background:${C.orange}"></i>appliance in use <i style="background:${C.crit}"></i>down <i style="background:${C.blue}"></i>table seated (ring = course progress) <span class="muted">badge = queued tasks</span>`;
+    view['[data-floor-legend]'] = `<i style="background:${C.aqua}"></i>cook working <i style="background:${C.yellow}"></i>walking <i style="background:#5d5c57"></i>idle <i style="background:${C.orange}"></i>appliance in use <i style="background:${C.crit}"></i>down <i style="background:${C.blue}"></i>table seated (ring = course progress) <span class="muted">badge = queued tasks</span>`;
   }
 
   function seriesPoints(st, f) { return st.series.map((p, i) => [p.t, f(p, i)]); }
@@ -318,7 +321,7 @@ export function mountDashboard(root, sim, opts = {}) {
 
   function renderRail(st) {
     const list = st.tickets.slice(0, 16);
-    $('[data-rail]').innerHTML = list.length ? list.map((t) => `<div class="tk ${t.late ? 'late' : t.age > 600 ? 'old' : ''}"><div class="h"><b>${esc(t.table)}</b><span>${esc(t.course)}</span><em>${mmss(t.age)}</em></div>
+    view['[data-rail]'] = list.length ? list.map((t) => `<div class="tk ${t.late ? 'late' : t.age > 600 ? 'old' : ''}"><div class="h"><b>${esc(t.table)}</b><span>${esc(t.course)}</span><em>${mmss(t.age)}</em></div>
       <div class="ls">${t.lines.map((l) => `<span class="${l.done ? 'ok' : ''}">${l.done ? '✓' : '◦'} ${l.qty}× ${esc(l.dish)}</span>`).join('')}</div>${t.passed ? '<div class="st">at the pass → runner</div>' : ''}</div>`).join('')
       + (st.tickets.length > 16 ? `<div class="muted">+${st.tickets.length - 16} more</div>` : '') : `<p class="muted">No tickets on the rail.</p>`;
   }
@@ -330,7 +333,7 @@ export function mountDashboard(root, sim, opts = {}) {
     items = items.map((i) => ({ ...i, frac: svc ? (i.atOpen > 0 && st.t >= open ? i.onHand / i.atOpen : (i.produced ? i.onHand / i.produced : 1)) : (i.start ? i.onHand / i.start : 0) }));
     items.sort((a, b) => a.frac - b.frac);
     const rate = (i) => (st.t > open + 600 ? Math.max(0, (i.atOpen - i.onHand) / (st.t - open)) : 0);
-    $('[data-inv-table]').innerHTML = `<thead><tr><th>Item</th><th>On hand</th><th></th><th>Status</th></tr></thead><tbody>${items.slice(0, 70).map((i) => {
+    view['[data-inv-table]'] = `<thead><tr><th>Item</th><th>On hand</th><th></th><th>Status</th></tr></thead><tbody>${items.slice(0, 70).map((i) => {
       const r = svc ? rate(i) : 0; const eta = r > 0 && i.onHand > 0 ? st.t + i.onHand / r : null; const out = i.onHand <= 0.001 && i.stockouts > 0;
       const used = !svc && i.onHand <= 0.001 && !i.stockouts;
       const lvl = out || i.stockouts ? 'crit' : used ? 'good' : i.frac < 0.2 ? 'warn' : 'good'; const word = i.stockouts ? (i.onHand > 0 ? '86 risk' : 'OUT') : used ? 'issued to prep' : i.frac < 0.2 ? 'LOW' : 'OK';
@@ -344,7 +347,7 @@ export function mountDashboard(root, sim, opts = {}) {
   function renderOee(st) {
     const rows = [...st.appliances].sort((a, b) => b.roll - a.roll || a.id.localeCompare(b.id));
     const mini = (v) => `<span class="mini"><i style="width:${Math.round(v * 100)}%"></i></span>`;
-    $('[data-oee-table]').innerHTML = `<thead><tr><th>${state.factory ? 'Machine' : 'Appliance'}</th><th>Load</th><th>A</th><th>P</th><th>Q</th><th>OEE</th></tr></thead><tbody>${rows.map((a) => `<tr data-app="${a.id}" class="${a.up ? '' : 'down'} ${state.sel?.id === a.id ? 'sel' : ''}">
+    view['[data-oee-table]'] = `<thead><tr><th>${state.factory ? 'Machine' : 'Appliance'}</th><th>Load</th><th>A</th><th>P</th><th>Q</th><th>OEE</th></tr></thead><tbody>${rows.map((a) => `<tr data-app="${a.id}" class="${a.up ? '' : 'down'} ${state.sel?.id === a.id ? 'sel' : ''}">
       <td>${esc(a.name.replace(/ \(.*\)/, ''))} <span class="muted">${a.id.split('_').pop()}</span>${a.up ? '' : ' <b class="st-crit">✕ DOWN</b>'}</td>
       <td>${mini(a.roll)}<span class="num">${a.inUse}/${a.capacity}</span></td><td class="num">${pctf(a.availability)}</td><td class="num">${pctf(a.performance)}</td><td class="num">${pctf(a.quality)}</td><td class="num"><b>${pctf(a.oee)}</b></td></tr>`).join('')}</tbody>`;
   }
@@ -352,7 +355,7 @@ export function mountDashboard(root, sim, opts = {}) {
   function renderMrp() {
     const t = sim.mrp(); const inv = sim.state.inventory; const by = Object.fromEntries(inv.map((i) => [i.id, i]));
     const rows = t.map((r) => ({ ...r, have: by[r.id]?.start ?? r.onHand })).sort((a, b) => (b.required - b.have > 0) - (a.required - a.have > 0) || b.required * b.cost - a.required * a.cost).slice(0, 40);
-    $('[data-mrp-table]').innerHTML = `<thead><tr><th>Ingredient</th><th>Needed</th><th>Stocked</th><th>Status</th></tr></thead><tbody>${rows.map((r) => {
+    view['[data-mrp-table]'] = `<thead><tr><th>Ingredient</th><th>Needed</th><th>Stocked</th><th>Status</th></tr></thead><tbody>${rows.map((r) => {
       const short = Math.max(0, r.required - r.have); const f = (v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : Math.round(v));
       return `<tr><td>${esc(r.name)}</td><td class="num">${f(r.required)} ${r.unit}</td><td class="num">${f(r.have)}</td><td class="${short > 0 ? 'st-crit' : 'st-good'}">${short > 0 ? `✕ short ${f(short)}` : '✓ covered'}</td></tr>`;
     }).join('')}</tbody>`;
@@ -360,7 +363,7 @@ export function mountDashboard(root, sim, opts = {}) {
 
   function renderLog(st) {
     const COL = { fault: C.crit, stockout: C.crit, '86': C.crit, qc: C.warn, ticket: C.blue, served: C.aqua, service: C.violet, prep: C.aqua, seat: C.ink2, staff: C.muted, res: C.muted };
-    $('[data-log]').innerHTML = st.log.slice(-60).reverse().map((e) => `<div><time>${hhmm(e.t)}</time><i style="background:${COL[e.type] || C.muted}"></i>${esc(e.msg)}</div>`).join('');
+    view['[data-log]'] = st.log.slice(-60).reverse().map((e) => `<div><time>${hhmm(e.t)}</time><i style="background:${COL[e.type] || C.muted}"></i>${esc(e.msg)}</div>`).join('');
   }
 
   // ---------------------------------------------------------------- hover wiring

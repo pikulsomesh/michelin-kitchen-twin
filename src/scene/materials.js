@@ -30,17 +30,23 @@ function heightToNormal(src, strength = 2) {
   const out = makeCanvas(w);
   const ctx = out.getContext('2d');
   const img = ctx.createImageData(w, h);
-  const H = (x, y) => sd[(((y + h) % h) * w + ((x + w) % w)) * 4] / 255;
+  // Same maths as sampling with wrapped (x, y), with the wrap and the /255
+  // hoisted out of the per-pixel loop: this runs on ~3M pixels at startup.
+  const H = new Float64Array(w * h);
+  for (let i = 0; i < w * h; i++) H[i] = sd[i * 4] / 255;
+  const out8 = img.data;
   for (let y = 0; y < h; y++) {
+    const row = y * w, up = ((y + 1) % h) * w, down = ((y - 1 + h) % h) * w;
     for (let x = 0; x < w; x++) {
-      const dx = (H(x + 1, y) - H(x - 1, y)) * strength;
-      const dy = (H(x, y + 1) - H(x, y - 1)) * strength;
+      const xr = x + 1 === w ? 0 : x + 1, xl = x === 0 ? w - 1 : x - 1;
+      const dx = (H[row + xr] - H[row + xl]) * strength;
+      const dy = (H[up + x] - H[down + x]) * strength;
       const nz = 1 / Math.sqrt(dx * dx + dy * dy + 1);
-      const i = (y * w + x) * 4;
-      img.data[i] = (-dx * nz * 0.5 + 0.5) * 255;
-      img.data[i + 1] = (dy * nz * 0.5 + 0.5) * 255;
-      img.data[i + 2] = nz * 255;
-      img.data[i + 3] = 255;
+      const i = (row + x) * 4;
+      out8[i] = (-dx * nz * 0.5 + 0.5) * 255;
+      out8[i + 1] = (dy * nz * 0.5 + 0.5) * 255;
+      out8[i + 2] = nz * 255;
+      out8[i + 3] = 255;
     }
   }
   ctx.putImageData(img, 0, 0);
