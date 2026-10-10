@@ -41,3 +41,13 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
 @media (max-width: 720px) {
   #panel { top: auto; height: 46%; right: 16px; left: 16px; width: auto; }
 }
+
+/* About popover on the HUD brand */
+.about { position: relative; }
+.about summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; }
+.about summary::-webkit-details-marker { display: none; }
+.about-pop { position: absolute; top: calc(100% + 10px); left: 0; z-index: 30; width: min(360px, calc(100vw - 32px)); display: grid; gap: 8px; padding: 14px 16px; background: rgba(14, 15, 17, 0.96); border: 1px solid var(--line); border-radius: 12px; font-size: 12.5px; line-height: 1.45; }
+.about-pop p { margin: 0 0 4px; color: var(--text); }
+.about-pop a { color: var(--accent); text-decoration: none; } .about-pop a:hover { text-decoration: underline; }
+.about-pop small { color: var(--muted); font-size: 11px; margin-top: 4px; }
+a.dbtn { text-decoration: none; display: inline-flex; align-items: center; }

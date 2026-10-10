@@ -15,7 +15,18 @@
       <div id="twin" aria-label="3D view of the kitchen"></div>
 
       <header class="hud" aria-label="Service">
-        <div class="hud-brand"><span class="mark">◆</span><div><b>The French Laundry</b><small>Kitchen digital twin</small></div></div>
+        <details class="hud-brand about">
+          <summary><span class="mark">◆</span><div><b>The French Laundry</b><small>Kitchen digital twin · about</small></div></summary>
+          <div class="about-pop">
+            <p>A three-Michelin-star dinner service run like a factory: the covers booked are the build plan, every recipe is a bill of materials and a routing, and a discrete-event simulation drives the brigade, the machines and the stock you see. Built with Claude, entirely in the browser.</p>
+            <a href="./studio.html">Studio: change the menu, season, dining room and mood</a>
+            <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/data-model.md" target="_blank" rel="noopener">How the data was built, with sources</a>
+            <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/simulation.md" target="_blank" rel="noopener">How the simulation works</a>
+            <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/nvidia.md" target="_blank" rel="noopener">Path to NVIDIA Omniverse and Isaac Sim</a>
+            <a href="https://github.com/pikulsomesh/michelin-kitchen-twin" target="_blank" rel="noopener">Source code</a>
+            <small>Independent portfolio project, not affiliated with The French Laundry, Thomas Keller Restaurant Group or the Michelin Guide. Layout, staffing and timings are partly estimated.</small>
+          </div>
+        </details>
         <div class="hud-clock"><span data-clock>--:--</span><span class="pill" data-phase>loading</span></div>
         <div class="hud-stats" data-stats></div>
         <div class="hud-transport">
@@ -37,6 +48,8 @@
         </select>
         <select class="dsel" data-quality aria-label="Render quality"></select>
         <button class="dbtn" data-act="usd" title="Download the plant as OpenUSD for NVIDIA Omniverse / Isaac Sim">USD ⤓</button>
+        <a class="dbtn" href="./studio.html" title="Customize the menu, season, dining room, lighting and mood">Studio</a>
+        <button class="dbtn" data-act="share" title="Copy a link to this exact moment of service">Share</button>
         <button class="dbtn primary" data-act="drawer" title="Operations dashboard and production plan">Operations</button>
       </nav>
 
