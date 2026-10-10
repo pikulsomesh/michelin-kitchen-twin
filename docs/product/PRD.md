@@ -41,13 +41,13 @@ A toggle in the UI ("Kitchen terms / Factory terms") swaps every label in the da
 ### P0: must ship for the first public link
 1. **Cinematic opening (first 10 seconds).** Page loads straight into a slow dolly shot across the live kitchen mid-service: steam, flame, cooks moving, tickets on the rail. One overlay line ("A three-Michelin-star dinner service, simulated as a factory.") and one button: **Run tonight's service**. Loader shows progress and lands on the shot, not a menu screen.
 2. **Realistic kitchen scene.** Line, pass, walk-in, pastry corner, dish pit. PBR stainless, tile, wood, copper; HDRI or baked lighting; contact shadows; steam/flame particles; ingredients visible at stations (hotel pans of mise en place). Quality toggle (High / Balanced / Mobile).
-3. **Menu and covers selector.** Pick courses from the published tasting menu (default: the full menu), set covers (default 60; range 1 to 200), set seating curve (default: two turns, 5:30 and 8:00 pm).
+3. **Menu and covers selector.** Pick courses from the published tasting menu (default: the full menu), set covers (default 62, the published seat count; range 1 to 400), set seating curve (default: two turns, 5:30 and 8:00 pm).
 4. **Deterministic discrete-event simulation.** Tickets, course firing, cook and machine scheduling, travel time between stations, inventory draw-down. Seeded; same inputs, same result. Runs faster than real time (1x to 60x, pause, step).
 5. **Live operations dashboard.** Covers served, plates/hour, average and p90 ticket time per course, station and machine utilization, OEE per machine (availability x performance x quality), current bottleneck with a one-sentence reason, labor utilization.
 6. **Real-time inventory.** Every ingredient's on-hand quantity draining live, with par levels, projected stockout time, and an "86" warning. Click an ingredient to see it highlighted in the walk-in and at the stations using it.
 7. **Timeline scrubber.** Scrub the whole service; the 3D scene, dashboard and inventory all jump to that moment.
 8. **What-if scenarios (one click each).** Each runs instantly and shows a before/after delta on the KPIs:
-   - **Full house:** covers 60 -> 120.
+   - **Full house:** covers 62 -> 124.
    - **Short-staffed:** remove one cook (choose station).
    - **Oven down:** a combi oven fails at 8:15 pm for 30 minutes.
    - **Supply shock:** lobster delivery short by 40%.
