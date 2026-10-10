@@ -30,4 +30,4 @@ sim.events; sim.taskLog; sim.forecast;                      // ordered event log
 
 Scenarios, comparisons, capacity sweeps and the shift-report CSV are in `src/sim/scenarios.js`. Mount the dashboard with `mountDashboard(el, sim, { onSelect })`; `onSelect` receives `{ type: 'station' | 'ingredient' | 'appliance', id }` so the 3D scene can highlight it.
 
-Run the demo with any static server: `python3 -m http.server` and open `dashboard-demo.html` (query: `covers`, `seed`, `seating`, `speed`, `t`, `play`). Tests: `node --test test/`.
+Run the demo with any static server: `python3 -m http.server` and open `dashboard-demo.html` (query: `covers`, `seed`, `seating`, `speed`, `t`, `play`). Tests: `npm test`; terminal KPI report: `npm run sim:report -- 80`.
