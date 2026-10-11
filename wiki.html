@@ -197,14 +197,15 @@
 │   ├── data.js            <span class="c"># bundles /data for the browser</span>
 │   ├── panel.js           <span class="c"># production plan drawer and equipment details</span>
 │   ├── <span class="d">model/</span>             <span class="c"># mrp.js (BOM explosion, load), validate.js</span>
-│   ├── <span class="d">sim/</span>               <span class="c"># engine.js, sim.js, adapter.js, mrp.js, scenarios.js, rng.js, data/</span>
+│   ├── <span class="d">sim/</span>               <span class="c"># engine.js, sim.js, adapter.js, mrp.js, scenarios.js, rng.js, data/,</span>
+│   │                      <span class="c">#   optimize.js, precomputed.js, precomputed.data.js</span>
 │   ├── <span class="d">scene/</span>             <span class="c"># Three.js twin: index, bind, quality, room, equipment, appliances,</span>
 │   │                      <span class="c">#   cooks, items, ingredients, materials, nav, plan, sky, tour, clock, usd</span>
-│   ├── <span class="d">dashboard/</span>         <span class="c"># dashboard.js, plan.js, charts.js, terms.js, page.js</span>
+│   ├── <span class="d">dashboard/</span>         <span class="c"># dashboard.js, plan.js, optimizer.js, charts.js, terms.js, page.js</span>
 │   ├── <span class="d">studio/</span>            <span class="c"># catalog, config, compile, look, stage, ui, main</span>
 │   └── <span class="d">wiki/</span>              <span class="c"># this page's script and styles</span>
-├── <span class="d">scripts/</span>               <span class="c"># validate, plan, sim-report (Node CLIs over the same modules)</span>
-├── <span class="d">tests/</span>                 <span class="c"># model, sim and studio tests (node --test)</span>
+├── <span class="d">scripts/</span>               <span class="c"># validate, plan, sim-report, precompute (Node CLIs over the same modules)</span>
+├── <span class="d">tests/</span>                 <span class="c"># model, sim, studio and optimizer tests (node --test)</span>
 ├── <span class="d">docs/</span>                  <span class="c"># data model, simulation, Studio, NVIDIA path, PRD and PR-FAQ</span>
 └── <span class="d">.github/workflows/</span>     <span class="c"># ci.yml (PRs and main), pages.yml (deploy)</span></div>
         </section>
@@ -313,7 +314,31 @@ sim.events; sim.taskLog; sim.forecast;    // event log, Gantt intervals, full-ru
             </tbody>
           </table></div>
           <p>The capacity sweep marks the knee as the first cover count where guest wait p90 passes 10 minutes, and names the resource that blocked work the most at that load.</p>
-          <div class="note pending" data-scenarios-note>Precomputed scenarios and an optimizer are being added in a parallel workstream. This section will describe them once they ship.</div>
+          <h3>The optimizer</h3>
+          <p>A tasting menu has a target length (195 minutes here). When guests sit longer than that, the overrun is the twin's equivalent of missed takt time. <code>src/sim/optimize.js</code> searches two levers that shorten it:</p>
+          <ul>
+            <li><b>An extra cook</b>, cloned from one of the brigade with the same roles, station and shift (one candidate per line role). In the engine this is <code>cfg.extraStaff: [{ like: staffId }]</code>.</li>
+            <li><b>A re-sequenced fire</b>: expo calls each course earlier, by a larger share of its slowest dish's lead time (<code>fireLead</code>, 1× to 1.5×, today 0.9×) plus a longer fixed buffer (<code>leadSec</code>, 75 to 225 s), so plates reach the pass as guests are ready.</li>
+          </ul>
+          <p>Every candidate re-runs the whole night on five seeds and is ranked on the average, so one lucky night cannot win. The two best cooks and the two best fire settings are then combined, since the levers are independent and often stack. Guards flag any plan that wins on meal time by hurting something else: first-pass yield falling more than a point, ticket p90 or table-wait p90 rising more than two minutes, or more guests walking away. The recommendation is the least invasive plan that passes the guards and meets the target: re-sequencing before extra labor, smaller changes first.</p>
+          <figure>
+            <svg class="dg" viewBox="0 0 866 112" role="img" aria-labelledby="dg5t">
+              <title id="dg5t">Optimizer: generate candidates, run each on five seeds, combine the best, apply guards, recommend the least invasive plan that meets the target.</title>
+              <defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" /></marker></defs>
+              <rect class="box sim" x="14" y="24" width="150" height="64" rx="10" /><text class="h" x="28" y="50">Candidates</text><text class="s" x="28" y="70">+1 cook per role, fire grid</text>
+              <rect class="box sim" x="186" y="24" width="150" height="64" rx="10" /><text class="h" x="200" y="50">Run × 5 seeds</text><text class="s" x="200" y="70">headless, averaged</text>
+              <rect class="box sim" x="358" y="24" width="150" height="64" rx="10" /><text class="h" x="372" y="50">Combine</text><text class="s" x="372" y="70">best 2 cooks × best 2 fires</text>
+              <rect class="box sim" x="530" y="24" width="150" height="64" rx="10" /><text class="h" x="544" y="50">Guards</text><text class="s" x="544" y="70">yield, tickets, waits</text>
+              <rect class="box view" x="702" y="24" width="150" height="64" rx="10" /><text class="h" x="716" y="50">Recommend</text><text class="s" x="716" y="70">least invasive, on target</text>
+              <path class="arr" d="M164 56H184" marker-end="url(#ah5)" /><path class="arr" d="M336 56H356" marker-end="url(#ah5)" /><path class="arr" d="M508 56H528" marker-end="url(#ah5)" /><path class="arr" d="M680 56H700" marker-end="url(#ah5)" />
+            </svg>
+          </figure>
+          <h3>Precomputed scenarios</h3>
+          <p>Optimizing one night is a few hundred full-service runs, so the site ships the answers. <code>npm run precompute</code> (<code>scripts/precompute.mjs</code>) optimizes 40, 62, 90 and 120 guests and writes <code>src/sim/precomputed.data.js</code>: each night's KPIs, every candidate ranked, and the recommended plan. <code>src/sim/precomputed.js</code> keys it by a hash of the simulation input, so if <code>/data</code> or the engine changes the site falls back to live runs, and <code>tests/optimizer.test.mjs</code> fails until the file is regenerated. The same file holds each precomputed night's end time, so <code>createSim({ cache })</code> skips the forecast run when one of them is loaded.</p>
+          <p class="muted">The table below is read from the precomputed file shipped with this site (average of five seeds).</p>
+          <div class="tw" data-library></div>
+          <h3>Where you see it</h3>
+          <p>The <b>Service scenarios and optimizer</b> panel (<code>src/dashboard/optimizer.js</code>) sits in the dashboard, on <a href="./dashboard.html">dashboard.html</a> and in the Operations drawer of the 3D twin. The <b>Scenarios</b> button in the dock opens the drawer at that panel. Pick a guest count to see its ranked plans and load one onto the twin; a night that is not precomputed can be optimized live, on fewer seeds. A loaded plan is part of the share link (<code>cook</code>, <code>fire</code>, <code>lead</code>).</p>
         </section>
 
         <!-- ============================================================ scene -->
@@ -388,6 +413,7 @@ twin.exportUSD();</code></pre>
               <tr><td>Quality</td><td>Auto, Low, Medium, High or Pro Max</td></tr>
               <tr><td>Click anything</td><td>Picks a machine or ingredient: highlights it, shows its details and selects it in the dashboard</td></tr>
               <tr><td>USD ⤓, Share, Studio</td><td>See <a href="#usd">OpenUSD export</a>, <a href="#share">Share links</a> and <a href="#studio">Studio</a></td></tr>
+              <tr><td>Scenarios</td><td>Opens the drawer at the scenarios and optimizer panel</td></tr>
               <tr><td>Operations</td><td>Opens a drawer with the live dashboard and the production plan, side by side with the 3D view</td></tr>
               <tr><td><kbd>Space</kbd></td><td>Play or pause</td></tr>
             </tbody>
@@ -416,6 +442,7 @@ twin.exportUSD();</code></pre>
               <tr><td>Plan the night</td><td>Guests, orders, stock and timing tabs that build a config patch and re-run the night from the same seed</td></tr>
               <tr><td>Guests: the dining-room line</td><td>In the house, waiting and walked away; course gaps against target</td></tr>
               <tr><td>What if…</td><td>One-click scenarios with before and after on every KPI</td></tr>
+              <tr><td>Service scenarios and optimizer</td><td>Precomputed nights for 40 to 120 guests, the optimizer's ranked plans, and a button to load one onto the twin</td></tr>
               <tr><td>Rated capacity</td><td>The 20 to 200 cover sweep and its knee</td></tr>
               <tr><td>Mise en place and ordering</td><td>The MRP table and the shift report as CSV</td></tr>
               <tr><td>Kitchen log</td><td>Every ticket fired, seating, stockout and breakdown, in plain words</td></tr>
@@ -452,10 +479,11 @@ twin.exportUSD();</code></pre>
               <tr><td><code>seed</code></td><td>Random seed for the night</td></tr>
               <tr><td><code>t</code></td><td>Hours after doors open</td></tr>
               <tr><td><code>speed</code>, <code>play</code></td><td>Playback speed, and <code>play=0</code> to open paused</td></tr>
+              <tr><td><code>cook</code>, <code>fire</code>, <code>lead</code></td><td>Optimizer levers: extra cooks cloned from these staff ids, the fire lead share, and the fire buffer in seconds</td></tr>
               <tr><td><code>intro</code>, <code>quality</code></td><td><code>intro=0</code> skips the crane shot; <code>quality</code> forces a level</td></tr>
             </tbody>
           </table></div>
-          <p>Example: <a href="./?covers=120&amp;seating=rush&amp;t=1.5">?covers=120&amp;seating=rush&amp;t=1.5</a> opens a rush seating for 120 covers an hour and a half after the doors open. A re-plan from the dashboard keeps the address bar in sync. Studio encodes its whole setup (dining room, menu, season, look) as base64 JSON in the hash, <code>#s=…</code>, so "62 seats, winter à la carte, candlelit" is a link.</p>
+          <p>Example: <a href="./?covers=120&amp;seating=rush&amp;t=1.5">?covers=120&amp;seating=rush&amp;t=1.5</a> opens a rush seating for 120 covers an hour and a half after the doors open, and <a href="./?covers=120&amp;cook=ST-SOUS-CHEF-1&amp;fire=1.5&amp;lead=225">?covers=120&amp;cook=ST-SOUS-CHEF-1&amp;fire=1.5&amp;lead=225</a> opens 120 covers on the optimizer's plan. A re-plan from the dashboard keeps the address bar in sync. Studio encodes its whole setup (dining room, menu, season, look) as base64 JSON in the hash, <code>#s=…</code>, so "62 seats, winter à la carte, candlelit" is a link.</p>
         </section>
 
         <!-- ============================================================ usd -->
@@ -494,6 +522,7 @@ npm run validate         # every id reference in /data resolves; option shares s
 npm test                 # planner, engine and Studio tests (node --test)
 npm run plan -- 62       # production plan for 62 covers in the terminal
 npm run sim:report -- 124  # simulated KPIs for 124 covers
+npm run precompute       # re-run the optimizer and rewrite src/sim/precomputed.data.js
 npm run build            # static site in dist/</code></pre>
           <p>Vite builds four HTML entries and serves them under <code>/michelin-kitchen-twin/</code>, the repository's Pages path. The tests check that the planner reproduces the published Oysters and Pearls quantities, that the engine is deterministic for a seed, replays identically after a backwards seek, serves every guest and keeps inventory balanced, that each what-if moves the KPIs it should, and that Studio's compile, seasons, share links and sun position behave.</p>
         </section>
@@ -506,6 +535,7 @@ npm run build            # static site in dist/</code></pre>
             <li><b>Fewer draw calls.</b> Static meshes are merged per material and the brigade's limbs are batched, so the kitchen renders in a small number of draw calls.</li>
             <li><b>Event-driven simulation.</b> The engine only computes when something happens, and the scene re-reads it at 6 Hz while tweening in between.</li>
             <li><b>Adaptive quality.</b> Auto starts from the GPU and steps down if the frame rate stays low; Pro Max only accumulates while the camera rests.</li>
+            <li><b>Precomputed answers.</b> The optimizer's results for four guest counts ship with the site, and cached nights skip their forecast run.</li>
             <li><b>Headless re-runs.</b> Studio, what-ifs and the capacity sweep re-run the full night without rendering, yielding to the UI between runs.</li>
           </ul>
         </section>
@@ -520,6 +550,7 @@ npm run build            # static site in dist/</code></pre>
               <tr><td>Product</td><td>The PR-FAQ and PRD: who the twin is for, the two-minute demo, what "realistic" means</td></tr>
               <tr><td>Research and data model</td><td><code>data/</code>, the sources, the MRP explosion, the site shell and the Pages deploy</td></tr>
               <tr><td>Simulation</td><td><code>src/sim</code> and <code>src/dashboard</code>: the engine, the guest line, what-ifs, capacity and the dashboard</td></tr>
+              <tr><td>Scenarios and optimizer</td><td><code>optimize.js</code>, the precomputed library and the dashboard panel</td></tr>
               <tr><td>Realistic 3D kitchen</td><td><code>src/scene</code>: materials, the building, cooks, quality levels, OpenUSD export</td></tr>
               <tr><td>Studio</td><td><code>src/studio</code>: dining room, menus, seasons, light and mood</td></tr>
             </tbody>
@@ -535,7 +566,7 @@ npm run build            # static site in dist/</code></pre>
             <li>Portions for courses without a published recipe, operation times not stated in a recipe, brigade size and shifts, equipment positions and slot counts, ingredient prices and eating times are estimates, marked <code>est</code> in the data.</li>
             <li>The layout follows the published concept and dimensions but is a reconstruction, not a survey.</li>
             <li>Labor load counts routed operations only; tasting, cleaning down, family meal and the chef's walkthrough are not modelled, so real utilization is higher.</li>
-            <li>Dispatching uses simple rules rather than an optimal schedule.</li>
+            <li>Dispatching uses simple priority rules. The optimizer searches staffing and fire-timing levers over whole nights; it does not solve for an optimal schedule of every operation.</li>
           </ul>
           <p class="muted">An independent, non-commercial portfolio project built from public information. Not affiliated with or endorsed by The French Laundry, Thomas Keller Restaurant Group, the Michelin Guide or NVIDIA.</p>
         </section>

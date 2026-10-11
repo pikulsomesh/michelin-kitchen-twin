@@ -1,7 +1,8 @@
 // The engineering wiki. The prose is static HTML in wiki.html; this script
-// fills the numbers and the bibliography from the same /data the twin runs on,
-// so the page cannot drift from the model, and drives the table of contents.
+// fills the numbers, the bibliography and the optimizer results from the same /data and precomputed
+// library the twin runs on, so the page cannot drift from the model, and drives the table of contents.
 import { data } from '../data.js';
+import LIBRARY from '../sim/precomputed.data.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -43,6 +44,15 @@ const usedBy = new Map();
 for (const rec of allRecords) for (const s of rec.src || []) usedBy.set(s, (usedBy.get(s) || 0) + 1);
 $('[data-sources]').innerHTML = `<table><thead><tr><th>Source</th><th>Publisher</th><th>Records citing it</th></tr></thead><tbody>${
   sources.sources.map((s) => `<tr><td>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>` : esc(s.title)}</td><td class="muted">${esc(s.publisher || s.author || '')}</td><td>${usedBy.get(s.id) || 0}</td></tr>`).join('')
+}</tbody></table>`;
+
+// ------------------------------------------------------------ precomputed scenarios
+const mins = (sec) => `${Math.round(sec / 60)} min`;
+$('[data-library]').innerHTML = `<table><thead><tr><th>Guests</th><th>Meal today</th><th>Target</th><th>Recommended plan</th><th>Meal on the plan</th></tr></thead><tbody>${
+  LIBRARY.scenarios.map((sc) => {
+    const rec = sc.candidates.find((c) => c.id === sc.recommended);
+    return `<tr><td>${sc.covers}</td><td>${mins(sc.baselineMean.mealAvg)}</td><td>${mins(sc.target)}</td><td>${rec ? esc(rec.label) : '<span class="muted">none needed</span>'}</td><td>${rec ? mins(rec.mean.mealAvg) : '–'}</td></tr>`;
+  }).join('')
 }</tbody></table>`;
 
 // ------------------------------------------------------------ table of contents
