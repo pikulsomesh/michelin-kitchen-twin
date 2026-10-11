@@ -121,7 +121,10 @@ export function bindSim(twin, sim, { syncHz = 6 } = {}) {
     errand.set(p.staff, true);
     try {
       for (const id of ids.slice(1)) twin.pickUpItem(id, p.staff);
-      await twin.moveItem(ids[0], 'dining', { carriedBy: p.staff });
+      const to = p.table ? `table:${p.table}` : 'dining';
+      await twin.moveItem(ids[0], to, { carriedBy: p.staff });
+      for (const id of ids.slice(1)) twin.moveItem(id, to, { seconds: 0.5 });
+      await new Promise((r) => setTimeout(r, 1500)); // leave the course on the table for a beat
     } catch { /* interrupted by a seek */ } finally {
       for (const id of ids) twin.removeItem(id);
       errand.delete(p.staff);

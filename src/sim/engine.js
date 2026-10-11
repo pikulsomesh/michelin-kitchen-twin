@@ -520,7 +520,8 @@ export class Engine {
       start: now + walk, end: now + walk + durActual, free: now + walk + attendActual, ticket: t.line?.ticket.id || null, course: t.line?.ticket.courseId || null,
       courseIdx: t.line?.ticket.course ?? null, dish: t.line?.dish.id || null, wait });
     this.emit('task:start', { task: t.id, name: t.name, kind: t.kind, station: t.station, appliance: appl?.id || null, staff: staff?.id || null,
-      dish: t.line?.dish.id || null, ticket: t.line?.ticket.id || null, start: t.startAt, end: t.endAt });
+      dish: t.line?.dish.id || null, ticket: (t.line?.ticket ?? (t.kind === 'run' ? t.ticket : null))?.id || null,
+      table: (t.line?.ticket ?? (t.kind === 'run' ? t.ticket : null))?.table || null, start: t.startAt, end: t.endAt });
     if (staff) {
       this.at(now + walk, () => { if (staff.task === t) staff.state = 'working'; });
       this.at(now + walk + attendActual, () => this.#freeStaff(staff, t));

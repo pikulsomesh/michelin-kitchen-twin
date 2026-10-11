@@ -168,7 +168,32 @@ export async function createKitchenScene(container, options = {}) {
   // The canopies and the dining room stay separate objects (hidden from
   // above, replaceable from Studio) but each draws in a few merged calls.
   for (const c of site.canopies) if (c.isGroup) batchGroup(c, { deep: true });
+  // Where each dining table stands, read before batching merges its parts.
+  let diningTables = [];
+  const readTables = () => {
+    site.dining.updateMatrixWorld(true);
+    diningTables = site.dining.children.map((t) => {
+      const b = new THREE.Box3().setFromObject(t);
+      return { id: t.userData.table || t.name.replace(/^Table_/, ''), x: (b.min.x + b.max.x) / 2, z: (b.min.z + b.max.z) / 2, hx: (b.max.x - b.min.x) / 2, hz: (b.max.z - b.min.z) / 2, plates: 0 };
+    });
+  };
+  readTables();
   batchGroup(site.dining, { deep: true });
+  // The room shows a few of the restaurant's tables; any other sim table is served at one of them.
+  const tableFor = (id) => {
+    if (!diningTables.length) return null;
+    const exact = diningTables.find((t) => t.id === id);
+    if (exact) return exact;
+    const n = parseInt(String(id).replace(/\D/g, ''), 10);
+    return diningTables[((Number.isFinite(n) ? n - 1 : 0) % diningTables.length + diningTables.length) % diningTables.length];
+  };
+  // the runner stands at the side of the table that faces the kitchen door
+  const tableSide = (t) => {
+    let ux = SITE.dining.spot[0] - t.x, uz = SITE.dining.spot[1] - t.z;
+    const len = Math.hypot(ux, uz) || 1; ux /= len; uz /= len;
+    const d = Math.abs(ux) * t.hx + Math.abs(uz) * t.hz + 0.3;
+    return { ux, uz, x: t.x + ux * d, z: t.z + uz * d };
+  };
 
   // Equipment from the layout
   const appliances = new Map();
@@ -520,6 +545,13 @@ export async function createKitchenScene(container, options = {}) {
     if (Array.isArray(target)) return { x: target[0], z: target[1], face: target[2] ?? null };
     if (target && typeof target === 'object' && 'x' in target) return { x: target.x, z: target.z, face: target.face ?? null };
     if (target === 'dining' || target === 'dining-room') return { x: SITE.dining.spot[0], z: SITE.dining.spot[1], face: -Math.PI / 2 };
+    if (typeof target === 'string' && target.startsWith('table:')) {
+      const t = tableFor(target.slice(6));
+      if (!t) return resolveTarget('dining', cookId);
+      const s = tableSide(t);
+      const [px, pz] = nav.center(...nav.nearestFree(nav.col(s.x), nav.row(s.z)));
+      return { x: px, z: pz, face: Math.atan2(t.x - px, t.z - pz) };
+    }
     if (target === 'server' || target === 'pass-server') {
       // runners line up along the dining side of the pass
       let i = cookId != null ? serverUse.get(cookId) : 0;
@@ -547,6 +579,13 @@ export async function createKitchenScene(container, options = {}) {
 
   const anchorFor = (target) => {
     if (target === 'dining' || target === 'dining-room') return new THREE.Vector3(SITE.dining.spot[0] - 0.6, 1.0, SITE.dining.spot[1]);
+    if (typeof target === 'string' && target.startsWith('table:')) {
+      const t = tableFor(target.slice(6));
+      if (!t) return anchorFor('dining');
+      // set down on the cloth, on the runner's side, spread along the edge
+      const s = tableSide(t), off = ((t.plates++ % 3) - 1) * 0.22;
+      return new THREE.Vector3(t.x + s.ux * 0.3 - s.uz * off, 0.75, t.z + s.uz * 0.3 + s.ux * off);
+    }
     const app = appliances.get(target);
     if (app) return app.group.localToWorld(app.nextSlot());
     const st = stations.get(target);
@@ -905,7 +944,7 @@ export async function createKitchenScene(container, options = {}) {
       cooks.delete(id);
     },
     // Walks a cook along the aisles to a work center, equipment, storage
-    // location, 'dining', 'server' or [x, z]. Resolves true on arrival,
+    // location, 'dining', 'table:<id>', 'server' or [x, z]. Resolves true on arrival,
     // false if interrupted by another move. seconds are sim seconds.
     moveCook(id, target, { seconds, speed } = {}) {
       const c = cooks.get(id);
@@ -1137,6 +1176,7 @@ export async function createKitchenScene(container, options = {}) {
         m.userData.table = t.id;
         g.add(m);
       }
+      readTables();
       batchGroup(g, { deep: true });
       return api;
     },
