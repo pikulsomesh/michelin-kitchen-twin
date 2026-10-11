@@ -46,6 +46,22 @@ $('[data-sources]').innerHTML = `<table><thead><tr><th>Source</th><th>Publisher<
   sources.sources.map((s) => `<tr><td>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>` : esc(s.title)}</td><td class="muted">${esc(s.publisher || s.author || '')}</td><td>${usedBy.get(s.id) || 0}</td></tr>`).join('')
 }</tbody></table>`;
 
+// ------------------------------------------------------------ provenance: sourced versus estimated
+const provenance = [
+  ['Ingredients', items.items],
+  ['Recipes (sub-assemblies and plates)', prods],
+  ['Equipment', resources.equipment],
+  ['Stations', resources.workCenters],
+];
+$('[data-provenance]').innerHTML = `<table><thead><tr><th>Records</th><th>Sourced only</th><th>Sourced, some fields estimated</th><th>Estimated</th></tr></thead><tbody>${
+  provenance.map(([label, recs]) => {
+    const pubs = (r) => (r.src || []).filter((s) => s !== 'est').length;
+    const only = recs.filter((r) => pubs(r) && !(r.src || []).includes('est')).length;
+    const mixed = recs.filter((r) => pubs(r) && (r.src || []).includes('est')).length;
+    return `<tr><td>${label}</td><td>${only}</td><td>${mixed}</td><td>${recs.length - only - mixed}</td></tr>`;
+  }).join('')
+}</tbody></table>`;
+
 // ------------------------------------------------------------ precomputed scenarios
 const mins = (sec) => `${Math.round(sec / 60)} min`;
 $('[data-library]').innerHTML = `<table><thead><tr><th>Guests</th><th>Meal today</th><th>Target</th><th>Recommended plan</th><th>Meal on the plan</th></tr></thead><tbody>${
