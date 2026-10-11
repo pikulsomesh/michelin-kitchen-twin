@@ -589,6 +589,7 @@ npm run build            # static site in dist/</code></pre>
             <li><b>Event-driven simulation.</b> The engine only computes when something happens, and the scene re-reads it at 6 Hz while tweening in between.</li>
             <li><b>Adaptive quality.</b> Auto starts from the GPU and steps down if the frame rate stays low; Pro Max only accumulates while the camera rests.</li>
             <li><b>Precomputed answers.</b> The optimizer's results for four guest counts ship with the site, and cached nights skip their forecast run.</li>
+            <li><b>Measured in the page.</b> <code>src/perf.js</code> times the first 3D frame and the live frame rate; the menu's View section shows them, and <code>npm run perf</code> records them at each quality level on a laptop and a phone viewport. Results and method: <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/performance.md" target="_blank" rel="noopener">docs/performance.md</a>.</li>
             <li><b>Headless re-runs.</b> Studio, what-ifs and the capacity sweep re-run the full night without rendering, yielding to the UI between runs.</li>
           </ul>
         </section>

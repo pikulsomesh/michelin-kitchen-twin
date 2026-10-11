@@ -484,10 +484,19 @@ export async function createKitchenScene(container, options = {}) {
     el.innerHTML = html;
     return new CSS2DObject(el);
   };
+  // Kitchen or Factory vocabulary (PRD section 2): stations read as workcells, cooks as operators,
+  // appliances as machines with their asset ids.
+  let factory = !!options.factory;
+  const stationText = (st) => (factory
+    ? `${st.id === 'WC-PASS' ? 'Final inspection' : `${st.name} cell`} <small>${st.id}</small>`
+    : st.name);
+  const cookText = (c) => (factory ? `<small>Operator</small> ${c.name}` : c.name);
+  const STATE_WORD = { busy: 'running', preheating: 'warm-up', fault: 'down' };
   const stationLabels = [];
   for (const st of stations.values()) {
     const z = st.zone;
-    const l = mkLabel('kt-station', `<span class="dot" style="background:${st.color}"></span>${st.name}`);
+    const l = mkLabel('kt-station', `<span class="dot" style="background:${st.color}"></span><span class="nm">${stationText(st)}</span>`);
+    l.station = st;
     const p = z ? [z.x + z.width / 2, z.z + z.depth / 2] : [st.spots[0].x, st.spots[0].z];
     l.position.set(p[0], 2.3, p[1]);
     l.element.addEventListener('click', () => api.focus(st.id));
@@ -504,7 +513,8 @@ export async function createKitchenScene(container, options = {}) {
   }
   const fmtChip = (app) => {
     const i = app.info || {};
-    const parts = [`<b>${app.name}</b>`, `<span class="st st-${app.state}">${app.state}</span>`];
+    const parts = [factory ? `<b>${app.name}</b> <small>${app.id}</small>` : `<b>${app.name}</b>`,
+      `<span class="st st-${app.state}">${factory ? STATE_WORD[app.state] || app.state : app.state}</span>`];
     if (i.tempC != null) parts.push(`${Math.round(i.tempC)}°C`);
     if (i.slotsBusy != null && app.placement?.eq.capacity?.slots) parts.push(`${i.slotsBusy}/${app.placement.eq.capacity.slots} slots`);
     if (i.label) parts.push(i.label);
@@ -631,7 +641,7 @@ export async function createKitchenScene(container, options = {}) {
       const maker = eq?.maker ? `<div class="sub">${eq.maker}${eq.capacity?.slots ? ` · ${eq.capacity.slots} slots` : ''}${eq.tempC != null ? ` · ${eq.tempC}°C` : ''}</div>` : '';
       return fmtChip(a) + maker;
     }
-    if (pick.type === 'cook') { const c = cooks.get(pick.id); return `<b>${c.name}</b> · ${c.role}${c.activity ? ' · ' + c.activity : ''}`; }
+    if (pick.type === 'cook') { const c = cooks.get(pick.id); return `<b>${cookText(c)}</b> · ${c.role}${c.activity ? ' · ' + c.activity : ''}`; }
     if (pick.type === 'ingredient') {
       const e = ingredients.get(pick.id);
       return `<b>${e.def.name}</b> · ${Math.round(e.level * 100)}% on hand${e.qty != null ? ` · ${e.qty}` : ''}<div class="sub">${e.def.id}${e.def.origin ? ' · ' + e.def.origin : ''}</div>`;
@@ -926,7 +936,7 @@ export async function createKitchenScene(container, options = {}) {
       c.setPosition(tgt.x, tgt.z);
       c.yaw = c.targetYaw = tgt.face ?? 0;
       c.location = spec.stationId || spec.at || 'WC-PASS';
-      const bubble = mkLabel('kt-cook', `<b>${c.name}</b><span></span>`);
+      const bubble = mkLabel('kt-cook', `<b>${cookText(c)}</b><span></span>`);
       bubble.position.set(0, 2.05, 0);
       c.root.add(bubble);
       c.bubble = bubble;
@@ -1070,6 +1080,14 @@ export async function createKitchenScene(container, options = {}) {
     },
     resetTraffic() { heat.fill(0); repaintHeat(); },
     setLabels(mode) { labelMode = mode; refreshLabelVisibility(); },
+    // true: Factory terms on the 3D labels, chips and tooltips; false: Kitchen terms.
+    setTerms(on) {
+      factory = !!on;
+      for (const l of stationLabels) l.element.querySelector('.nm').innerHTML = stationText(l.station);
+      for (const c of cooks.values()) c.bubble.element.querySelector('b').innerHTML = cookText(c);
+      for (const [id, chip] of chipFor) chip.element.innerHTML = fmtChip(appliances.get(id));
+    },
+    get factoryTerms() { return factory; },
 
     // Time
     setTimeScale(x) { timeScale = Math.max(0, x); },

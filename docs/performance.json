@@ -1,0 +1,57 @@
+{
+  "measuredAt": "2026-10-11T20:15:53.603Z",
+  "url": "http://localhost:4179/michelin-kitchen-twin/",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "gpu": false,
+  "seconds": 10,
+  "rows": [
+    {
+      "viewport": "laptop",
+      "quality": "mobile",
+      "firstFrameMs": 12122,
+      "readyMs": 12098,
+      "fps": 0.3,
+      "frameP95Ms": null
+    },
+    {
+      "viewport": "laptop",
+      "quality": "balanced",
+      "firstFrameMs": 13560,
+      "readyMs": 13552,
+      "fps": 0.1,
+      "frameP95Ms": null
+    },
+    {
+      "viewport": "laptop",
+      "quality": "high",
+      "firstFrameMs": 14400,
+      "readyMs": 14391,
+      "fps": 0,
+      "frameP95Ms": null
+    },
+    {
+      "viewport": "phone",
+      "quality": "mobile",
+      "firstFrameMs": 15264,
+      "readyMs": 15252,
+      "fps": 0.4,
+      "frameP95Ms": 1526.2
+    },
+    {
+      "viewport": "phone",
+      "quality": "balanced",
+      "firstFrameMs": 14046,
+      "readyMs": 14034,
+      "fps": 0,
+      "frameP95Ms": null
+    },
+    {
+      "viewport": "phone",
+      "quality": "high",
+      "firstFrameMs": 13946,
+      "readyMs": 13930,
+      "fps": 0.1,
+      "frameP95Ms": null
+    }
+  ]
+}
