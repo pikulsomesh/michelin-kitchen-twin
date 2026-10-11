@@ -13,6 +13,7 @@ import { mountDashboard } from './dashboard/dashboard.js';
 import { createKitchenScene } from './scene/index.js';
 import { bindSim } from './scene/bind.js';
 import { createSiteTour } from './site-tour.js';
+import { mountTraceCard } from './trace.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -38,6 +39,9 @@ const twin = await createKitchenScene($('#twin'), {
 });
 window.kitchenTwin = { twin, sim };
 const binding = bindSim(twin, sim);
+const trace = mountTraceCard($('[data-trace]'), sim, { onFly: (id) => { twin.highlight([id]); twin.flyTo(id); } });
+// Open the genealogy card for a 3D plate (the one being followed, or one that was clicked).
+const tracePlate = (itemId) => { const m = binding.plateOf(itemId); if (m) trace.show(m.ticket, m.dish); };
 
 // ------------------------------------------------------------ dashboard + plan
 // The operations drawer is closed, split (beside the 3D twin) or full (metrics only).
@@ -49,6 +53,9 @@ const dash = mountDashboard($('#dashboard'), sim, {
     twin.highlight([sel.id]);
     if (sel.type !== 'ingredient') twin.flyTo(sel.id);
     if (sel.type === 'appliance') showEquipment(index, sel.id);
+    if (sel.ticket && sel.dish) trace.show(sel.ticket, sel.dish);
+    // From the metrics-only view, open the 3D twin beside it so the camera move is visible.
+    if (sel.from === 'gantt' && $('#app').classList.contains('ops-full')) setOps('split', false);
   },
 });
 renderPanel(index, $('#panel'));
@@ -58,6 +65,7 @@ twin.on('select', (pick) => {
   twin.highlight([pick.id]);
   if (pick.type === 'appliance') { showEquipment(index, pick.id); dash.select({ type: 'appliance', id: pick.id }); }
   if (pick.type === 'ingredient') dash.select({ type: 'ingredient', id: pick.id });
+  if (pick.type === 'item' && binding.plateOf(pick.id)) { twin.follow(pick.id); tracePlate(pick.id); }
 });
 
 // ------------------------------------------------------------ frame loop: the sim owns the clock
@@ -69,6 +77,7 @@ twin.onFrame((dt) => {
   if (hudT > 0.25) { hudT = 0; renderHud(); }
   if (drawerOpen && dashT > 0.1) { dashT = 0; dash.update(); }
   story.tick();
+  trace.tick(dt);
 });
 
 // ------------------------------------------------------------ HUD
@@ -223,12 +232,12 @@ twin.on('tour', (e) => {
 });
 twin.on('follow', (e) => {
   if (e.done) say('Served.', 1600);
-  else if (!story.active) say('Following a plate to the pass and out to the dining room.', 2600);
+  else { tracePlate(e.id); if (!story.active) say('Following a plate to the pass and out to the dining room.', 2600); }
 });
 document.addEventListener('keydown', (e) => {
   if (e.target.matches?.('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.code === 'Space') { e.preventDefault(); story.active ? story.togglePause() : actions.play(); }
-  if (e.key === 'Escape') { if (!side.hidden) setMenu(false); else if (story.active) story.stop(); else if (drawerOpen) setOps('closed'); }
+  if (e.key === 'Escape') { if (!side.hidden) setMenu(false); else if (story.active) story.stop(); else if (trace.open) trace.hide(); else if (drawerOpen) setOps('closed'); }
   if (story.active && e.key === 'ArrowRight') story.next();
   if (story.active && e.key === 'ArrowLeft') story.prev();
   if (e.key === 's') actions.site();

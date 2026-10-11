@@ -76,6 +76,8 @@ const TEMPLATE = `
     <article class="panel wide" data-panel="library"><h2 data-term="library">Service scenarios & optimizer</h2><div data-library></div></article>
 
     <article class="panel wide"><h2 data-term="whatif">What if…</h2>
+      <div class="pin" data-pin></div>
+      <div class="pin-out" data-pin-out></div>
       <div class="scen" data-scen></div>
       <div class="scen-out" data-scen-out><p class="muted">Pick a scenario. It re-runs the whole service from the same seed and shows the before/after on every KPI.</p></div></article>
 
@@ -106,7 +108,7 @@ export function mountDashboard(root, sim, opts = {}) {
   const ncourse = data.courses.length;
   const COURSE_GROUP = (idx) => { const f = (idx ?? 0) / ncourse; return f < 0.3 ? 'start' : f < 0.75 ? 'main' : 'finish'; };
   const washRole = data.sim?.washRole ?? 'plonge', runRole = data.sim?.runnerRole ?? 'runner';
-  const state = { factory: false, gantt: 'cooks', inv: 'service', sel: null, scen: null, sweep: null, last: 0, tick: 0, hover: {}, ganttBars: [], floorHits: [] };
+  const state = { pin: null, factory: false, gantt: 'cooks', inv: 'service', sel: null, scen: null, sweep: null, last: 0, tick: 0, hover: {}, ganttBars: [], floorHits: [] };
   const listeners = new Set();
   const emitSel = (s) => { state.sel = s; opts.onSelect?.(s); listeners.forEach((cb) => cb(s)); };
 
@@ -160,28 +162,57 @@ export function mountDashboard(root, sim, opts = {}) {
 
   // ---------------------------------------------------------------- scenarios
   function renderScen() {
+    if (!$('[data-pin]').firstChild) renderPin();
     const stations = data.stations.filter((x) => ['poisson', 'meat', 'saucier', 'garde_manger', 'pastry'].includes(x.id)).map((x) => x.id);
     $('[data-scen]').innerHTML = SCENARIOS.map((s) => `<button class="btn scn ${state.scen?.id === s.id ? 'on' : ''}" data-scn="${s.id}" title="${esc(s.blurb)}">${esc(s.label)}</button>`).join('')
       + (SCENARIOS.some((x) => x.param) ? `<label class="sel">Short-staffed at <select data-scn-station>${stations.map((s) => `<option value="${s}">${STATION_LABEL[s] || s}</option>`).join('')}</select></label>` : '');
     $$('[data-scn]').forEach((b) => b.addEventListener('click', () => runScenario(b.dataset.scn)));
   }
+  const GLYPH = { good: '▲', bad: '▼', flat: '•' };
+  const fmtDelta = (r) => (r.fmt === 'pct' ? `${r.delta >= 0 ? '+' : ''}${(r.delta * 100).toFixed(1)} pts`
+    : r.fmt === 'clock' ? `${r.delta >= 0 ? '+' : '−'}${Math.floor(Math.abs(r.delta) / 3600)}h ${String(Math.round((Math.abs(r.delta) % 3600) / 60)).padStart(2, '0')}m`
+      : r.fmt === 'dur' ? `${r.delta >= 0 ? '+' : '−'}${mmss(Math.abs(r.delta))}` : `${r.delta >= 0 ? '+' : ''}${FMT[r.fmt](r.delta)}`);
+  const cmpTable = (rows, baseLabel, altLabel) => `<table class="t cmp"><thead><tr><th>KPI</th><th>${esc(baseLabel)}</th><th>${esc(altLabel)}</th><th>Change</th></tr></thead><tbody>${rows.map((r) =>
+    `<tr class="${r.verdict}"><td>${esc(r.label)}</td><td>${FMT[r.fmt](r.base)}</td><td>${FMT[r.fmt](r.alt)}</td><td class="v-${r.verdict}">${GLYPH[r.verdict]} ${fmtDelta(r)}</td></tr>`).join('')}</tbody></table>`;
+
+  // ---------------------------------------------------------------- pinned baseline
+  // Pin tonight's run; every later night (a scenario, a re-plan, an optimizer plan) is compared against it.
+  const runKey = (c) => JSON.stringify(c);
+  function describeRun(c) {
+    const seat = (data.seatingScenarios || []).find((x) => x.id === c.seating)?.name ?? c.seating;
+    const bits = [`${c.covers} covers`, seat, `seed ${c.seed}`];
+    if (c.staffOut?.length) bits.push(`${c.staffOut.length} cook${c.staffOut.length > 1 ? 's' : ''} out`);
+    if (c.extraStaff?.length) bits.push(`+${c.extraStaff.length} cook${c.extraStaff.length > 1 ? 's' : ''}`);
+    if (c.faults?.length) bits.push(`${c.faults.length} breakdown${c.faults.length > 1 ? 's' : ''}`);
+    if (Object.values(c.supply || {}).some((v) => v < 1)) bits.push('short delivery');
+    return bits.join(' · ');
+  }
+  function renderPin() {
+    const pin = state.pin;
+    $('[data-pin]').innerHTML = pin
+      ? `<span><b>📌 Baseline:</b> ${esc(pin.label)}</span><button class="btn" data-pin-act="unpin">Unpin</button>`
+      : `<button class="btn" data-pin-act="pin">📌 Pin this night as the baseline</button><span class="muted">Then change covers, staff or machines: every run is compared against it.</span>`;
+    $('[data-pin-act]').onclick = () => { state.pin = pin ? null : snapRun(); renderPin(); renderScen(); };
+    const out = $('[data-pin-out]');
+    if (!pin || runKey(sim.config) === pin.key) { out.innerHTML = pin ? '<p class="muted">The live twin is running the pinned night. Try a scenario, re-plan or load an optimizer plan to compare.</p>' : ''; return; }
+    const cur = { ...sim.forecast.snapshot, endT: sim.forecast.endT };
+    out.innerHTML = `<p class="why"><b>This night:</b> ${esc(describeRun(sim.config))}</p>${cmpTable(compare(pin.snap, cur), 'Pinned', 'This night')}`;
+  }
+  const snapRun = () => ({ key: runKey(sim.config), label: describeRun(sim.config), snap: { ...sim.forecast.snapshot, endT: sim.forecast.endT } });
+  sim.on('reset', () => { if (state.pin) setTimeout(renderPin, 0); });
+
   function runScenario(id) {
     const sc = SCENARIOS.find((s) => s.id === id); const out = $('[data-scen-out]');
     out.innerHTML = `<p class="muted">Running “${esc(sc.label)}” from seed ${sim.config.seed}…</p>`;
     setTimeout(() => {
-      const base = sim.forecast.snapshot; const station = $('[data-scn-station]')?.value;
+      const station = $('[data-scn-station]')?.value;
       const patch = sc.apply(sim.config, data, station);
       const alt = runHeadless(data, { ...sim.config, ...patch });
-      const rows = compare({ ...base, endT: sim.forecast.endT }, alt);
+      const rows = compare(state.pin?.snap ?? { ...sim.forecast.snapshot, endT: sim.forecast.endT }, alt);
       state.scen = { id, patch, alt };
       renderScen();
-      const glyph = { good: '▲ better', bad: '▼ worse', flat: '• same' };
       out.innerHTML = `<div class="scen-head"><b>${esc(sc.label)}</b> <span class="muted">${esc(sc.blurb)}</span> <button class="btn primary" data-apply>Run this on the live twin</button></div>
-        <p class="why">${esc(alt.kpis.bottleneck.text)}</p>
-        <table class="t cmp"><thead><tr><th>KPI</th><th>Baseline</th><th>Scenario</th><th>Change</th></tr></thead><tbody>${rows.map((r) => {
-          const d = r.fmt === 'pct' ? `${r.delta >= 0 ? '+' : ''}${(r.delta * 100).toFixed(1)} pts` : r.fmt === 'clock' ? `${r.delta >= 0 ? '+' : '−'}${Math.floor(Math.abs(r.delta) / 3600)}h ${String(Math.round((Math.abs(r.delta) % 3600) / 60)).padStart(2, '0')}m` : r.fmt === 'dur' ? `${r.delta >= 0 ? '+' : '−'}${mmss(Math.abs(r.delta))}` : `${r.delta >= 0 ? '+' : ''}${FMT[r.fmt](r.delta)}`;
-          return `<tr class="${r.verdict}"><td>${esc(r.label)}</td><td>${FMT[r.fmt](r.base)}</td><td>${FMT[r.fmt](r.alt)}</td><td class="v-${r.verdict}">${glyph[r.verdict].split(' ')[0]} ${d}</td></tr>`;
-        }).join('')}</tbody></table>`;
+        <p class="why">${esc(alt.kpis.bottleneck.text)}</p>${cmpTable(rows, state.pin ? 'Pinned' : 'Baseline', 'Scenario')}`;
       out.querySelector('[data-apply]').onclick = () => { sim.reset(patch); syncRange(); syncPlan(); sim.seek(doorsT()); sim.play(); update(true); };
     }, 20);
   }
@@ -380,7 +411,14 @@ export function mountDashboard(root, sim, opts = {}) {
   hoverCanvas('[data-ch-thru]', lineHover('thru', '/h'));
   hoverCanvas('[data-ch-wip]', lineHover('wip', ''));
   hoverCanvas('[data-ch-course]', (x, y) => { const st = sim.state; const rh = ($('[data-ch-course]').getBoundingClientRect().height - 14) / 10; const c = st.kpis.perCourse[Math.floor((y - 4) / rh)]; return c ? `<b>${esc(c.name)}</b><br>${c.n} served<br>p50 ${mmss(c.p50)} · p90 ${mmss(c.p90)} · max ${mmss(c.max)}` : null; });
-  hoverCanvas('[data-gantt-cv]', (x, y) => { const b = state.ganttBars.find((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h); return b ? `<b>${esc(b.l.name)}</b><br>${hhmm(b.l.start)} → ${hhmm(b.l.end)}<br>${b.l.ticket ? `ticket ${b.l.ticket} · ` : ''}waited ${Math.round(b.l.wait)} s` : null; });
+  const ganttBarAt = (x, y) => state.ganttBars.find((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h);
+  hoverCanvas('[data-gantt-cv]', (x, y) => { const b = ganttBarAt(x, y); $('[data-gantt-cv]').style.cursor = b ? 'pointer' : ''; return b ? `<b>${esc(b.l.name)}</b><br>${hhmm(b.l.start)} → ${hhmm(b.l.end)}<br>${b.l.ticket ? `ticket ${b.l.ticket} · ` : ''}waited ${Math.round(b.l.wait)} s<br><span class="muted">Click to see it in the kitchen</span>` : null; });
+  // Click a bar: fly the 3D camera to its machine (or the cook's station); a plate's bar also opens its genealogy.
+  $('[data-gantt-cv]').addEventListener('click', (e) => {
+    const r = e.currentTarget.getBoundingClientRect(); const b = ganttBarAt(e.clientX - r.left, e.clientY - r.top); if (!b) return;
+    const l = b.l; const onMachine = state.gantt === 'machines' && l.appliance;
+    emitSel({ type: onMachine ? 'appliance' : 'station', id: onMachine ? l.appliance : l.station, ticket: l.ticket, dish: l.dish, from: 'gantt' });
+  });
   const floor = hoverCanvas('[data-floor]', (x, y) => { const h = state.floorHits.find((q) => (q.rect ? x >= q.rect[0] && x <= q.rect[0] + q.rect[2] && y >= q.rect[1] && y <= q.rect[1] + q.rect[3] : Math.hypot(q.x - x, q.y - y) <= q.r)); return h?.tip || null; });
   floor.addEventListener('click', (e) => { const r = floor.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; const h = state.floorHits.find((q) => q.rect && x >= q.rect[0] && x <= q.rect[0] + q.rect[2] && y >= q.rect[1] && y <= q.rect[1] + q.rect[3]); if (h) emitSel({ type: 'station', id: h.station.id }); });
   root.addEventListener('click', (e) => {

@@ -69,3 +69,6 @@
 .lib-t .kind { font-size: 10.5px; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--axis); color: var(--ink-2); white-space: nowrap; }
 .lib-t .k-cook { border-color: var(--orange); } .lib-t .k-fire { border-color: var(--aqua); } .lib-t .k-both { border-color: var(--violet); }
 .btn.small { padding: 2px 8px; font-size: 11.5px; } .lib-live { margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pin { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+.pin .muted { font-size: 11px; }
+.pin-out { margin-bottom: 10px; } .pin-out:empty { display: none; }
