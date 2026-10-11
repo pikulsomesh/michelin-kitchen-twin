@@ -28,6 +28,7 @@
         <a href="#stack">Stack</a>
         <a href="#repo">Repository layout</a>
         <h2>The model</h2>
+        <a href="#research">The research story</a>
         <a href="#data">Data and sources</a>
         <a href="#planning">Production planning (MRP)</a>
         <a href="#simulation">Simulation engine</a>
@@ -208,6 +209,54 @@
 ├── <span class="d">tests/</span>                 <span class="c"># model, sim, studio and optimizer tests (node --test)</span>
 ├── <span class="d">docs/</span>                  <span class="c"># data model, simulation, Studio, NVIDIA path, PRD and PR-FAQ</span>
 └── <span class="d">.github/workflows/</span>     <span class="c"># ci.yml (PRs and main), pages.yml (deploy)</span></div>
+        </section>
+
+        <!-- ============================================================ research -->
+        <section id="research">
+          <h2>The research story</h2>
+          <p class="lede">Nobody handed over blueprints. The French Laundry does not publish its floor plan, its brigade or its prep lists. Everything in this twin was pieced together from what the restaurant, its architects, the trade press, its cookbook and its diners have put in public, and each fact is tagged with where it came from.</p>
+
+          <h3>Why this kitchen</h3>
+          <p>The brief was a three-star kitchen, as realistic as possible. That made the choice a research question: which three-star kitchen has the most published detail? The French Laundry won clearly. Its 2014 to 2017 rebuild was covered by the architects (Snøhetta), by <i>Architectural Record</i>, and by <i>Foodservice Equipment &amp; Supplies</i>, whose article lists the full equipment schedule down to the make of the slicer. Thomas Keller's 1999 cookbook gives exact quantities for the signature dishes. And diners have written course-by-course accounts of the tasting menu, with timings.</p>
+
+          <h3>Five kinds of source, five parts of the twin</h3>
+          <div class="tw"><table>
+            <thead><tr><th>Source</th><th>What it gave the twin</th><th>Where it lives</th></tr></thead>
+            <tbody>
+              <tr><td><b>Architecture press</b><br><span class="muted">Architectural Record, Snøhetta</span></td><td>The building: the vaulted ventilated ceiling, ribbon window, terrazzo floor, white surfaces, the annex's butchery and produce rooms</td><td>The plant, layout and 3D scene</td></tr>
+              <tr><td><b>Trade press</b><br><span class="muted">FE&amp;S "Clean Slate"</span></td><td>Kitchen and annex areas, the two Bonnet island suites, every named appliance, and the decision to have no walk-in coolers</td><td>Equipment, storage, work centers</td></tr>
+              <tr><td><b>The cookbook, via reproductions</b><br><span class="muted">The French Laundry Cookbook (1999)</span></td><td>Exact quantities, temperatures and times for four dishes</td><td>Bills of materials and routings</td></tr>
+              <tr><td><b>Diner reviews</b><br><span class="muted">The Chihuo, Tiny Urban Kitchen</span></td><td>The course sequence, supplements, how long the meal lasts, and a headcount of the kitchen at service</td><td>Menu, pacing, brigade size</td></tr>
+              <tr><td><b>Journalism and reference</b><br><span class="muted">Press Democrat, AP, Wikipedia, Tasting Table</span></td><td>Seats, stars, price, the garden's share of the produce, the cellar</td><td>Restaurant facts, demand</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3>Things we learned along the way</h3>
+          <div class="cards nuggets">
+            <div class="card"><b>There are no walk-in coolers</b><small>Almost every restaurant kitchen has one. This one replaced them with reach-ins throughout, some custom-built 102 inches tall. So the twin stores stock in reach-ins at each station, not in a cold room.</small><cite>FE&amp;S</cite></div>
+            <div class="card"><b>There are no hoods either</b><small>A curved, skylit, ventilated ceiling about 20 ft high at the peak, dropping to 9 ft over the cooking suites, does the job. It is the vault you see in the 3D view.</small><cite>FE&amp;S, Architectural Record</cite></div>
+            <div class="card"><b>The light is tuned to the dining room</b><small>The kitchen's LED colour temperature matches the dining room's, so a plate looks the same at the pass as on the table.</small><cite>Architectural Record</cite></div>
+            <div class="card"><b>A fryer that isn't on the list</b><small>Coffee and Doughnuts needs doughnuts fried at 325°F, but the equipment schedule names no fryer. The twin fries them in a pot on the pastry suite's induction hob, and says so.</small><cite>Food Network recipe, FE&amp;S</cite></div>
+            <div class="card"><b>The garden across the street</b><small>The restaurant's own culinary garden supplies about 30% of its vegetables, and diver scallops arrive within 24 hours of harvest.</small><cite>AP, 2012</cite></div>
+            <div class="card"><b>Sources disagree, and that's recorded</b><small>The trade press says 62 seats after the rebuild; Wikipedia and Tasting Table say 60. The cellar holds 16,000 bottles, or 15,000 according to Snøhetta. The twin picks one and keeps the other in a note.</small><cite>restaurant.json</cite></div>
+            <div class="card"><b>Some dishes start three days early</b><small>Once the recipes were in, the planner showed corned veal tongue needs about 76 hours from brining to plate, and foie gras au torchon about 49. That is why real kitchens make them days ahead.</small><cite>Computed by the planner</cite></div>
+            <div class="card"><b>"At least a dozen" cooks</b><small>The restaurant has over 100 staff but publishes no kitchen roster. One diner counted at least a dozen people in the kitchen during service, so the twin's brigade is 15: 13 cooks and 2 dishwashers.</small><cite>Tiny Urban Kitchen, estimate</cite></div>
+          </div>
+
+          <h3>From an article to a moving kitchen</h3>
+          <ol>
+            <li><b>Read and extract.</b> Each source was read for facts the model could use: a dimension, an appliance, a quantity, a time. Each fact became a field in a JSON file with a <code>src</code> list naming where it came from.</li>
+            <li><b>Translate into factory terms.</b> Recipes became bills of materials, method steps became routings with a station, appliance, cook and time, and the brigade became a labor pool with skills. See <a href="#data">Data and sources</a>.</li>
+            <li><b>Fill the gaps honestly.</b> Where nothing was published (portions for dishes without a recipe, most operation times, positions on the floor, ingredient prices), a typical professional value went in, tagged <code>est</code>.</li>
+            <li><b>Check it.</b> A validator checks every cross-reference, and a test checks that planning four servings of Oysters and Pearls reproduces the cookbook's quantities.</li>
+            <li><b>Run it.</b> The planner explodes covers into grams and minutes, the simulation plays the night, and the 3D scene draws what the simulation is doing.</li>
+          </ol>
+          <p>The research, the data model and the planner were built by one Claude session in the first hours of the project, and handed to the 3D, simulation and Studio sessions as a shared contract of ids. See <a href="#history">How it was built</a>.</p>
+
+          <h3>Sourced versus estimated</h3>
+          <p class="muted">Counted live from <code>/data</code>. A record is "sourced" when it cites a publication, "estimated" when its only tag is <code>est</code>; many cite a publication for some fields and estimate others.</p>
+          <div class="tw" data-provenance></div>
+          <p>The main estimates are the brigade size and shifts, where equipment stands, portions for courses with no published recipe, and ingredient prices. The full list is in <a href="#limits">Limits and estimates</a>, and the bibliography with how often each source is cited is under <a href="#data">Data and sources</a>.</p>
         </section>
 
         <!-- ============================================================ data -->
