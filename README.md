@@ -44,6 +44,7 @@ npm install
 npm run dev              # 3D site at http://localhost:5173
 npm run plan -- 62       # production plan for 62 covers in the terminal
 npm run validate         # check every reference in /data
+npm run precompute       # re-run the cached scenarios (40, 62, 90, 120 guests) and the optimizer after changing /data or src/sim
 npm test
 ```
 

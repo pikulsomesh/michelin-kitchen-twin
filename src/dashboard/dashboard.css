@@ -57,3 +57,15 @@
 .mtiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 10px; } .mini-tile { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; border-left: 3px solid var(--axis); display: grid; gap: 1px; }
 .mini-tile small { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; } .mini-tile b { font-size: 22px; font-variant-numeric: tabular-nums; } .mini-tile span { color: var(--ink-2); font-size: 11.5px; } .mini-tile.warn { border-left-color: var(--warn); } .mini-tile.crit { border-left-color: var(--crit); }
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+/* service scenarios & optimizer (optimizer.js) */
+.lib-note { margin: 0 0 8px; }
+.lib-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-bottom: 8px; }
+.lib-card { text-align: left; background: var(--surface-2); border: 1px solid var(--axis); border-left: 3px solid var(--axis); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; cursor: pointer; }
+.lib-card:hover { border-color: var(--muted); } .lib-card.on { background: #1d3a63; border-color: var(--blue); }
+.lib-card.good { border-left-color: var(--good); } .lib-card.warn { border-left-color: var(--warn); } .lib-card.crit { border-left-color: var(--crit); }
+.lib-card small { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; } .lib-card b { font-size: 22px; font-variant-numeric: tabular-nums; } .lib-card b small { font-size: 11px; text-transform: none; letter-spacing: 0; }
+.lib-card span { font-size: 11.5px; color: var(--ink-2); } .lib-card span.st-good { color: var(--good); } .lib-card span.st-warn { color: var(--warn); } .lib-card span.st-crit { color: var(--crit); }
+.lib-t td:first-child { min-width: 240px; } .lib-t td:nth-child(n+2), .lib-t th:nth-child(n+2) { white-space: nowrap; } .lib-t tr.rec td { background: rgba(57, 135, 229, .12); } .lib-t tr.flag td { color: var(--muted); }
+.lib-t .kind { font-size: 10.5px; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--axis); color: var(--ink-2); white-space: nowrap; }
+.lib-t .k-cook { border-color: var(--orange); } .lib-t .k-fire { border-color: var(--aqua); } .lib-t .k-both { border-color: var(--violet); }
+.btn.small { padding: 2px 8px; font-size: 11.5px; } .lib-live { margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }

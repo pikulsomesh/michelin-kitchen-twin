@@ -9,6 +9,8 @@ export const DEFAULT_CFG = {
   covers: 60,
   seating: 'twoTurn',   // 'twoTurn' (5:30 + 8:00) | 'bell' | 'rush' (everyone within 30 min)
   staffOut: [],         // staff ids removed from the schedule (short-staffed what-if)
+  extraStaff: [],       // [{ like: staffId, id?, name?, shift? }] cooks added to the schedule, cloned from an existing one (optimizer)
+  fireLead: 0.9,        // expo fires a course this share of its slowest dish's lead time before guests are ready (optimizer re-sequences it)
   faults: [],           // [{ appliance: id|type, at: seconds, durationSec }] forced breakdowns
   // ---- guest-side controls (all optional; null = take the dataset's own value)
   arrival: null,        // { start, end, shape: 'uniform' | 'bell' | 'waves' } seconds since midnight; overrides the seating scenario
@@ -85,7 +87,11 @@ export class Engine {
       def: i, onHand: q, start: q, used: 0, produced: 0, wasted: 0, stockouts: 0, minOnHand: q,
     }]; }));
     this.pendingProd = {}; // component -> number of unfinished prep tasks that yield it
-    this.staff = data.staff.filter((d) => !c.staffOut.includes(d.id)).map((d, idx) => ({
+    const extra = (c.extraStaff || []).map((x, i) => {
+      const base = data.staff.find((d) => d.id === x.like);
+      return base && { ...base, id: x.id ?? `${base.id}-EXTRA-${i + 1}`, name: x.name ?? `${base.name} (extra)`, title: x.title ?? `${base.title} (extra)`, ...(x.shift ? { shift: x.shift } : {}) };
+    }).filter(Boolean);
+    this.staff = [...data.staff, ...extra].filter((d) => !c.staffOut.includes(d.id)).map((d, idx) => ({
       id: d.id, def: d, station: d.home, state: 'off', onShift: false, leaving: false, task: null,
       busy: 0, svcBusy: 0, walk: 0, done: 0, busyAtOpen: 0, walkAtOpen: 0, ord: idx,
     }));
@@ -294,7 +300,7 @@ export class Engine {
     // expo fires early by the planned lead time of the slowest dish on this course (JIT / offset scheduling)
     const course = this.courses[idx]; let lead = 0;
     for (const part of course.parts) for (const o of part) if (o.dish) lead = Math.max(lead, this.#critical(this.dishById[o.dish], Math.max(1, Math.round(p.size / part.length))));
-    this.at(Math.max(this.now, readyAt - lead * 0.9 - this.cfg.leadSec), () => this.#fireTicket(p, idx, readyAt));
+    this.at(Math.max(this.now, readyAt - lead * this.cfg.fireLead - this.cfg.leadSec), () => this.#fireTicket(p, idx, readyAt));
   }
 
   #fireTicket(p, idx, readyAt) {

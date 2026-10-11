@@ -12,7 +12,8 @@
     "validate": "node scripts/validate.mjs",
     "sim:report": "node scripts/sim-report.mjs",
     "plan": "node scripts/plan.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "precompute": "node scripts/precompute.mjs"
   },
   "dependencies": {
     "three": "0.186.0"
