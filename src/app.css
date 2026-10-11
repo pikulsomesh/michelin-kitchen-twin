@@ -1,6 +1,7 @@
 /* Site chrome around the 3D twin: HUD, dock, drawer, captions, loading. */
 #twin { position: absolute; inset: 0; }
 #app.with-drawer #twin { right: min(560px, 46vw); }
+#app.ops-full .hud, #app.ops-full .dock { visibility: hidden; }
 
 .hud, .dock, .caption {
   position: absolute; z-index: 3; color: var(--text);
@@ -48,6 +49,12 @@
   background: #0d0d0d; border-left: 1px solid #26272a; display: flex; flex-direction: column;
 }
 .drawer[hidden] { display: none; }
+#app.ops-full .drawer { width: 100%; border-left: 0; }
+#app.ops-full .drawer-body .dash .topbar { grid-template-columns: auto auto auto minmax(180px, 1fr) auto; }
+.seg-view { display: inline-flex; margin-left: auto; border: 1px solid #2c2d31; border-radius: 7px; overflow: hidden; }
+.drawer-tabs .seg-view button { border-radius: 0; padding: 5px 10px; }
+.drawer-tabs .seg-view button.on { color: var(--text); background: rgba(214, 180, 106, 0.16); }
+.drawer-tabs .seg-view + .close { margin-left: 4px; }
 .drawer-tabs { display: flex; gap: 4px; padding: 8px 10px; border-bottom: 1px solid #26272a; }
 .drawer-tabs button {
   font: 500 12px Inter, system-ui, sans-serif; color: var(--muted); background: none; border: 0;
@@ -75,7 +82,93 @@
 .loading small { color: var(--muted); }
 .loading.done { opacity: 0; pointer-events: none; }
 
+/* Burger and the collapsible left sidebar */
+.burger { display: grid; gap: 4px; align-content: center; width: 34px; height: 34px; padding: 0 9px; margin-right: -6px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; cursor: pointer; }
+.burger span { display: block; height: 1.5px; background: var(--text); border-radius: 1px; transition: transform 0.2s, opacity 0.2s; }
+.burger:hover { background: rgba(255, 255, 255, 0.12); }
+.side {
+  position: absolute; z-index: 7; top: 0; left: 0; bottom: 0; width: min(330px, 86vw); display: flex; flex-direction: column;
+  background: rgba(13, 14, 16, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08); color: var(--text); animation: side-in 0.22s ease-out;
+}
+.side[hidden] { display: none; }
+@keyframes side-in { from { transform: translateX(-24px); opacity: 0; } }
+.side-head { display: flex; align-items: center; gap: 9px; padding: max(16px, env(safe-area-inset-top)) 16px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+.side-head .mark { color: var(--accent); font-size: 16px; }
+.side-head b { font: 600 15px Georgia, serif; letter-spacing: 0.03em; }
+.side-x { margin-left: auto; background: none; border: 0; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px 6px; }
+.side-x:hover { color: var(--text); }
+.side-body { flex: 1; overflow-y: auto; padding: 6px 10px 18px; }
+.side section { padding: 10px 0 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.side h3 { margin: 0 6px 6px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.sitem {
+  display: block; width: 100%; text-align: left; text-decoration: none; color: var(--text); background: none; border: 0;
+  border-radius: 9px; padding: 8px 8px; cursor: pointer; font: inherit;
+}
+.sitem:hover { background: rgba(255, 255, 255, 0.06); }
+.sitem.on { background: rgba(214, 180, 106, 0.12); }
+.sitem b { display: block; font-size: 13.5px; font-weight: 550; }
+.sitem small { display: block; color: var(--muted); font-size: 11.5px; line-height: 1.4; margin-top: 2px; }
+.srow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 8px; font-size: 13px; }
+.srow .dsel { width: 170px; }
+.srow2 { display: flex; gap: 6px; padding: 8px; flex-wrap: wrap; }
+.side-keys { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 12px 8px 0; }
+
+/* The site tour's story card */
+.story {
+  position: absolute; z-index: 8; left: 16px; bottom: max(18px, env(safe-area-inset-bottom)); width: min(440px, calc(100% - 32px));
+  padding: 18px 20px 14px; color: var(--text); overflow: hidden;
+  background: linear-gradient(160deg, rgba(30, 27, 21, 0.92), rgba(12, 13, 15, 0.94) 60%);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(214, 180, 106, 0.28); border-radius: 16px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.story[hidden] { display: none; }
+.story.turn > :not(.story-bar) { animation: story-in 0.45s ease-out both; }
+@keyframes story-in { from { opacity: 0; transform: translateY(6px); } }
+.story-kicker { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.story h2 { margin: 6px 0 8px; font: 500 24px/1.18 Georgia, 'Times New Roman', serif; letter-spacing: 0.005em; }
+.story p { margin: 0; color: #cfccc3; font-size: 13.5px; line-height: 1.55; }
+.story-ctas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.story-ctas[hidden] { display: none; }
+.story-foot { display: flex; align-items: center; gap: 4px; margin-top: 14px; }
+.story-foot button { background: none; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text); border-radius: 7px; min-width: 30px; height: 28px; cursor: pointer; font-size: 13px; }
+.story-foot button:hover { background: rgba(255, 255, 255, 0.08); }
+.story-foot button[hidden] { display: none; }
+.story-dots { display: flex; gap: 5px; flex: 1; }
+.story-dots button { min-width: 0; width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.18); }
+.story-dots button.seen { background: rgba(214, 180, 106, 0.45); }
+.story-dots button.on { width: 20px; border-radius: 4px; background: var(--accent); }
+.story-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255, 255, 255, 0.06); }
+.story-bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+body.touring-site .dock, body.touring-site .caption { display: none; }
+#app.with-drawer .story { max-width: calc(100% - min(560px, 46vw) - 32px); }
+
+/* Opening hero, shown once after the intro shot */
+.hero {
+  position: absolute; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100% - 32px));
+  text-align: center; padding: 30px 30px 26px; color: var(--text);
+  background: radial-gradient(ellipse at 50% 0%, rgba(214, 180, 106, 0.14), transparent 70%), rgba(12, 13, 15, 0.8);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px;
+  animation: story-in 0.7s ease-out both;
+}
+.hero[hidden] { display: none; }
+.hero small { color: var(--accent); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+.hero h1 { margin: 12px 0 12px; font: 500 34px/1.14 Georgia, 'Times New Roman', serif; }
+.hero p { margin: 0 auto 20px; max-width: 440px; color: #cfccc3; font-size: 14px; line-height: 1.6; }
+.hero > div { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.cta, .ghost { font: 600 13px Inter, system-ui, sans-serif; border-radius: 10px; padding: 10px 16px; cursor: pointer; text-decoration: none; display: inline-block; }
+.cta { background: var(--accent); color: #17140c; border: 1px solid var(--accent); }
+.cta:hover { filter: brightness(1.08); }
+.ghost { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.16); font-weight: 500; }
+.ghost:hover { background: rgba(255, 255, 255, 0.1); }
+
 @media (max-width: 760px) {
+  .story { left: 10px; right: 10px; width: auto; padding: 14px 15px 12px; }
+  .story h2 { font-size: 19px; }
+  .story p { font-size: 12.5px; }
+  .hero h1 { font-size: 26px; }
+  .hero { padding: 22px 18px 20px; }
+  #app.ops-full .drawer { height: 100%; border-radius: 0; }
   .hud { gap: 10px; padding: 6px 9px; }
   .hud-brand small, .hud-stats div:nth-child(n+3) { display: none; }
   .hud-clock [data-clock] { font-size: 18px; }
@@ -84,4 +177,7 @@
   .drawer { top: auto; left: 0; width: auto; height: 62%; border-left: 0; border-top: 1px solid #26272a; border-radius: 14px 14px 0 0; }
   #app.with-drawer #twin { right: 0; bottom: 62%; }
   #app.with-drawer .dock { display: none; }
+  #app.with-drawer .story { bottom: calc(62% + 10px); max-width: none; }
+  #app.with-drawer .story p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .story p { max-height: 30vh; overflow: auto; }
 }

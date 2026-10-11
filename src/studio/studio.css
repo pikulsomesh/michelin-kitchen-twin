@@ -21,7 +21,8 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
 button, select, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 
-#studio { display: grid; grid-template: 'top top' auto 'panel view' 1fr / 400px 1fr; height: 100%; }
+/* One full-screen stage. The customize panel floats over it on the left; Run mode puts it away. */
+#studio { display: grid; grid-template: 'top' auto 'view' 1fr / 1fr; height: 100%; position: relative; }
 .st-top { grid-area: top; display: flex; align-items: center; gap: 16px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: #111215; }
 .st-brand { color: var(--text); text-decoration: none; font-weight: 600; white-space: nowrap; }
 .st-brand span { color: var(--tint); }
@@ -33,7 +34,21 @@ button { cursor: pointer; }
 .st-actions { display: flex; gap: 6px; }
 button.primary { background: var(--accent); color: #17140c; border-color: var(--accent); font-weight: 600; }
 
-#panel { grid-area: panel; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line); font-size: 13px; line-height: 1.45; }
+#panel {
+  position: absolute; z-index: 4; top: calc(var(--top-h, 53px) + 12px); left: 12px; bottom: 12px; width: 380px;
+  overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(10px);
+  font-size: 13px; line-height: 1.45; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+#studio.run #panel { display: none; }
+.st-mode { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex: none; }
+.st-mode button { background: none; border: 0; padding: 7px 13px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.st-mode button.on { background: var(--tint); color: #121212; font-weight: 600; }
+#studio.edit .st-timeline { left: 404px; }
+#studio.edit .st-impact { width: min(660px, calc(100% - 416px)); }
+#studio.run .st-impact { width: min(980px, calc(100% - 24px)); }
+#studio.run .st-impact .kpis { grid-template-columns: repeat(10, 1fr); }
+@media (max-width: 1560px) { #studio.run .st-impact .kpis { grid-template-columns: repeat(5, 1fr); } }
+@media (max-width: 1120px) { #studio.edit .st-impact { display: none; } }
 .st-view { grid-area: view; position: relative; overflow: hidden; }
 #stage { position: absolute; inset: 0; }
 .st-actions select { background: #0b0c0e; border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; font-size: 13px; }
@@ -121,7 +136,13 @@ button.primary { background: var(--accent); color: #17140c; border-color: var(--
 
 @media (max-width: 900px) {
   #studio { grid-template: 'top' auto 'view' 52vh 'panel' 1fr / 1fr; }
-  #panel { border-right: 0; border-top: 1px solid var(--line); }
+  #studio.run { grid-template: 'top' auto 'view' 1fr / 1fr; }
+  #panel { position: static; grid-area: panel; width: auto; border-radius: 0; border-width: 1px 0 0; box-shadow: none; }
+  #studio.edit .st-timeline { left: 0; }
+  #studio.edit .st-impact, #studio.run .st-impact { display: block; width: auto; }
+  #studio.run .st-impact .kpis { grid-template-columns: repeat(2, 1fr); }
+  .st-top { flex-wrap: wrap; gap: 8px 12px; }
+  .st-views { order: 3; flex-basis: 100%; }
   .st-impact { position: static; width: auto; margin: 0; border-radius: 0; border-width: 1px 0 0; }
   .st-view { display: flex; flex-direction: column; }
   #stage { position: relative; flex: 1; min-height: 0; }

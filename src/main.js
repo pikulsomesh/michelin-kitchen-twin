@@ -12,6 +12,7 @@ import { leversFromQuery, leversToQuery } from './sim/optimize.js';
 import { mountDashboard } from './dashboard/dashboard.js';
 import { createKitchenScene } from './scene/index.js';
 import { bindSim } from './scene/bind.js';
+import { createSiteTour } from './site-tour.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -39,6 +40,8 @@ window.kitchenTwin = { twin, sim };
 const binding = bindSim(twin, sim);
 
 // ------------------------------------------------------------ dashboard + plan
+// The operations drawer is closed, split (beside the 3D twin) or full (metrics only).
+let lastOpsMode = store.get('ops') === 'full' ? 'full' : 'split';
 let drawerOpen = false;
 const dash = mountDashboard($('#dashboard'), sim, {
   onSelect(sel) {
@@ -65,6 +68,7 @@ twin.onFrame((dt) => {
   hudT += dt; dashT += dt;
   if (hudT > 0.25) { hudT = 0; renderHud(); }
   if (drawerOpen && dashT > 0.1) { dashT = 0; dash.update(); }
+  story.tick();
 });
 
 // ------------------------------------------------------------ HUD
@@ -97,8 +101,50 @@ const constraintName = (key) => {
 };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-// ------------------------------------------------------------ dock
+// ------------------------------------------------------------ dock, sidebar and operations layout
 let labels = 'stations';
+const labelSel = $('[data-labels]');
+const setLabels = (v) => { labels = v; labelSel.value = v; twin.setLabels(v); };
+const overlaySel = $('[data-overlay]');
+const setOverlay = (v) => { overlaySel.value = v; twin.setOverlay(v); };
+function setOps(mode, remember = true) {
+  if (mode !== 'closed' && remember) { lastOpsMode = mode; store.set('ops', mode); }
+  const was = drawerOpen;
+  drawerOpen = mode !== 'closed';
+  $('[data-drawer]').hidden = !drawerOpen;
+  $('#app').classList.toggle('with-drawer', mode === 'split');
+  $('#app').classList.toggle('ops-full', mode === 'full');
+  $$('[data-opsview]').forEach((b) => b.classList.toggle('on', b.dataset.opsview === mode));
+  $$('[data-act="drawer"]').forEach((b) => b.classList.toggle('on', drawerOpen));
+  if (drawerOpen && !was) { hideHero(); dash.update(true); }
+}
+// Factory vocabulary in the dashboard, flipped by the site tour.
+const setTerms = (factory) => $(`#dashboard [data-terms="${factory ? 1 : 0}"]`)?.click();
+// Scroll the drawer to a dashboard panel (by its data-term), below the dashboard's sticky top bar.
+const dashPanel = (term) => {
+  const body = $('.drawer-body');
+  const el = term && $(`#dashboard [data-term="${term}"]`)?.closest('.panel');
+  const bar = $('#dashboard .topbar')?.offsetHeight ?? 0;
+  const top = el ? el.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - bar - 8 : 0;
+  // An eased scroll of our own: native smooth scrolling can stall while the 3D scene keeps the main thread busy.
+  const from = body.scrollTop, t0 = performance.now();
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / 700);
+    body.scrollTop = from + (top - from) * (1 - (1 - k) ** 3);
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
+const side = $('[data-side]');
+const setMenu = (open) => {
+  side.hidden = !open;
+  $('#app').classList.toggle('with-side', open);
+  $('[data-act="menu"]').setAttribute('aria-expanded', String(open));
+};
+const hero = $('[data-hero]');
+const hideHero = () => { if (!hero.hidden) { hero.hidden = true; store.set('hero', '1'); } };
+const story = createSiteTour($('[data-story]'), { twin, sim, ops: (m) => setOps(m, false), dashPanel, terms: setTerms, overlay: setOverlay, labels: setLabels });
+story.onChange((on) => { $$('[data-act="site"]').forEach((b) => b.classList.toggle('on', on)); if (!on) setOps('closed'); });
 const caption = $('[data-caption]');
 let captionTimer = 0;
 const say = (text, ms = 3200) => {
@@ -108,12 +154,14 @@ const say = (text, ms = 3200) => {
 };
 const actions = {
   play() { sim.playing ? sim.pause() : sim.play(); renderHud(); },
-  tour() { twin.touring ? twin.stopTour() : twin.startTour(); },
-  overview() { twin.overview(); },
-  plate() { twin.followNextPlate(); say('Waiting for the next plate to leave a station…'); },
+  menu() { hideHero(); setMenu(side.hidden); },
+  site() { hideHero(); setMenu(false); story.active ? story.stop() : story.start(); },
+  tour() { hideHero(); setMenu(false); story.stop(); twin.touring ? twin.stopTour() : twin.startTour(); },
+  overview() { setMenu(false); story.stop(); twin.overview(); },
+  plate() { hideHero(); setMenu(false); story.stop(); twin.followNextPlate(); say('Waiting for the next plate to leave a station…'); },
+  'hero-close'() { hideHero(); },
   labels() {
-    labels = { stations: 'all', all: 'none', none: 'stations' }[labels];
-    twin.setLabels(labels);
+    setLabels({ stations: 'all', all: 'none', none: 'stations' }[labels]);
     say({ stations: 'Station labels', all: 'Station and machine labels', none: 'Labels off' }[labels], 1400);
   },
   usd() {
@@ -134,23 +182,23 @@ const actions = {
     catch { prompt('Link to this moment', url); }
   },
   scenarios() {
-    if (!drawerOpen) actions.drawer();
+    setMenu(false); story.stop();
+    if (!drawerOpen) setOps(lastOpsMode);
     $('[data-tab="ops"]').click();
-    $('[data-panel="library"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    dashPanel('library');
   },
-  drawer() {
-    drawerOpen = !drawerOpen;
-    $('[data-drawer]').hidden = !drawerOpen;
-    $('#app').classList.toggle('with-drawer', drawerOpen);
-    if (drawerOpen) dash.update(true);
-  },
+  drawer() { const open = drawerOpen; story.stop(); setOps(open ? 'closed' : lastOpsMode); },
+  'ops-split'() { setMenu(false); story.stop(); setOps('split'); $('[data-tab="ops"]').click(); },
+  'ops-full'() { setMenu(false); story.stop(); setOps('full'); $('[data-tab="ops"]').click(); },
 };
-$$('[data-act]').forEach((b) => b.addEventListener('click', () => actions[b.dataset.act]()));
+// The dashboard binds its own [data-act] buttons; only the site chrome's are ours.
+$$('[data-act]').filter((b) => !b.closest('#dashboard')).forEach((b) => b.addEventListener('click', () => actions[b.dataset.act]?.()));
 $$('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   $$('[data-tab]').forEach((x) => x.classList.toggle('on', x === b));
   $$('[data-pane]').forEach((p) => { p.hidden = p.dataset.pane !== b.dataset.tab; });
 }));
-$('[data-overlay]').onchange = (e) => twin.setOverlay(e.target.value);
+overlaySel.onchange = () => setOverlay(overlaySel.value);
+labelSel.onchange = () => setLabels(labelSel.value);
 const qualSel = $('[data-quality]');
 const qualLabel = Object.fromEntries(twin.qualityTiers.map((t) => [t.id, t.label]));
 const paintQuality = () => {
@@ -170,16 +218,21 @@ twin.on('quality', (e) => {
   if (e.steppedDown) say(`Running slow here, so Auto switched to ${qualLabel[e.quality]}. Pick a level in the quality menu to keep one.`, 4500);
 });
 twin.on('tour', (e) => {
-  $('[data-act="tour"]').classList.toggle('on', !!e.playing);
-  if (e.shot) say(e.shot, 2600);
+  $$('[data-act="tour"]').forEach((b) => b.classList.toggle('on', !!e.playing));
+  if (e.shot && !story.active) say(e.shot, 2600);
 });
 twin.on('follow', (e) => {
   if (e.done) say('Served.', 1600);
-  else say('Following a plate to the pass and out to the dining room.', 2600);
+  else if (!story.active) say('Following a plate to the pass and out to the dining room.', 2600);
 });
 document.addEventListener('keydown', (e) => {
-  if (e.target.matches('input, select, textarea')) return;
-  if (e.code === 'Space') { e.preventDefault(); actions.play(); }
+  if (e.target.matches?.('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.code === 'Space') { e.preventDefault(); story.active ? story.togglePause() : actions.play(); }
+  if (e.key === 'Escape') { if (!side.hidden) setMenu(false); else if (story.active) story.stop(); else if (drawerOpen) setOps('closed'); }
+  if (story.active && e.key === 'ArrowRight') story.next();
+  if (story.active && e.key === 'ArrowLeft') story.prev();
+  if (e.key === 's') actions.site();
+  if (e.key === 'm') actions.menu();
   if (e.key === 't') actions.tour();
   if (e.key === 'o') actions.overview();
   if (e.key === 'f') actions.plate();
@@ -197,4 +250,14 @@ if (q.get('play') !== '0') sim.play();
 renderHud();
 $('[data-loading]').classList.add('done');
 setTimeout(() => $('[data-loading]').remove(), 900);
-if (q.get('intro') !== '0') twin.intro({ seconds: 11 }).then((ok) => { if (ok) say('Dinner service · The French Laundry, Yountville', 3500); });
+// ?ops=split|full opens the dashboard; ?tour=site starts the site tour. A first visit lands on the opening
+// shot and then offers the site tour.
+if (q.get('ops') === 'split' || q.get('ops') === 'full') setOps(q.get('ops'));
+if (q.get('tour') === 'site') story.start();
+else if (q.get('intro') !== '0') {
+  twin.intro({ seconds: 11 }).then((ok) => {
+    if (!ok) return;
+    if (store.get('hero') || story.active || drawerOpen) say('Dinner service · The French Laundry, Yountville', 3500);
+    else hero.hidden = false;
+  });
+}

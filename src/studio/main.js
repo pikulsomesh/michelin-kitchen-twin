@@ -201,6 +201,36 @@ document.getElementById('reset').onclick = () => {
 };
 window.addEventListener('hashchange', () => { const s = hashState(); if (s) { state = s; panel.setState(s); applyVisuals(); scheduleRecompile(); } });
 
+// ---------------------------------------------------------------------------------------- mode
+// Customize: the panel floats over the full-screen stage. Run the night: the panel is put away and the whole
+// service on this setup plays from just before the doors open, with its results on screen. ?mode=run opens there.
+const studioEl = document.getElementById('studio');
+const topEl = document.querySelector('.st-top');
+const syncTop = () => studioEl.style.setProperty('--top-h', `${topEl.offsetHeight}px`);
+new ResizeObserver(syncTop).observe(topEl);
+let mode = 'edit';
+function setMode(next) {
+  mode = next;
+  studioEl.classList.toggle('edit', mode === 'edit');
+  studioEl.classList.toggle('run', mode === 'run');
+  document.querySelectorAll('[data-mode]').forEach((b) => b.classList.toggle('on', b.dataset.mode === mode));
+  const p = new URLSearchParams(location.search);
+  if (mode === 'run') p.set('mode', 'run'); else p.delete('mode');
+  history.replaceState(null, '', `${location.pathname}${p.size ? `?${p}` : ''}${location.hash}`);
+  if (mode === 'run') {
+    sim.seek(Math.max(sim.start, compiled.cfg.doorsOpen - 600));
+    sim.play();
+    view('all');
+    paintSim(true);
+  }
+}
+document.querySelectorAll('[data-mode]').forEach((b) => { b.onclick = () => setMode(b.dataset.mode); });
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches?.('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey || !sheet.hidden) return;
+  if (e.key === 'r') setMode('run');
+  if (e.key === 'e') setMode('edit');
+});
+
 // ------------------------------------------------------------------------------------------ go
 applyVisuals();
 panel.setSummary(compiled.summary);
@@ -208,6 +238,7 @@ rebuildSim();
 view('dining', true);
 document.querySelector('[data-view="dining"]').classList.add('on');
 setTimeout(renderImpact, 50);
+setMode(params.get('mode') === 'run' ? 'run' : 'edit');
 
 twin.onFrame((dt) => {
   dt = Math.min(0.1, dt);
