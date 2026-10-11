@@ -12,6 +12,7 @@ const CSS = `
   transition: background .2s;
 }
 .kt-station:hover { background: rgba(30,32,38,.92); }
+.kt-station small, .kt-cook small, .kt-chip small { font-size: .82em; font-weight: 500; opacity: .62; letter-spacing: .02em; }
 .kt-station .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .kt-cook {
   font: 500 10px/1.25 Inter, system-ui, sans-serif; color: #fff; text-align: center;

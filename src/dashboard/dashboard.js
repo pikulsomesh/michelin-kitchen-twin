@@ -1,7 +1,7 @@
 // Live operations dashboard for the kitchen digital twin. Pure DOM + canvas, no dependencies.
 // Usage: const dash = mountDashboard(el, sim, { onSelect }); dash.start();   // or call dash.update() from your own loop
 import { C, fit, lineChart, nearest, barRows, hhmm, mmss } from './charts.js';
-import { TERMS } from './terms.js';
+import { TERMS, vocab } from './terms.js';
 import { mountPlan, drawGuestLine } from './plan.js';
 import { mountOptimizer } from './optimizer.js';
 import { scenariosFor, runHeadless, compare, capacitySweep, shiftReportCSV, avgOee } from '../sim/scenarios.js';
@@ -106,7 +106,7 @@ export function mountDashboard(root, sim, opts = {}) {
   const ncourse = data.courses.length;
   const COURSE_GROUP = (idx) => { const f = (idx ?? 0) / ncourse; return f < 0.3 ? 'start' : f < 0.75 ? 'main' : 'finish'; };
   const washRole = data.sim?.washRole ?? 'plonge', runRole = data.sim?.runnerRole ?? 'runner';
-  const state = { factory: false, gantt: 'cooks', inv: 'service', sel: null, scen: null, sweep: null, last: 0, tick: 0, hover: {}, ganttBars: [], floorHits: [] };
+  const state = { factory: vocab.factory, gantt: 'cooks', inv: 'service', sel: null, scen: null, sweep: null, last: 0, tick: 0, hover: {}, ganttBars: [], floorHits: [] };
   const listeners = new Set();
   const emitSel = (s) => { state.sel = s; opts.onSelect?.(s); listeners.forEach((cb) => cb(s)); };
 
@@ -139,9 +139,10 @@ export function mountDashboard(root, sim, opts = {}) {
     },
   };
   $$('[data-act]').forEach((b) => b.addEventListener('click', () => act[b.dataset.act]()));
-  $$('[data-terms]').forEach((b) => b.addEventListener('click', () => {
-    state.factory = b.dataset.terms === '1'; $$('[data-terms]').forEach((x) => x.classList.toggle('on', x === b)); applyTerms(); update(true);
-  }));
+  $$('[data-terms]').forEach((b) => b.addEventListener('click', () => vocab.set(b.dataset.terms === '1')));
+  const followTerms = (on) => { state.factory = on; $$('[data-terms]').forEach((x) => x.classList.toggle('on', x.dataset.terms === (on ? '1' : '0'))); applyTerms(); update(true); };
+  vocab.on(followTerms);
+  $$('[data-terms]').forEach((x) => x.classList.toggle('on', x.dataset.terms === (state.factory ? '1' : '0')));
   $$('[data-gantt]').forEach((b) => b.addEventListener('click', () => { state.gantt = b.dataset.gantt; $$('[data-gantt]').forEach((x) => x.classList.toggle('on', x === b)); drawGantt(sim.state); }));
   $$('[data-inv]').forEach((b) => b.addEventListener('click', () => { state.inv = b.dataset.inv; $$('[data-inv]').forEach((x) => x.classList.toggle('on', x === b)); state.lastHeavy = 0; update(true); }));
   root.addEventListener('keydown', (e) => { if (e.target.matches('input,select')) return; if (e.code === 'Space') { e.preventDefault(); act.play(); } });
@@ -419,7 +420,7 @@ export function mountDashboard(root, sim, opts = {}) {
   const api = {
     update, start() { if (!raf) { prev = performance.now(); raf = requestAnimationFrame(loop); } update(true); },
     stop() { cancelAnimationFrame(raf); raf = 0; }, on: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
-    select: (s) => { state.sel = s; update(true); }, setFactoryTerms(v) { state.factory = !!v; applyTerms(); update(true); }, actions: act,
+    select: (s) => { state.sel = s; update(true); }, setFactoryTerms: (v) => vocab.set(v), actions: act,
   };
   update(true);
   return api;

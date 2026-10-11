@@ -63,7 +63,9 @@
               <option value="traffic">Foot traffic</option>
               <option value="both">Both</option>
             </select></label>
+            <label class="srow">Terms <select class="dsel" data-vocab aria-label="Vocabulary"><option value="kitchen">Kitchen</option><option value="factory">Factory</option></select></label>
             <label class="srow">Quality <select class="dsel" data-quality aria-label="Render quality"></select></label>
+            <div class="srow" title="Measured in this browser: frames per second over the last 2 s, and time from opening the page to the first 3D frame">Performance <span class="perf" data-perf>measuring…</span></div>
           </section>
           <section>
             <h3>Build and learn</h3>
@@ -122,6 +124,7 @@
         <p>Every recipe is a bill of materials, every cook an operator, every oven a machine with OEE. Watch the brigade cook a night for 62 guests, live, in your browser.</p>
         <div><button class="cta" data-act="site">Take the site tour</button><button class="ghost" data-act="hero-close">Explore on my own</button></div>
       </section>
+      <section class="summary" data-summary aria-live="polite" hidden></section>
       <div class="loading" data-loading><div><span class="mark">◆</span><b>The French Laundry</b><small>Building the kitchen…</small></div></div>
     </div>
     <script type="module" src="/src/main.js"></script>

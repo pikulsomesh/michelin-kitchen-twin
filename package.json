@@ -13,7 +13,8 @@
     "sim:report": "node scripts/sim-report.mjs",
     "plan": "node scripts/plan.mjs",
     "test": "node --test tests/*.test.mjs",
-    "precompute": "node scripts/precompute.mjs"
+    "precompute": "node scripts/precompute.mjs",
+    "perf": "node scripts/perf.mjs"
   },
   "dependencies": {
     "three": "0.186.0"
