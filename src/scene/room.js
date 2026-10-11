@@ -488,8 +488,10 @@ export function buildSite(M, plan, nav) {
     }
     g.add(dining);
     out.dining = dining;
-    nav.addRect(-7, -0.05, -0.5, 4.5);
-    nav.addRect(-7, -0.05, 6.3, KD + 0.5);
+    // runners walk the room to the tables: block its edges and each table with its chairs
+    nav.addRect(-7, -0.05, -0.5, 0.05);
+    nav.addRect(-7, -0.05, KD - 0.05, KD + 0.5);
+    for (const t of dining.children) nav.addBox(t.position.x, t.position.z, 1.9, 1.9);
   }
 
   // ---------------------------------------------------------------- garden
