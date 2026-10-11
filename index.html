@@ -15,6 +15,7 @@
       <div id="twin" aria-label="3D view of the kitchen"></div>
 
       <header class="hud" aria-label="Service">
+        <button class="burger" data-act="menu" aria-label="Open the menu" aria-expanded="false" aria-controls="side" title="Menu (M)"><span></span><span></span><span></span></button>
         <details class="hud-brand about">
           <summary><span class="mark">◆</span><div><b>The French Laundry</b><small>Kitchen digital twin · about</small></div></summary>
           <div class="about-pop">
@@ -37,23 +38,51 @@
         </div>
       </header>
 
+      <aside class="side" id="side" data-side aria-label="Menu" hidden>
+        <div class="side-head"><span class="mark">◆</span><b>Explore the twin</b><button class="side-x" data-act="menu" aria-label="Close the menu">✕</button></div>
+        <div class="side-body">
+          <section>
+            <h3>Watch</h3>
+            <button class="sitem" data-act="site"><b>Site tour</b><small>The whole twin as a short guided story: kitchen, operations, scenarios and Studio</small></button>
+            <button class="sitem" data-act="tour"><b>Kitchen tour</b><small>A camera walk past every station and machine</small></button>
+            <button class="sitem" data-act="plate"><b>Follow a plate</b><small>Trace the next plate from the stove to its table</small></button>
+            <button class="sitem" data-act="overview"><b>Bird's-eye view</b><small>The whole plant from above</small></button>
+          </section>
+          <section>
+            <h3>Analyze</h3>
+            <button class="sitem" data-act="ops-split"><b>Operations, split view</b><small>The live twin beside its dashboard</small></button>
+            <button class="sitem" data-act="ops-full"><b>Operations, metrics only</b><small>The full dashboard: KPIs, Gantt, inventory, OEE</small></button>
+            <button class="sitem" data-act="scenarios"><b>Scenarios and optimizer</b><small>Nights for 40 to 120 guests and plans to cut the overrun</small></button>
+          </section>
+          <section>
+            <h3>View</h3>
+            <label class="srow">Labels <select class="dsel" data-labels aria-label="Labels"><option value="stations">Stations</option><option value="all">Stations and machines</option><option value="none">Off</option></select></label>
+            <label class="srow">Overlay <select class="dsel" data-overlay aria-label="Overlay">
+              <option value="none">None</option>
+              <option value="utilization">Utilization</option>
+              <option value="traffic">Foot traffic</option>
+              <option value="both">Both</option>
+            </select></label>
+            <label class="srow">Quality <select class="dsel" data-quality aria-label="Render quality"></select></label>
+          </section>
+          <section>
+            <h3>Build and learn</h3>
+            <a class="sitem" href="./studio.html"><b>Studio</b><small>Change the menu, season, dining room and mood, then run the night</small></a>
+            <a class="sitem" href="./wiki.html"><b>Engineering wiki</b><small>Data, stack, simulation, 3D and deploy</small></a>
+            <a class="sitem" href="./wiki.html#research"><b>The research story</b><small>Where the French Laundry facts came from, and how they became a model</small></a>
+            <div class="srow2">
+              <button class="dbtn" data-act="share" title="Copy a link to this exact moment of service">Share this moment</button>
+              <button class="dbtn" data-act="usd" title="Download the plant as OpenUSD for NVIDIA Omniverse / Isaac Sim">OpenUSD ⤓</button>
+            </div>
+          </section>
+          <p class="side-keys">Keys: Space play · S site tour · T kitchen tour · F follow a plate · O bird's-eye · M menu</p>
+        </div>
+      </aside>
+
       <nav class="dock" aria-label="View controls">
-        <button class="dbtn" data-act="tour" title="Guided camera tour">Tour</button>
-        <button class="dbtn" data-act="overview" title="Bird's-eye view of the plant">Overview</button>
+        <button class="dbtn" data-act="site" title="A guided story of the whole twin (S)">Site tour</button>
+        <button class="dbtn" data-act="tour" title="Camera walk through the kitchen">Kitchen tour</button>
         <button class="dbtn" data-act="plate" title="Follow the next plate from the stove to the table">Follow a plate</button>
-        <button class="dbtn" data-act="labels" title="Station and machine labels">Labels</button>
-        <select class="dsel" data-overlay aria-label="Overlay">
-          <option value="none">No overlay</option>
-          <option value="utilization">Utilization</option>
-          <option value="traffic">Foot traffic</option>
-          <option value="both">Both</option>
-        </select>
-        <select class="dsel" data-quality aria-label="Render quality"></select>
-        <button class="dbtn" data-act="usd" title="Download the plant as OpenUSD for NVIDIA Omniverse / Isaac Sim">USD ⤓</button>
-        <a class="dbtn" href="./studio.html" title="Customize the menu, season, dining room, lighting and mood">Studio</a>
-        <a class="dbtn" href="./wiki.html" title="How the twin is engineered: data, stack, simulation, 3D, Studio and deploy">Wiki</a>
-        <button class="dbtn" data-act="share" title="Copy a link to this exact moment of service">Share</button>
-        <button class="dbtn" data-act="scenarios" title="Precomputed nights for 40 to 120 guests, and the optimizer's plans to cut the meal-time overrun">Scenarios</button>
         <button class="dbtn primary" data-act="drawer" title="Operations dashboard and production plan">Operations</button>
       </nav>
 
@@ -61,6 +90,7 @@
         <div class="drawer-tabs">
           <button class="on" data-tab="ops">Live operations</button>
           <button data-tab="plan">Production plan</button>
+          <span class="seg-view" role="group" aria-label="Layout"><button data-act="ops-split" data-opsview="split" title="3D twin beside the dashboard">Split</button><button data-act="ops-full" data-opsview="full" title="Dashboard only">Metrics only</button></span>
           <button class="close" data-act="drawer" aria-label="Close">✕</button>
         </div>
         <div class="drawer-body">
@@ -70,6 +100,28 @@
       </aside>
 
       <div class="caption" data-caption hidden></div>
+
+      <section class="story" data-story aria-live="polite" hidden>
+        <div class="story-kicker" data-story-kicker></div>
+        <h2 data-story-title></h2>
+        <p data-story-body></p>
+        <div class="story-ctas" data-story-ctas></div>
+        <div class="story-foot">
+          <div class="story-dots" data-story-dots></div>
+          <button data-story="prev" aria-label="Previous">‹</button>
+          <button data-story="pause" aria-label="Pause or resume">❚❚</button>
+          <button data-story="next" aria-label="Next">›</button>
+          <button data-story="close" aria-label="End the tour">✕</button>
+        </div>
+        <div class="story-bar"><i data-story-bar></i></div>
+      </section>
+
+      <section class="hero" data-hero hidden>
+        <small>The French Laundry · Yountville · three Michelin stars</small>
+        <h1>A dinner service,<br />simulated as a factory.</h1>
+        <p>Every recipe is a bill of materials, every cook an operator, every oven a machine with OEE. Watch the brigade cook a night for 62 guests, live, in your browser.</p>
+        <div><button class="cta" data-act="site">Take the site tour</button><button class="ghost" data-act="hero-close">Explore on my own</button></div>
+      </section>
       <div class="loading" data-loading><div><span class="mark">◆</span><b>The French Laundry</b><small>Building the kitchen…</small></div></div>
     </div>
     <script type="module" src="/src/main.js"></script>

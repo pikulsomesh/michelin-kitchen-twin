@@ -453,17 +453,20 @@ twin.exportUSD();</code></pre>
             <thead><tr><th>Control</th><th>What it does</th></tr></thead>
             <tbody>
               <tr><td>HUD</td><td>Service clock, phase (prep or service), covers seated, tickets on the rail, ticket p90 and the current constraint; play or pause and a speed from 1× to 300×</td></tr>
-              <tr><td>Opening</td><td>An 11-second crane shot from the garden into the kitchen (skip with <code>?intro=0</code>)</td></tr>
-              <tr><td>Tour <kbd>t</kbd></td><td>A guided camera tour through 15 shots: the suites, hearth, rotisserie, combis, reach-ins, the pass, the clock, pastry, the garden window, the annex and the plant layout from above</td></tr>
-              <tr><td>Overview <kbd>o</kbd></td><td>Bird's-eye view of the plant</td></tr>
+              <tr><td>Opening</td><td>An 11-second crane shot from the garden into the kitchen, then, on a first visit, one card offering the site tour (skip both with <code>?intro=0</code>)</td></tr>
+              <tr><td>Dock</td><td>Four buttons: Site tour, Kitchen tour, Follow a plate and Operations. Everything else lives in the menu</td></tr>
+              <tr><td>Menu ☰ <kbd>m</kbd></td><td>A collapsible left sidebar: the tours, both operations layouts, scenarios, labels, overlay, quality, Studio, this wiki, the research story, Share and OpenUSD</td></tr>
+              <tr><td>Site tour <kbd>s</kbd></td><td>An 11-chapter guided story of the whole twin. It moves the camera, opens the dashboard split or full, flips the factory vocabulary, the utilization and foot-traffic overlays, follows a plate and opens the optimizer, with one caption card per chapter. Chapters auto-advance; <kbd>←</kbd> <kbd>→</kbd> step, <kbd>Space</kbd> pauses, <kbd>Esc</kbd> ends it. <code>?tour=site</code> starts it</td></tr>
+              <tr><td>Kitchen tour <kbd>t</kbd></td><td>A camera tour through 15 shots: the suites, hearth, rotisserie, combis, reach-ins, the pass, the clock, pastry, the garden window, the annex and the plant layout from above</td></tr>
+              <tr><td>Bird's-eye view <kbd>o</kbd></td><td>The whole plant from above</td></tr>
               <tr><td>Follow a plate <kbd>f</kbd></td><td>The camera follows the next plate from its station to the pass and out to the dining room</td></tr>
-              <tr><td>Labels</td><td>Cycles station labels, station and machine labels, and none</td></tr>
+              <tr><td>Labels</td><td>Station labels, station and machine labels, or none</td></tr>
               <tr><td>Overlay</td><td>Utilization heat on stations and machines, foot-traffic trails, or both</td></tr>
               <tr><td>Quality</td><td>Auto, Low, Medium, High or Pro Max</td></tr>
               <tr><td>Click anything</td><td>Picks a machine or ingredient: highlights it, shows its details and selects it in the dashboard</td></tr>
-              <tr><td>USD ⤓, Share, Studio</td><td>See <a href="#usd">OpenUSD export</a>, <a href="#share">Share links</a> and <a href="#studio">Studio</a></td></tr>
-              <tr><td>Scenarios</td><td>Opens the drawer at the scenarios and optimizer panel</td></tr>
-              <tr><td>Operations</td><td>Opens a drawer with the live dashboard and the production plan, side by side with the 3D view</td></tr>
+              <tr><td>Share, OpenUSD, Studio</td><td>See <a href="#share">Share links</a>, <a href="#usd">OpenUSD export</a> and <a href="#studio">Studio</a></td></tr>
+              <tr><td>Scenarios</td><td>Opens the dashboard at the scenarios and optimizer panel</td></tr>
+              <tr><td>Operations</td><td>The live dashboard and the production plan in a drawer. <b>Split</b> keeps the 3D twin beside it; <b>Metrics only</b> gives the dashboard the whole screen. The last choice is remembered, and <code>?ops=split</code> or <code>?ops=full</code> opens it</td></tr>
               <tr><td><kbd>Space</kbd></td><td>Play or pause</td></tr>
             </tbody>
           </table></div>
@@ -504,6 +507,7 @@ twin.exportUSD();</code></pre>
         <section id="studio">
           <h2>Studio</h2>
           <p><a href="./studio.html">Studio</a> is where you shape the restaurant behind the twin. Every change other than lighting recompiles the simulation input, re-runs the whole service headlessly in about a tenth of a second, and shows the impact against the house setup for the same season.</p>
+          <p>The 3D stage fills the screen. <b>Customize</b> <kbd>e</kbd> floats the editing panel over it on the left; <b>Run the night</b> <kbd>r</kbd> puts the panel away, frames the whole restaurant and plays the full service on your setup from just before the doors open, with its results across the top and the operations dashboard one click away. <code>?mode=run</code> opens Studio in Run mode.</p>
           <div class="tw"><table>
             <thead><tr><th>Tab</th><th>Controls</th><th>Flows into</th></tr></thead>
             <tbody>
