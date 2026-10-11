@@ -9,6 +9,7 @@ const num = (v, d) => (Number.isFinite(+v) && v !== '' ? +v : d);
 export const PLAN_DEFAULTS = {
   arrival: null, partyMix: null, mix: null, courseGapMin: null, eatScale: 1, paceCv: 0.25, patienceMin: 60,
   stockOverride: null, purchasing: 'plan', purchaseFactor: 1.15, noShowRate: 0.03,
+  extraStaff: [], fireLead: 0.9, leadSec: 75, // the optimizer's levers (src/sim/optimize.js)
 };
 
 /** Which dishes can a guest choose between (option parts) or add on (supplements)? */

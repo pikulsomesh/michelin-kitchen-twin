@@ -7,7 +7,11 @@ import { seatingWindow } from './adapter.js';
 
 export { DEFAULT_CFG, fmtClock, mrpTable, explodeRequirements };
 
-export function createSim({ data, ...cfg } = {}) {
+/**
+ * cache (optional): (resolvedConfig) => endT | null. A precomputed run (src/sim/precomputed.js) knows when the
+ * night ends, so the full-night forecast is skipped until something asks for it and the twin starts at once.
+ */
+export function createSim({ data, cache = null, ...cfg } = {}) {
   if (!data) throw new Error('createSim: data (KitchenData) is required');
   const listeners = new Map();
   let muted = false;
@@ -33,7 +37,7 @@ export function createSim({ data, ...cfg } = {}) {
   let config = resolve(cfg);
   let eng = null; // set below (emit may fire during construction)
   eng = new Engine(data, config, emit);
-  let forecast = null;
+  let forecast = null, cachedEnd = null;
 
   const computeForecast = () => {
     const probe = new Engine(data, config, () => {});
@@ -43,7 +47,9 @@ export function createSim({ data, ...cfg } = {}) {
     const snap = probe.snapshot();
     forecast = { endT: probe.endT ?? probe.now, snapshot: snap, series: probe.series };
   };
-  computeForecast();
+  const plan = () => { forecast = null; cachedEnd = cache?.(config) ?? null; if (cachedEnd == null) computeForecast(); };
+  plan();
+  const endT = () => cachedEnd ?? forecast.endT;
 
   const sim = {
     data,
@@ -53,8 +59,10 @@ export function createSim({ data, ...cfg } = {}) {
     get engine() { return eng; },
     get t() { return eng.now; },
     get start() { return eng.t0; },
-    get end() { return forecast.endT; },
-    get forecast() { return forecast; },
+    get end() { return endT(); },
+    get forecast() { if (!forecast) computeForecast(); return forecast; },
+    /** true when this night's end came from the precomputed cache instead of a full forecast run */
+    get cached() { return cachedEnd != null; },
     get state() { return { ...eng.snapshot(), series: eng.series }; },
     snapshot() { return this.state; },
     on(type, cb) { if (!listeners.has(type)) listeners.set(type, new Set()); listeners.get(type).add(cb); return () => listeners.get(type).delete(cb); },
@@ -63,9 +71,9 @@ export function createSim({ data, ...cfg } = {}) {
     pause() { this.playing = false; emit('control', { playing: false }); },
     setSpeed(x) { this.speed = x; emit('control', { speed: x }); },
     /** advance the simulation by dt simulated seconds */
-    step(dt) { eng.advance(Math.min(eng.now + dt, forecast.endT)); emit('tick', { t: eng.now }); return eng.now; },
+    step(dt) { eng.advance(Math.min(eng.now + dt, endT())); emit('tick', { t: eng.now }); return eng.now; },
     /** advance by wall-clock seconds at the current speed (call from requestAnimationFrame) */
-    tick(wallDt) { if (this.playing) this.step(wallDt * this.speed); if (eng.now >= forecast.endT) this.playing = false; },
+    tick(wallDt) { if (this.playing) this.step(wallDt * this.speed); if (eng.now >= endT()) this.playing = false; },
     /** PRD query: state of the whole twin at time t (seeks, then returns the snapshot) */
     stateAt(t) { this.seek(t); return this.state; },
     /** ordered event log so far: [{ t, type, ...payload }] */
@@ -74,7 +82,7 @@ export function createSim({ data, ...cfg } = {}) {
     get taskLog() { return eng.taskLog; },
     /** jump to an absolute time (seconds since midnight); backwards seeks replay from the seed deterministically */
     seek(t) {
-      t = Math.max(eng.t0, Math.min(t, forecast.endT));
+      t = Math.max(eng.t0, Math.min(t, endT()));
       if (t < eng.now) {
         muted = true;
         eng = new Engine(data, config, emit);
@@ -90,7 +98,7 @@ export function createSim({ data, ...cfg } = {}) {
     reset(patch = {}) {
       config = resolve(patch, config);
       muted = true; eng = new Engine(data, config, emit); muted = false;
-      computeForecast();
+      plan();
       emit('reset', { config });
     },
     /** raw-material requirement vs stock for the current plan (the MRP table) */

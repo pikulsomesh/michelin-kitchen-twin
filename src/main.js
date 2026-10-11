@@ -7,6 +7,8 @@ import { buildIndex } from './model/mrp.js';
 import { renderPanel, showEquipment } from './panel.js';
 import { adaptKitchenData } from './sim/adapter.js';
 import { createSim } from './sim/sim.js';
+import { forecastCache } from './sim/precomputed.js';
+import { leversFromQuery, leversToQuery } from './sim/optimize.js';
 import { mountDashboard } from './dashboard/dashboard.js';
 import { createKitchenScene } from './scene/index.js';
 import { bindSim } from './scene/bind.js';
@@ -23,7 +25,7 @@ const SPEEDS = [1, 5, 15, 30, 60, 120, 300];
 // ------------------------------------------------------------ simulation
 const index = buildIndex(data);
 const simData = adaptKitchenData(data);
-const sim = createSim({ data: simData, ...(q.get('covers') ? { covers: +q.get('covers') } : {}), ...(q.get('seating') ? { seating: q.get('seating') } : {}), seed: +q.get('seed') || 1 });
+const sim = createSim({ data: simData, cache: forecastCache(simData), ...(q.get('covers') ? { covers: +q.get('covers') } : {}), ...(q.get('seating') ? { seating: q.get('seating') } : {}), seed: +q.get('seed') || 1, ...leversFromQuery(q) });
 sim.setSpeed(+q.get('speed') || 30);
 sim.seek(q.get('t') ? sim.config.doorsOpen + 3600 * +q.get('t') : sim.config.doorsOpen - 600);
 
@@ -126,10 +128,15 @@ const actions = {
   async share() {
     // ?covers&seating&seed&t (hours after doors open) reproduce this exact moment: the sim is deterministic.
     const c = sim.config;
-    const p = new URLSearchParams({ covers: c.covers, seating: c.seating, seed: c.seed, t: ((sim.t - c.doorsOpen) / 3600).toFixed(2), intro: 0 });
+    const p = leversToQuery(c, new URLSearchParams({ covers: c.covers, seating: c.seating, seed: c.seed, t: ((sim.t - c.doorsOpen) / 3600).toFixed(2), intro: 0 }));
     const url = `${location.origin}${location.pathname}?${p}`;
     try { await navigator.clipboard.writeText(url); say('Link to this moment copied. It replays the same service, to the second.', 3000); }
     catch { prompt('Link to this moment', url); }
+  },
+  scenarios() {
+    if (!drawerOpen) actions.drawer();
+    $('[data-tab="ops"]').click();
+    $('[data-panel="library"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
   drawer() {
     drawerOpen = !drawerOpen;
@@ -181,7 +188,7 @@ document.addEventListener('keydown', (e) => {
 // A re-plan from the dashboard (covers, seating, seed) is kept in the address bar.
 sim.on('reset', ({ config }) => {
   const p = new URLSearchParams(location.search);
-  p.set('covers', config.covers); p.set('seating', config.seating); p.set('seed', config.seed); p.delete('t');
+  p.set('covers', config.covers); p.set('seating', config.seating); p.set('seed', config.seed); p.delete('t'); leversToQuery(config, p);
   history.replaceState(null, '', `${location.pathname}?${p}${location.hash}`);
 });
 

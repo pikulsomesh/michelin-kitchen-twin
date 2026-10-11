@@ -3,6 +3,7 @@
 import { C, fit, lineChart, nearest, barRows, hhmm, mmss } from './charts.js';
 import { TERMS } from './terms.js';
 import { mountPlan, drawGuestLine } from './plan.js';
+import { mountOptimizer } from './optimizer.js';
 import { scenariosFor, runHeadless, compare, capacitySweep, shiftReportCSV, avgOee } from '../sim/scenarios.js';
 
 const SPEEDS = [1, 10, 60, 300, 900, 2400];
@@ -71,6 +72,8 @@ const TEMPLATE = `
       <div class="mtiles" data-gl-tiles></div>
       <div class="two"><div><canvas class="ch tall" data-gl-flow></canvas><div class="legend"><i style="background:${C.blue}"></i>In the house <i style="background:${C.orange}"></i>Waiting for a table <i style="background:${C.crit}"></i>Walked away</div></div>
       <div><canvas class="ch tall" data-gl-gap></canvas><div class="legend"><i style="background:${C.blue}"></i>Average wait between courses <i style="background:${C.orange}"></i>p90 <span class="muted">dashed = target</span></div></div></div></article>
+
+    <article class="panel wide" data-panel="library"><h2 data-term="library">Service scenarios & optimizer</h2><div data-library></div></article>
 
     <article class="panel wide"><h2 data-term="whatif">What if…</h2>
       <div class="scen" data-scen></div>
@@ -412,6 +415,7 @@ export function mountDashboard(root, sim, opts = {}) {
 
   syncRange(); paintPhases(); syncPlan(); renderScen(); applyTerms();
   mountPlan($('[data-plan]'), sim, { onApply: () => { syncRange(); syncPlan(); state.scen = null; state.sweep = null; renderScen(); sim.seek(doorsT()); sim.play(); update(true); } });
+  mountOptimizer($('[data-library]'), sim, { onLoad: () => { syncRange(); syncPlan(); state.scen = null; state.sweep = null; renderScen(); sim.seek(doorsT()); sim.play(); update(true); } });
   const api = {
     update, start() { if (!raf) { prev = performance.now(); raf = requestAnimationFrame(loop); } update(true); },
     stop() { cancelAnimationFrame(raf); raf = 0; }, on: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },

@@ -2,13 +2,15 @@
 import { data as raw } from '../data.js';
 import { adaptKitchenData } from '../sim/adapter.js';
 import { createSim } from '../sim/sim.js';
+import { forecastCache } from '../sim/precomputed.js';
+import { leversFromQuery } from '../sim/optimize.js';
 import { mountDashboard } from './dashboard.js';
 
 const q = new URLSearchParams(location.search);
 const num = (k, d) => (q.get(k) !== null && Number.isFinite(+q.get(k)) ? +q.get(k) : d);
 const data = adaptKitchenData(raw);
 const sim = createSim({
-  data, seed: num('seed', 1), ...(q.get('covers') ? { covers: num('covers') } : {}), ...(q.get('seating') ? { seating: q.get('seating') } : {}),
+  data, cache: forecastCache(data), seed: num('seed', 1), ...leversFromQuery(q), ...(q.get('covers') ? { covers: num('covers') } : {}), ...(q.get('seating') ? { seating: q.get('seating') } : {}),
 });
 sim.setSpeed(num('speed', 60));
 sim.seek(sim.config.doorsOpen - 600);

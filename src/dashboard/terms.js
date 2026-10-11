@@ -17,6 +17,7 @@ export const TERMS = {
   labor: ['Brigade', 'Operators'],
   bottleneck: ['Bottleneck', 'Constraint'],
   whatif: ['What if…', 'Scenario analysis'],
+  library: ['Service scenarios & optimizer', 'Precomputed scenarios & schedule optimizer'],
   capacity: ['Rated capacity', 'Capacity curve'],
   mrp: ['Mise en place & ordering', 'MRP: material requirements'],
   gantt: ['Station Gantt', 'Resource Gantt'],
