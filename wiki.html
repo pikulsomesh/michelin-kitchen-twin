@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitchen Twin Wiki</title>
+    <meta name="description" content="How the kitchen digital twin is engineered: where the data comes from, the repository structure, the stack, the simulation engine, the 3D scene, quality modes, views, Studio, the operations dashboard, share links, OpenUSD export, and build and deploy." />
+    <meta name="theme-color" content="#0e0f11" />
+    <link rel="stylesheet" href="/src/wiki/wiki.css" />
+  </head>
+  <body>
+    <header class="wk-top">
+      <button class="wk-menu" data-menu aria-label="Contents">☰ Contents</button>
+      <a class="wk-brand" href="./"><span class="mark">◆</span>Kitchen Twin <span>Wiki</span></a>
+      <nav class="wk-links" aria-label="Site">
+        <a href="./">3D twin</a>
+        <a href="./studio.html">Studio</a>
+        <a class="opt" href="./dashboard.html">Dashboard</a>
+        <a class="opt" href="https://github.com/pikulsomesh/michelin-kitchen-twin" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <div class="wk">
+      <nav class="wk-toc" aria-label="Contents">
+        <h2>Start here</h2>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#stack">Stack</a>
+        <a href="#repo">Repository layout</a>
+        <h2>The model</h2>
+        <a href="#data">Data and sources</a>
+        <a href="#planning">Production planning (MRP)</a>
+        <a href="#simulation">Simulation engine</a>
+        <a href="#scenarios">Scenarios and optimizer</a>
+        <h2>What you see</h2>
+        <a href="#scene">3D scene</a>
+        <a href="#quality">Quality modes</a>
+        <a href="#views">Views and controls</a>
+        <a href="#dashboard">Operations dashboard</a>
+        <a href="#studio">Studio</a>
+        <a href="#share">Share links and replay</a>
+        <a href="#usd">OpenUSD export</a>
+        <h2>Engineering</h2>
+        <a href="#build">Build, test and deploy</a>
+        <a href="#performance">Performance</a>
+        <a href="#history">How it was built</a>
+        <a href="#limits">Limits and estimates</a>
+      </nav>
+
+      <main class="wk-main">
+        <!-- ============================================================ overview -->
+        <section id="overview">
+          <p class="eyebrow">Engineering wiki</p>
+          <h1>A three-star kitchen, built like a factory twin</h1>
+          <p class="lede">This site is a digital twin of The French Laundry's kitchen in Yountville, California, running a full dinner service. It is modelled the way a manufacturing plant is: covers booked are the build plan, every recipe is a bill of materials with a routing, stations are work centers, and a discrete-event simulation drives the brigade, the machines and the stock you see in 3D. Everything runs in your browser from a static GitHub Pages site.</p>
+          <p class="muted">The numbers below are read live from the same <code>/data</code> files the twin runs on.</p>
+          <div class="stats">
+            <div><b data-count="courses">–</b><small>courses on the tasting menu</small></div>
+            <div><b data-count="products">–</b><small>recipes (<span data-count="intermediates"></span> sub-assemblies, <span data-count="finished"></span> plates)</small></div>
+            <div><b data-count="items">–</b><small>raw ingredients</small></div>
+            <div><b data-count="bomLines">–</b><small>bill-of-materials lines</small></div>
+            <div><b data-count="ops">–</b><small>routing operations</small></div>
+            <div><b data-count="equipment">–</b><small>pieces of equipment</small></div>
+            <div><b data-count="workCenters">–</b><small>work centers (stations)</small></div>
+            <div><b data-count="staff">–</b><small>brigade members in <span data-count="roles"></span> roles</small></div>
+            <div><b data-count="sources">–</b><small>cited publications</small></div>
+            <div><b data-count="cited">–</b><small>of records cite a publication</small></div>
+          </div>
+          <div class="cards">
+            <a class="card" href="./"><b>3D twin</b><small>The photoreal kitchen with the simulated service playing in it, the HUD, guided tour and the operations drawer.</small></a>
+            <a class="card" href="./studio.html"><b>Studio</b><small>Change the dining room, menu, season and mood, and watch the scene and the service re-plan.</small></a>
+            <a class="card" href="./dashboard.html"><b>Operations dashboard</b><small>The full-screen control room: tickets, OEE, inventory, guests, what-ifs and rated capacity.</small></a>
+            <a class="card" href="https://github.com/pikulsomesh/michelin-kitchen-twin" target="_blank" rel="noopener"><b>Source code</b><small>The repository: data, engine, scene, Studio, tests and the Pages workflow.</small></a>
+          </div>
+        </section>
+
+        <!-- ============================================================ architecture -->
+        <section id="architecture">
+          <h2>Architecture</h2>
+          <p>The system is a pipeline with one source of truth. Sourced JSON in <code>/data</code> is turned into a production plan and into the simulation's input; the simulation owns the clock; the 3D scene, the dashboard and Studio only read its state and send it commands.</p>
+          <figure>
+            <svg class="dg" viewBox="0 0 880 400" role="img" aria-labelledby="dg1t">
+              <title id="dg1t">Data flows from /data into the MRP plan and the simulation adapter; the simulation drives the 3D scene and the dashboard; Studio compiles edits into simulation input and lighting.</title>
+              <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" /></marker></defs>
+              <path class="arr" d="M95 150V20H770V38" marker-end="url(#ah1)" />
+              <text class="s" x="300" y="14">layout, equipment, storage and ingredients → geometry</text>
+              <path class="arr" d="M170 175C200 175 200 88 228 88" marker-end="url(#ah1)" />
+              <path class="arr" d="M170 205C200 205 200 198 228 198" marker-end="url(#ah1)" />
+              <path class="arr" d="M410 88H468" marker-end="url(#ah1)" />
+              <path class="arr" d="M410 198H468" marker-end="url(#ah1)" />
+              <path class="arr" d="M640 180C665 180 665 70 688 70" marker-end="url(#ah1)" />
+              <path class="arr" d="M640 210H688" marker-end="url(#ah1)" />
+                            <text class="s" x="666" y="130">bindSim</text>
+              <path class="arr" d="M320 226V332H468" marker-end="url(#ah1)" />
+              <text class="s" x="330" y="322">base model</text>
+              <path class="arr" d="M555 300V248" marker-end="url(#ah1)" />
+              <text class="s" x="562" y="280">KitchenData + cfg</text>
+              <path class="arr dash" d="M640 345H868V70H852" marker-end="url(#ah1)" />
+              <text class="s" x="700" y="362">look: sun, sky, mood, dining room</text>
+
+              <rect class="box data" x="20" y="150" width="150" height="80" rx="10" />
+              <text class="h" x="34" y="176">/data</text>
+              <text class="s" x="34" y="196">9 JSON files</text>
+              <text class="s" x="34" y="214">every record cited or est</text>
+
+              <rect class="box sim" x="230" y="60" width="180" height="56" rx="10" />
+              <text class="h" x="244" y="84">model/mrp.js</text>
+              <text class="s" x="244" y="102">BOM explosion, load</text>
+              <rect class="box sim" x="230" y="170" width="180" height="56" rx="10" />
+              <text class="h" x="244" y="194">sim/adapter.js</text>
+              <text class="s" x="244" y="212">routings → task chains</text>
+
+              <rect class="box view" x="470" y="60" width="170" height="56" rx="10" />
+              <text class="h" x="484" y="84">panel.js</text>
+              <text class="s" x="484" y="102">production plan drawer</text>
+              <rect class="box sim" x="470" y="150" width="170" height="96" rx="10" />
+              <text class="h" x="484" y="176">sim/engine.js</text>
+              <text class="s" x="484" y="194">discrete-event job shop</text>
+              <text class="h" x="484" y="218">sim/sim.js</text>
+              <text class="s" x="484" y="236">clock, seek, events, forecast</text>
+
+              <rect class="box view" x="690" y="40" width="160" height="60" rx="10" />
+              <text class="h" x="704" y="64">scene/ (Three.js)</text>
+              <text class="s" x="704" y="84">photoreal twin</text>
+              <rect class="box view" x="690" y="180" width="160" height="60" rx="10" />
+              <text class="h" x="704" y="204">dashboard/</text>
+              <text class="s" x="704" y="224">live operations</text>
+
+              <rect class="box studio" x="470" y="300" width="170" height="64" rx="10" />
+              <text class="h" x="484" y="324">studio/compile.js</text>
+              <text class="s" x="484" y="344">edits → sim input</text>
+            </svg>
+            <figcaption>The three pages share these modules. <code>index.html</code> wires all of them; <code>studio.html</code> adds the Studio layer; <code>dashboard.html</code> mounts the dashboard on its own.</figcaption>
+            <div class="legend"><span><i style="border-color:var(--accent)"></i>Sourced data</span><span><i style="border-color:var(--blue)"></i>Planning and simulation</span><span><i style="border-color:var(--green)"></i>Views</span><span><i style="border-color:var(--violet)"></i>Studio</span></div>
+          </figure>
+
+          <h3>The frame loop</h3>
+          <p>The simulation owns time. Each animation frame advances it by the wall-clock delta times the chosen speed, then the scene and the dashboard mirror the new state. Because every view reads the same state, the 3D cooks, the Gantt chart and the HUD never disagree.</p>
+          <figure>
+            <svg class="dg" viewBox="0 0 866 112" role="img" aria-labelledby="dg2t">
+              <title id="dg2t">Per frame: requestAnimationFrame, sim.tick, engine.advance, binding.update, dashboard.update, render.</title>
+              <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" /></marker></defs>
+              <g>
+                <rect class="box" x="14" y="24" width="150" height="64" rx="10" /><text class="h" x="28" y="50">twin.onFrame(dt)</text><text class="s" x="28" y="70">requestAnimationFrame</text>
+                <rect class="box sim" x="186" y="24" width="150" height="64" rx="10" /><text class="h" x="200" y="50">sim.tick(dt)</text><text class="s" x="200" y="70">dt × speed, 1× to 300×</text>
+                <rect class="box sim" x="358" y="24" width="150" height="64" rx="10" /><text class="h" x="372" y="50">engine.advance</text><text class="s" x="372" y="70">pop events, dispatch</text>
+                <rect class="box view" x="530" y="24" width="150" height="64" rx="10" /><text class="h" x="544" y="50">binding.update</text><text class="s" x="544" y="70">mirror state at 6 Hz</text>
+                <rect class="box view" x="702" y="24" width="150" height="64" rx="10" /><text class="h" x="716" y="50">render</text><text class="s" x="716" y="70">HUD 4 Hz, drawer 10 Hz</text>
+              </g>
+              <path class="arr" d="M164 56H184" marker-end="url(#ah2)" /><path class="arr" d="M336 56H356" marker-end="url(#ah2)" /><path class="arr" d="M508 56H528" marker-end="url(#ah2)" /><path class="arr" d="M680 56H700" marker-end="url(#ah2)" />
+            </svg>
+            <figcaption>From <code>src/main.js</code>. Cooks and plates are tweened between syncs, so motion stays smooth at 60 fps while the scene only re-reads the simulation six times a second.</figcaption>
+          </figure>
+        </section>
+
+        <!-- ============================================================ stack -->
+        <section id="stack">
+          <h2>Stack</h2>
+          <p>The twin is deliberately small: one runtime dependency, no framework, no backend and no binary assets.</p>
+          <div class="tw"><table>
+            <thead><tr><th>Layer</th><th>Choice</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>Language</td><td>Modern JavaScript (ES2022 modules), CSS</td><td>The same simulation and planning code runs in the browser and in Node without a compile step.</td></tr>
+              <tr><td>3D rendering</td><td><a href="https://threejs.org" target="_blank" rel="noopener">Three.js</a> 0.186 (WebGL 2), with its post-processing addons: GTAO, Unreal bloom, bokeh depth of field, FXAA, output pass</td><td>Physically based materials, real-time shadows and a mature post-processing chain, in the browser.</td></tr>
+              <tr><td>UI</td><td>Plain DOM and Canvas 2D charts (<code>src/dashboard/charts.js</code>)</td><td>No framework to download; charts draw thousands of Gantt bars cheaply on a canvas.</td></tr>
+              <tr><td>Simulation</td><td>Hand-written discrete-event engine with a binary-heap event queue and a seeded PRNG (mulberry32)</td><td>Deterministic, dependency-free and fast enough to run a whole night in about a tenth of a second.</td></tr>
+              <tr><td>Build</td><td><a href="https://vite.dev" target="_blank" rel="noopener">Vite</a> 8, multi-page build (four HTML entries)</td><td>Bundles JSON imports, splits shared chunks, and serves the dev site with hot reload.</td></tr>
+              <tr><td>Tests</td><td>Node 22's built-in test runner (<code>node --test</code>)</td><td>No test framework needed; the engine and planner are pure modules.</td></tr>
+              <tr><td>CI and hosting</td><td>GitHub Actions; GitHub Pages via <code>actions/deploy-pages</code></td><td>Every pull request is validated, tested and built; every merge to <code>main</code> publishes.</td></tr>
+              <tr><td>Interchange</td><td>OpenUSD (<code>.usda</code>) written in the browser</td><td>Opens in usdview, NVIDIA Omniverse and Isaac Sim with prims named by the data ids.</td></tr>
+            </tbody>
+          </table></div>
+        </section>
+
+        <!-- ============================================================ repo -->
+        <section id="repo">
+          <h2>Repository layout</h2>
+          <p>Each top-level folder under <code>src/</code> was owned by one workstream and talks to the others only through the data ids and small APIs.</p>
+<div class="tree"><span class="d">michelin-kitchen-twin/</span>
+├── index.html             <span class="c"># the 3D twin with HUD, dock and operations drawer</span>
+├── studio.html            <span class="c"># Studio: dining room, menu, season, light and mood</span>
+├── dashboard.html         <span class="c"># full-screen operations dashboard</span>
+├── wiki.html              <span class="c"># this page</span>
+├── vite.config.js         <span class="c"># multi-page build, Pages base path /michelin-kitchen-twin/</span>
+├── <span class="d">data/</span>                  <span class="c"># sourced master data, the single source of truth</span>
+│   ├── restaurant.json    <span class="c"># plant: kitchen, annex, garden, seats, design team</span>
+│   ├── menu.json          <span class="c"># tasting menu: courses, choices, supplements, eating times</span>
+│   ├── service.json       <span class="c"># build plan: covers, seatings, pacing, variability, what-ifs, KPIs</span>
+│   ├── items.json         <span class="c"># raw materials: yield, storage, shelf life, price, seasons</span>
+│   ├── products.json      <span class="c"># sub-assemblies and plates, each with a BOM and a routing</span>
+│   ├── resources.json     <span class="c"># work centers, equipment, storage, roles, shifts, staff</span>
+│   ├── layout.json        <span class="c"># floor plan: zones, equipment placements, benches</span>
+│   ├── terms.json         <span class="c"># kitchen ↔ factory vocabulary</span>
+│   └── sources.json       <span class="c"># bibliography cited by every record</span>
+├── <span class="d">src/</span>
+│   ├── main.js            <span class="c"># wires sim + scene + dashboard + plan for index.html</span>
+│   ├── data.js            <span class="c"># bundles /data for the browser</span>
+│   ├── panel.js           <span class="c"># production plan drawer and equipment details</span>
+│   ├── <span class="d">model/</span>             <span class="c"># mrp.js (BOM explosion, load), validate.js</span>
+│   ├── <span class="d">sim/</span>               <span class="c"># engine.js, sim.js, adapter.js, mrp.js, scenarios.js, rng.js, data/</span>
+│   ├── <span class="d">scene/</span>             <span class="c"># Three.js twin: index, bind, quality, room, equipment, appliances,</span>
+│   │                      <span class="c">#   cooks, items, ingredients, materials, nav, plan, sky, tour, clock, usd</span>
+│   ├── <span class="d">dashboard/</span>         <span class="c"># dashboard.js, plan.js, charts.js, terms.js, page.js</span>
+│   ├── <span class="d">studio/</span>            <span class="c"># catalog, config, compile, look, stage, ui, main</span>
+│   └── <span class="d">wiki/</span>              <span class="c"># this page's script and styles</span>
+├── <span class="d">scripts/</span>               <span class="c"># validate, plan, sim-report (Node CLIs over the same modules)</span>
+├── <span class="d">tests/</span>                 <span class="c"># model, sim and studio tests (node --test)</span>
+├── <span class="d">docs/</span>                  <span class="c"># data model, simulation, Studio, NVIDIA path, PRD and PR-FAQ</span>
+└── <span class="d">.github/workflows/</span>     <span class="c"># ci.yml (PRs and main), pages.yml (deploy)</span></div>
+        </section>
+
+        <!-- ============================================================ data -->
+        <section id="data">
+          <h2>Data and sources</h2>
+          <p>The French Laundry was chosen because it is the three-star kitchen with the most published detail: a 2017 rebuild documented by its architects and by the trade press, a published equipment schedule, a cookbook, and course-by-course reviews. Every record in <code>/data</code> has a <code>src</code> list that points into <code>sources.json</code>, or <code>est</code> where it is a modelling estimate.</p>
+          <h3>Kitchen concepts as manufacturing master data</h3>
+          <div class="tw"><table>
+            <thead><tr><th>Kitchen</th><th>Manufacturing</th><th>Where</th></tr></thead>
+            <tbody>
+              <tr><td>The restaurant and its kitchen</td><td>Plant</td><td><code>restaurant.json</code></td></tr>
+              <tr><td>Tasting menu, choices, supplements</td><td>Product catalogue, configure-to-order options</td><td><code>menu.json</code></td></tr>
+              <tr><td>Covers booked tonight</td><td>Master production schedule</td><td><code>service.json</code></td></tr>
+              <tr><td>Ingredients</td><td>Purchased raw materials (item master)</td><td><code>items.json</code> <code>RM-*</code></td></tr>
+              <tr><td>Mise en place</td><td>Sub-assemblies, work in process</td><td><code>products.json</code> <code>INT-*</code></td></tr>
+              <tr><td>Plated courses</td><td>Finished goods</td><td><code>products.json</code> <code>FG-*</code></td></tr>
+              <tr><td>Recipe quantities</td><td>Bill of materials</td><td><code>bom</code> in each product</td></tr>
+              <tr><td>Method, station, appliance, timings</td><td>Routing with setup and run times</td><td><code>routing</code> in each product</td></tr>
+              <tr><td>Stations</td><td>Work centers</td><td><code>resources.json</code> <code>WC-*</code></td></tr>
+              <tr><td>Ranges, combis, hearth, PacoJet</td><td>Machines with parallel slots</td><td><code>resources.json</code> <code>EQ-*</code></td></tr>
+              <tr><td>Reach-ins, humidor, aging cooler</td><td>Storage locations</td><td><code>resources.json</code> <code>SL-*</code></td></tr>
+              <tr><td>The brigade</td><td>Labor pool, skills matrix, shifts</td><td><code>resources.json</code> roles, staff</td></tr>
+              <tr><td>Floor plan</td><td>Plant layout</td><td><code>layout.json</code></td></tr>
+            </tbody>
+          </table></div>
+          <p>The ids are the contract between every part of the system. The simulation keys its machines by <code>EQ-*</code>, the scene places a model at each <code>EQ-*</code> position, the dashboard names constraints by role and machine, and the USD export writes a prim per id. <code>npm run validate</code> checks every cross-reference before CI will build.</p>
+          <h3>Bibliography</h3>
+          <p class="muted">Rendered from <code>data/sources.json</code>, with how many ingredient, recipe, equipment and station records cite each one.</p>
+          <div class="tw" data-sources></div>
+          <p>Four recipes reproduce Thomas Keller's published quantities exactly (Oysters and Pearls, the salmon cornet batter, Coffee and Doughnuts, butter-poached lobster), and a test checks the planner reproduces the Oysters and Pearls numbers. The rest of the menu uses typical fine-dining portions, marked <code>est</code>. See <a href="#limits">Limits and estimates</a>.</p>
+        </section>
+
+        <!-- ============================================================ planning -->
+        <section id="planning">
+          <h2>Production planning (MRP)</h2>
+          <p><code>src/model/mrp.js</code> runs a classic material requirements planning explosion, the same code in the browser drawer and in <code>npm run plan</code>.</p>
+          <figure>
+            <svg class="dg" viewBox="0 0 862 120" role="img" aria-labelledby="dg3t">
+              <title id="dg3t">Covers become plates, plates explode into batches of sub-assemblies, then raw materials grossed up for yield, then labor and machine minutes compared with capacity.</title>
+              <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" /></marker></defs>
+              <rect class="box data" x="14" y="24" width="124" height="72" rx="10" /><text class="h" x="26" y="50">Covers</text><text class="s" x="26" y="70">the build plan</text>
+              <rect class="box sim" x="156" y="24" width="124" height="72" rx="10" /><text class="h" x="168" y="50">Demand</text><text class="s" x="168" y="70">plates per option</text><text class="s" x="168" y="86">and supplement</text>
+              <rect class="box sim" x="298" y="24" width="124" height="72" rx="10" /><text class="h" x="310" y="50">Explode</text><text class="s" x="310" y="70">BOM level by level,</text><text class="s" x="310" y="86">in whole batches</text>
+              <rect class="box sim" x="440" y="24" width="124" height="72" rx="10" /><text class="h" x="452" y="50">Raw materials</text><text class="s" x="452" y="70">grossed up by</text><text class="s" x="452" y="86">trim yield</text>
+              <rect class="box sim" x="582" y="24" width="124" height="72" rx="10" /><text class="h" x="594" y="50">Load</text><text class="s" x="594" y="70">labor and machine</text><text class="s" x="594" y="86">minutes</text>
+              <rect class="box view" x="724" y="24" width="124" height="72" rx="10" /><text class="h" x="736" y="50">Capacity</text><text class="s" x="736" y="70">vs rostered shifts</text>
+              <path class="arr" d="M138 60H154" marker-end="url(#ah3)" /><path class="arr" d="M280 60H296" marker-end="url(#ah3)" /><path class="arr" d="M422 60H438" marker-end="url(#ah3)" /><path class="arr" d="M564 60H580" marker-end="url(#ah3)" /><path class="arr" d="M706 60H722" marker-end="url(#ah3)" />
+            </svg>
+            <figcaption><code>demandForCovers()</code> → <code>explode()</code> → <code>loadSummary()</code>, plus <code>leadTimeMinutes()</code> for items that take days (corned tongue about 76 hours, foie gras torchon about 49).</figcaption>
+          </figure>
+          <ul>
+            <li>Option shares (beef or veal tongue) and supplement uptake (caviar, foie gras) are applied as expected values and rounded up.</li>
+            <li>Sub-assemblies are made in whole batches, so 31 lobsters' worth of demand blanches two batches of 20.</li>
+            <li>Raw materials are grossed up by <code>yieldPct</code>: 900 g of shelled corn needs 2 kg on the cob.</li>
+            <li>Each routing step becomes labor minutes for a role, scaled by <code>laborFraction</code> because a cook is not hands-on while the combi runs, and machine minutes for a piece of equipment.</li>
+          </ul>
+          <p>At 62 covers every station has headroom; at 120 the fish commis needs more prep time than the shift allows. Those are the constraints the simulation then shows live.</p>
+        </section>
+
+        <!-- ============================================================ simulation -->
+        <section id="simulation">
+          <h2>Simulation engine</h2>
+          <p><code>src/sim/engine.js</code> is a discrete-event simulation of the service as a job shop. Time jumps from event to event on a binary heap; between events nothing is computed, which is why a full night of prep and service simulates in about 0.1 seconds.</p>
+          <h3>What flows through it</h3>
+          <ol>
+            <li><b>Reservations</b> [demand]: covers split into parties of one to six, arriving on the chosen seating curve, with no-shows and a finite set of tables. A party that waits longer than its patience walks away.</li>
+            <li><b>Prep</b> [pre-production]: the menu is exploded into prep batches with a safety factor. Prep tasks consume raw stock and produce components that service tasks then consume. Items whose lead time cannot fit the day (veal stock, corned tongue, foie torchon) are carry-over stock from a previous day.</li>
+            <li><b>Tickets</b> [work orders]: one per table per course. Expo fires each ticket early by the planned lead time of its slowest dish, and staggers the other dishes so they all finish together (just-in-time offset scheduling).</li>
+            <li><b>Tasks</b> [routed operations]: each dish is a chain of steps with a station, an appliance type, a role, a duration and a hands-on time, so a combi stays busy after the cook walks away.</li>
+            <li><b>Quality gate</b> [final inspection]: QC rejects and plates held too long at the pass are re-fired; waste and food cost are tracked.</li>
+            <li><b>Guests</b> [a second production line]: parties are seated, eat each course at their own pace, and leave; every stage has a queue and a KPI.</li>
+          </ol>
+          <h3>Dispatching</h3>
+          <p>Whenever something changes, ready tasks are sorted by class (re-fires first, then service, then prep, then pot wash) and by due date, with prep ordered by latest start. Each task then needs, in order: its inputs in stock (or still being prepped, in which case it waits), a free position at its station, a free slot on an appliance of the right type (the least-loaded unit wins), and a cook with that role or skill. Whatever blocks a task is logged, and the blocker with the most waiting in the last half hour is named on the HUD as the constraint, in theory-of-constraints terms.</p>
+          <h3>Randomness and determinism</h3>
+          <p>Operation times are means with lognormal spread (more for hands-on work, less for machine cycles), and appliances break down on an MTBF/MTTR model. All randomness comes from three seeded mulberry32 streams, so the same covers, seating and seed replay the same night to the second. Seeking backwards rebuilds the engine and replays from the seed; that is what makes share links exact.</p>
+          <h3>KPIs</h3>
+          <p>Ticket time p50, p90 and p95 per course; guest wait and course gap against target; throughput and work in process; utilization of cooks, stations and appliances on a 15-minute rolling window; OEE (availability × performance × quality) per appliance; first-pass yield; stockouts, substitutions and comps; food cost, waste and energy; and the bottleneck read-out.</p>
+          <h3>API</h3>
+<pre><code>import { createSim } from './src/sim/sim.js';
+const sim = createSim({ data, covers: 62, seed: 1, seating: 'tfl-staggered' });
+sim.play(); sim.setSpeed(60);
+twin.onFrame((dt) => sim.tick(dt));       // the sim owns the clock
+sim.seek(t); sim.stateAt(t);              // backwards seeks replay from the seed
+sim.reset({ covers: 120, staffOut: [...] });   // re-plan the night
+sim.on('ticket.fired' | 'op.start' | 'op.end' | 'staff.move' | 'machine.state'
+     | 'inventory.change' | 'plate.passed' | 'plate.refire', cb);
+sim.events; sim.taskLog; sim.forecast;    // event log, Gantt intervals, full-run result</code></pre>
+          <p>The same modules run headless in Node: <code>npm run sim:report -- 124</code> prints the KPIs for 124 covers.</p>
+        </section>
+
+        <!-- ============================================================ scenarios -->
+        <section id="scenarios">
+          <h2>Scenarios and optimizer</h2>
+          <p>Every what-if is a config patch applied to the same seed, so a comparison isolates the change. <code>src/sim/scenarios.js</code> runs a whole service headlessly with <code>runHeadless()</code>, compares two runs on every KPI with <code>compare()</code>, sweeps covers from 20 to 200 to find rated capacity, and writes the shift report as CSV.</p>
+          <div class="tw"><table>
+            <thead><tr><th>What-if</th><th>Patch</th></tr></thead>
+            <tbody>
+              <tr><td>Full house</td><td>Double the covers</td></tr>
+              <tr><td>Short-staffed</td><td>One cook removed from the schedule (<code>staffOut</code>)</td></tr>
+              <tr><td>Combi ovens down</td><td>Forced breakdown of both combis at 20:15 for 30 minutes (<code>faults</code>)</td></tr>
+              <tr><td>Supply shock</td><td>Lobster delivered 40% short (<code>supply</code>)</td></tr>
+              <tr><td>Rush seating</td><td>Everyone arrives within 30 minutes</td></tr>
+            </tbody>
+          </table></div>
+          <p>The capacity sweep marks the knee as the first cover count where guest wait p90 passes 10 minutes, and names the resource that blocked work the most at that load.</p>
+          <div class="note pending" data-scenarios-note>Precomputed scenarios and an optimizer are being added in a parallel workstream. This section will describe them once they ship.</div>
+        </section>
+
+        <!-- ============================================================ scene -->
+        <section id="scene">
+          <h2>3D scene</h2>
+          <p><code>src/scene/</code> builds a photoreal model of the 2017 kitchen (the curved skylit vault, terrazzo floor, the fritted ribbon window onto the garden), the support annex, the culinary garden and a glimpse of the dining room. There are no downloaded models or textures: geometry is generated from <code>/data</code> at load, and every material's texture maps are painted on canvases at runtime from a seeded generator, so they look identical on every load.</p>
+          <div class="tw"><table>
+            <thead><tr><th>File</th><th>Builds</th></tr></thead>
+            <tbody>
+              <tr><td><code>index.js</code></td><td>Renderer, camera, controls, lighting rig, post-processing, the public API and the render loop</td></tr>
+              <tr><td><code>plan.js</code></td><td>Turns <code>layout.json</code> and <code>resources.json</code> into positions for every station, machine, cabinet and cook spot</td></tr>
+              <tr><td><code>room.js</code></td><td>The building, vault, annex, dining glimpse, courtyard and garden</td></tr>
+              <tr><td><code>equipment.js</code>, <code>appliances.js</code></td><td>The equipment schedule at real dimensions: Bonnet suites, Hestan range, stock pot ranges, RATIONAL combis, Rotisol rotisserie, hearth, reach-ins and more, each with live flames, glowing elements, steam, door state and a status LED</td></tr>
+              <tr><td><code>materials.js</code></td><td>Procedural PBR: brushed and polished steel with anisotropy, enamel, cast iron, brass, copper, terrazzo, tile, wood, glass</td></tr>
+              <tr><td><code>ingredients.js</code></td><td>A container for every <code>RM-*</code> and <code>INT-*</code> in its storage location, whose level drains as the simulation draws stock</td></tr>
+              <tr><td><code>cooks.js</code></td><td>Articulated brigade figures in whites that walk, face their work and gesture while busy</td></tr>
+              <tr><td><code>nav.js</code></td><td>A walkable-floor grid with A* path finding, so cooks walk the aisles around equipment the way an AGV moves on a factory floor</td></tr>
+              <tr><td><code>items.js</code></td><td>Plates, pans, trays and pots carried between stations and run to the dining room</td></tr>
+              <tr><td><code>sky.js</code>, <code>clock.js</code>, <code>tour.js</code></td><td>The dusk sky, the "Sense of Urgency" clock over the pass, and the camera shots for the tour</td></tr>
+              <tr><td><code>bind.js</code></td><td>Mirrors simulation state into the scene: cooks walk to their task's station, appliances follow their state, plates move, shelves drain</td></tr>
+              <tr><td><code>quality.js</code>, <code>usd.js</code></td><td>Quality levels and the Pro Max accumulator; the OpenUSD exporter</td></tr>
+            </tbody>
+          </table></div>
+          <p>The steel reflects the kitchen itself: a cube-camera reflection probe is captured from the aisle once the scene is built. Static geometry is merged into a few draw calls per material, and the cooks' limbs are batched per figure.</p>
+          <h3>Scene API</h3>
+          <p>Everything is driven through ids from the data. The simulation, Studio and the dashboard use the same calls.</p>
+<pre><code>const twin = await createKitchenScene(el, { quality: 'auto' });
+twin.setApplianceState('EQ-HEARTH', 'busy', { tempC: 420, slotsBusy: 3 });
+twin.addCook(id, { name, role, stationId }); await twin.moveCook(id, 'WC-PASS');
+twin.addItem(id, { kind: 'plate', dishId }, at); twin.moveItem(id, to, { carriedBy });
+twin.setInventoryLevel('RM-LOBSTER', 0.4);
+twin.setOverlay('utilization' | 'traffic' | 'both'); twin.highlight(ids);
+twin.flyTo('EQ-COMBI-KITCHEN'); twin.startTour(); twin.followNextPlate();
+twin.setLook({ sun, sky, interior, accent, exposure, haze, season });  // Studio
+twin.setQuality('auto' | 'mobile' | 'balanced' | 'high' | 'ultra');
+twin.exportUSD();</code></pre>
+        </section>
+
+        <!-- ============================================================ quality -->
+        <section id="quality">
+          <h2>Quality modes</h2>
+          <p>Every level shows the same picture: the same materials, in-kitchen reflections, filmic tone mapping, glow on flames and lamps, and soft shadows from the evening sun and the vault lights. Higher levels add sharpness and depth, not a different look.</p>
+          <div class="tw"><table>
+            <thead><tr><th>Level</th><th>For</th><th>Pixels</th><th>Anti-aliasing</th><th>Extras</th></tr></thead>
+            <tbody>
+              <tr><td><b>Low</b> <code>mobile</code></td><td>Phones, tablets, older laptops</td><td>1×</td><td>FXAA</td><td>Bloom, 2K shadows</td></tr>
+              <tr><td><b>Medium</b> <code>balanced</code></td><td>Everyday laptops, integrated GPUs</td><td>up to 1.5×</td><td>4× MSAA</td><td>Bloom, 2K shadows</td></tr>
+              <tr><td><b>High</b> <code>high</code></td><td>Apple Pro and Max chips, discrete GPUs</td><td>up to 2×</td><td>4× MSAA</td><td>Ground-truth ambient occlusion, 4K shadows</td></tr>
+              <tr><td><b>Pro Max</b> <code>ultra</code></td><td>Stills</td><td>up to 2.5×</td><td>4× MSAA + accumulation</td><td>GTAO, 4K shadows, progressive supersampling, soft area shadows, depth of field</td></tr>
+            </tbody>
+          </table></div>
+          <h3>Auto</h3>
+          <p>Auto reads the GPU name the browser reports and the device memory. Software renderers, coarse-pointer devices and older Intel graphics start on Low; Apple Pro, Max and Ultra chips and discrete cards start on High; everything else starts on Medium. While the view is in use, if frames stay under about 28 fps for three seconds, Auto steps down one level and says so in a caption. It never picks Pro Max and never overrides a level you chose. Your choice is remembered in local storage.</p>
+          <h3>How Pro Max works</h3>
+          <p>While the camera rests, each frame is rendered with a sub-pixel camera offset and with the sun and key light nudged across a disc, following Halton sequences. An accumulation pass blends each frame into a half-float history buffer with a weight of 1/(n+1), so after about 96 frames the image converges to a supersampled still with soft area shadows, like an offline render. Any camera move resets the history.</p>
+        </section>
+
+        <!-- ============================================================ views -->
+        <section id="views">
+          <h2>Views and controls</h2>
+          <h3>3D twin (<code>index.html</code>)</h3>
+          <div class="tw"><table>
+            <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+            <tbody>
+              <tr><td>HUD</td><td>Service clock, phase (prep or service), covers seated, tickets on the rail, ticket p90 and the current constraint; play or pause and a speed from 1× to 300×</td></tr>
+              <tr><td>Opening</td><td>An 11-second crane shot from the garden into the kitchen (skip with <code>?intro=0</code>)</td></tr>
+              <tr><td>Tour <kbd>t</kbd></td><td>A guided camera tour through 15 shots: the suites, hearth, rotisserie, combis, reach-ins, the pass, the clock, pastry, the garden window, the annex and the plant layout from above</td></tr>
+              <tr><td>Overview <kbd>o</kbd></td><td>Bird's-eye view of the plant</td></tr>
+              <tr><td>Follow a plate <kbd>f</kbd></td><td>The camera follows the next plate from its station to the pass and out to the dining room</td></tr>
+              <tr><td>Labels</td><td>Cycles station labels, station and machine labels, and none</td></tr>
+              <tr><td>Overlay</td><td>Utilization heat on stations and machines, foot-traffic trails, or both</td></tr>
+              <tr><td>Quality</td><td>Auto, Low, Medium, High or Pro Max</td></tr>
+              <tr><td>Click anything</td><td>Picks a machine or ingredient: highlights it, shows its details and selects it in the dashboard</td></tr>
+              <tr><td>USD ⤓, Share, Studio</td><td>See <a href="#usd">OpenUSD export</a>, <a href="#share">Share links</a> and <a href="#studio">Studio</a></td></tr>
+              <tr><td>Operations</td><td>Opens a drawer with the live dashboard and the production plan, side by side with the 3D view</td></tr>
+              <tr><td><kbd>Space</kbd></td><td>Play or pause</td></tr>
+            </tbody>
+          </table></div>
+          <h3>Studio cameras</h3>
+          <p>Dining room, Kitchen, Garden window and Whole restaurant.</p>
+        </section>
+
+        <!-- ============================================================ dashboard -->
+        <section id="dashboard">
+          <h2>Operations dashboard</h2>
+          <p><code>src/dashboard/</code> is a control room for the service, drawn with plain DOM and Canvas 2D. It runs full screen at <a href="./dashboard.html">dashboard.html</a>, in the drawer of the 3D twin, and over Studio, always on the same simulation object, so selecting a machine in the dashboard flies the 3D camera to it and vice versa.</p>
+          <div class="tw"><table>
+            <thead><tr><th>Panel</th><th>Shows</th></tr></thead>
+            <tbody>
+              <tr><td>Top bar</td><td>Clock, phase, transport (doors, play, +5 min, speed, scrubber), re-plan by covers, seating and seed, and the Kitchen or Factory vocabulary toggle</td></tr>
+              <tr><td>KPI tiles and banner</td><td>Headline KPIs and the named constraint</td></tr>
+              <tr><td>The kitchen, live</td><td>A floor-plan view with every cook and station state</td></tr>
+              <tr><td>Ticket rail</td><td>Open tickets per table and course, with their age</td></tr>
+              <tr><td>Throughput and WIP</td><td>Plates per hour on a 15-minute rolling window, open tickets and queued tasks</td></tr>
+              <tr><td>Ticket time by course</td><td>p50 and p90 against the 15-minute target</td></tr>
+              <tr><td>Station Gantt</td><td>The last 75 minutes of hands-on work for cooks or machines, colored by course group, prep and pot wash</td></tr>
+              <tr><td>Inventory</td><td>Service stock and the pantry, draining live</td></tr>
+              <tr><td>Appliances</td><td>OEE = availability × performance × quality, and load</td></tr>
+              <tr><td>Brigade</td><td>Utilization by station</td></tr>
+              <tr><td>Plan the night</td><td>Guests, orders, stock and timing tabs that build a config patch and re-run the night from the same seed</td></tr>
+              <tr><td>Guests: the dining-room line</td><td>In the house, waiting and walked away; course gaps against target</td></tr>
+              <tr><td>What if…</td><td>One-click scenarios with before and after on every KPI</td></tr>
+              <tr><td>Rated capacity</td><td>The 20 to 200 cover sweep and its knee</td></tr>
+              <tr><td>Mise en place and ordering</td><td>The MRP table and the shift report as CSV</td></tr>
+              <tr><td>Kitchen log</td><td>Every ticket fired, seating, stockout and breakdown, in plain words</td></tr>
+            </tbody>
+          </table></div>
+          <p>The Kitchen or Factory toggle swaps every panel title between kitchen language and manufacturing language from <code>data/terms.json</code>: ticket rail becomes work-order queue, brigade becomes labor, mise en place becomes MRP.</p>
+        </section>
+
+        <!-- ============================================================ studio -->
+        <section id="studio">
+          <h2>Studio</h2>
+          <p><a href="./studio.html">Studio</a> is where you shape the restaurant behind the twin. Every change other than lighting recompiles the simulation input, re-runs the whole service headlessly in about a tenth of a second, and shows the impact against the house setup for the same season.</p>
+          <div class="tw"><table>
+            <thead><tr><th>Tab</th><th>Controls</th><th>Flows into</th></tr></thead>
+            <tbody>
+              <tr><td>Dining room</td><td>Presets, counts and shapes of two- to eight-tops, covers, seating curve, doors and last seating, eating pace, patience, no-shows, seed</td><td>3D tables and chairs; the sim's tables, reservations and guest behaviour</td></tr>
+              <tr><td>Menu</td><td>Tasting or à la carte; courses, dishes and guest-choice shares; prices</td><td>The sim's courses, dishes, prep and ingredients; check average and food cost</td></tr>
+              <tr><td>Season</td><td>Spring, summer, fall, winter</td><td>Out-of-season dishes swap; produce is repriced and delivered short; sun, sky, foliage, produce and flowers</td></tr>
+              <tr><td>Light and mood</td><td>Six moods, time of day, colour temperature, brightness, exposure, haze, weather, candles</td><td>The 3D light rig only</td></tr>
+            </tbody>
+          </table></div>
+          <p><code>compile.js</code> is a pure function from the Studio state and the adapted base model to the simulation's data and config. <code>look.js</code> places the sun with the NOAA solar-position formulas for Yountville (38.4° N) and converts colour temperatures with a black-body fit. <code>stage.js</code> layers the dining room, candlelight, flowers, seated guests and weather onto the same photoreal twin.</p>
+        </section>
+
+        <!-- ============================================================ share -->
+        <section id="share">
+          <h2>Share links and replay</h2>
+          <p>Because the simulation is deterministic, a link carries a moment, not a recording. Opening it rebuilds the same night from the seed and seeks to the same second.</p>
+          <div class="tw"><table>
+            <thead><tr><th>Parameter</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>covers</code></td><td>Guests booked</td></tr>
+              <tr><td><code>seating</code></td><td>Seating scenario from <code>service.json</code>: <code>tfl-staggered</code>, <code>two-turns</code> or <code>rush</code></td></tr>
+              <tr><td><code>seed</code></td><td>Random seed for the night</td></tr>
+              <tr><td><code>t</code></td><td>Hours after doors open</td></tr>
+              <tr><td><code>speed</code>, <code>play</code></td><td>Playback speed, and <code>play=0</code> to open paused</td></tr>
+              <tr><td><code>intro</code>, <code>quality</code></td><td><code>intro=0</code> skips the crane shot; <code>quality</code> forces a level</td></tr>
+            </tbody>
+          </table></div>
+          <p>Example: <a href="./?covers=120&amp;seating=rush&amp;t=1.5">?covers=120&amp;seating=rush&amp;t=1.5</a> opens a rush seating for 120 covers an hour and a half after the doors open. A re-plan from the dashboard keeps the address bar in sync. Studio encodes its whole setup (dining room, menu, season, look) as base64 JSON in the hash, <code>#s=…</code>, so "62 seats, winter à la carte, candlelit" is a link.</p>
+        </section>
+
+        <!-- ============================================================ usd -->
+        <section id="usd">
+          <h2>OpenUSD export</h2>
+          <p>The USD button writes the kitchen as an OpenUSD stage (<code>.usda</code>) in the browser and downloads it; nothing is uploaded. Prims are named after the data ids, so <code>EQ-COMBI-KITCHEN</code> in the data is <code>/TheFrenchLaundry/Equipment/EQ_COMBI_KITCHEN</code> in Omniverse.</p>
+<pre><code>/TheFrenchLaundry            Y-up, metres
+  /Looks                     UsdPreviewSurface materials
+  /Building                  shell, benches, annex, garden
+  /Equipment/EQ_HEARTH ...   one Xform per machine with twin:* metadata,
+                             render meshes and a box collider
+  /WorkCenters/WC_FISH ...   stations with cook positions
+  /Brigade/...               cooks at their current positions
+  /PhysicsScene              so Isaac Sim can drop robots or people in</code></pre>
+          <p>It opens in usdview, NVIDIA Omniverse and Isaac Sim. It carries geometry, transforms, materials and colliders, not the simulation. The repository's <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/nvidia.md" target="_blank" rel="noopener">NVIDIA path</a> explains how the twin would move into Omniverse, Isaac Sim and cuOpt, and is explicit about what is roadmap.</p>
+        </section>
+
+        <!-- ============================================================ build -->
+        <section id="build">
+          <h2>Build, test and deploy</h2>
+          <figure>
+            <svg class="dg" viewBox="0 0 866 112" role="img" aria-labelledby="dg4t">
+              <title id="dg4t">A pull request runs CI (install, validate, test, build); merging to main runs the Pages workflow, which builds dist and deploys it to GitHub Pages.</title>
+              <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" /></marker></defs>
+              <rect class="box" x="14" y="24" width="150" height="64" rx="10" /><text class="h" x="28" y="50">Pull request</text><text class="s" x="28" y="70">one branch per thread</text>
+              <rect class="box build" x="186" y="24" width="150" height="64" rx="10" /><text class="h" x="200" y="50">CI (ci.yml)</text><text class="s" x="200" y="70">validate · test · build</text>
+              <rect class="box" x="358" y="24" width="150" height="64" rx="10" /><text class="h" x="372" y="50">Merge to main</text><text class="s" x="372" y="70">when CI is green</text>
+              <rect class="box build" x="530" y="24" width="150" height="64" rx="10" /><text class="h" x="544" y="50">pages.yml</text><text class="s" x="544" y="70">vite build → dist/</text>
+              <rect class="box view" x="702" y="24" width="150" height="64" rx="10" /><text class="h" x="716" y="50">GitHub Pages</text><text class="s" x="716" y="70">deploy-pages</text>
+              <path class="arr" d="M164 56H184" marker-end="url(#ah4)" /><path class="arr" d="M336 56H356" marker-end="url(#ah4)" /><path class="arr" d="M508 56H528" marker-end="url(#ah4)" /><path class="arr" d="M680 56H700" marker-end="url(#ah4)" />
+            </svg>
+          </figure>
+<pre><code>npm install
+npm run dev              # dev server at http://localhost:5173 (also /studio.html, /dashboard.html, /wiki.html)
+npm run validate         # every id reference in /data resolves; option shares sum to 1
+npm test                 # planner, engine and Studio tests (node --test)
+npm run plan -- 62       # production plan for 62 covers in the terminal
+npm run sim:report -- 124  # simulated KPIs for 124 covers
+npm run build            # static site in dist/</code></pre>
+          <p>Vite builds four HTML entries and serves them under <code>/michelin-kitchen-twin/</code>, the repository's Pages path. The tests check that the planner reproduces the published Oysters and Pearls quantities, that the engine is deterministic for a seed, replays identically after a backwards seek, serves every guest and keeps inventory balanced, that each what-if moves the KPIs it should, and that Studio's compile, seasons, share links and sun position behave.</p>
+        </section>
+
+        <!-- ============================================================ performance -->
+        <section id="performance">
+          <h2>Performance</h2>
+          <ul>
+            <li><b>No asset downloads.</b> Geometry and textures are generated at load, so the whole site is a few hundred kilobytes of compressed JavaScript and CSS.</li>
+            <li><b>Fewer draw calls.</b> Static meshes are merged per material and the brigade's limbs are batched, so the kitchen renders in a small number of draw calls.</li>
+            <li><b>Event-driven simulation.</b> The engine only computes when something happens, and the scene re-reads it at 6 Hz while tweening in between.</li>
+            <li><b>Adaptive quality.</b> Auto starts from the GPU and steps down if the frame rate stays low; Pro Max only accumulates while the camera rests.</li>
+            <li><b>Headless re-runs.</b> Studio, what-ifs and the capacity sweep re-run the full night without rendering, yielding to the UI between runs.</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================ history -->
+        <section id="history">
+          <h2>How it was built</h2>
+          <p>The twin was built by Claude: several sessions working in parallel in one project, each in its own thread, each owning one part of the repository and merging its own pull requests once CI was green. A person set the goal and the bar and steered the work.</p>
+          <div class="tw"><table>
+            <thead><tr><th>Workstream</th><th>Owned</th></tr></thead>
+            <tbody>
+              <tr><td>Product</td><td>The PR-FAQ and PRD: who the twin is for, the two-minute demo, what "realistic" means</td></tr>
+              <tr><td>Research and data model</td><td><code>data/</code>, the sources, the MRP explosion, the site shell and the Pages deploy</td></tr>
+              <tr><td>Simulation</td><td><code>src/sim</code> and <code>src/dashboard</code>: the engine, the guest line, what-ifs, capacity and the dashboard</td></tr>
+              <tr><td>Realistic 3D kitchen</td><td><code>src/scene</code>: materials, the building, cooks, quality levels, OpenUSD export</td></tr>
+              <tr><td>Studio</td><td><code>src/studio</code>: dining room, menus, seasons, light and mood</td></tr>
+            </tbody>
+          </table></div>
+          <p>The threads agreed on contracts rather than sharing files: one set of ids in the data, and small APIs (<code>createSim</code>, <code>createKitchenScene</code>, <code>bindSim</code>, <code>mountDashboard</code>, <code>compileStudio</code>). When one thread needed something from another, it asked, and the owner made the change. The full story is in <a href="https://github.com/pikulsomesh/michelin-kitchen-twin/blob/main/docs/how-it-was-built.md" target="_blank" rel="noopener">docs/how-it-was-built.md</a>.</p>
+        </section>
+
+        <!-- ============================================================ limits -->
+        <section id="limits">
+          <h2>Limits and estimates</h2>
+          <ul>
+            <li>The menu is a composite of documented courses; the real Chef's Tasting Menu changes daily.</li>
+            <li>Portions for courses without a published recipe, operation times not stated in a recipe, brigade size and shifts, equipment positions and slot counts, ingredient prices and eating times are estimates, marked <code>est</code> in the data.</li>
+            <li>The layout follows the published concept and dimensions but is a reconstruction, not a survey.</li>
+            <li>Labor load counts routed operations only; tasting, cleaning down, family meal and the chef's walkthrough are not modelled, so real utilization is higher.</li>
+            <li>Dispatching uses simple rules rather than an optimal schedule.</li>
+          </ul>
+          <p class="muted">An independent, non-commercial portfolio project built from public information. Not affiliated with or endorsed by The French Laundry, Thomas Keller Restaurant Group, the Michelin Guide or NVIDIA.</p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/wiki/wiki.js"></script>
+  </body>
+</html>
