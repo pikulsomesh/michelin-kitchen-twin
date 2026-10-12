@@ -30,3 +30,14 @@ export const TERMS = {
   guestLine: ['Guests: the dining-room line', 'Customer flow'],
   report: ['Shift report (CSV)', 'Production report (CSV)'],
 };
+
+// The Kitchen / Factory choice is one setting for the whole site: the dashboard, the HUD, the 3D labels
+// and the end-of-service card all follow it.
+const subs = new Set();
+let factory = false;
+export const vocab = {
+  get factory() { return factory; },
+  set(on) { on = !!on; if (on === factory) return; factory = on; for (const f of subs) f(on); },
+  on(f) { subs.add(f); return () => subs.delete(f); },
+  pick(pair) { return pair[factory ? 1 : 0]; },
+};

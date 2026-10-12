@@ -162,12 +162,41 @@ body.touring-site .dock, body.touring-site .caption { display: none; }
 .ghost { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.16); font-weight: 500; }
 .ghost:hover { background: rgba(255, 255, 255, 0.1); }
 
+/* End-of-service card: the shift report's headline numbers */
+.summary {
+  position: absolute; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(640px, calc(100% - 32px));
+  max-height: calc(100% - 120px); overflow: auto; padding: 22px 22px 18px; color: var(--text);
+  background: radial-gradient(ellipse at 50% 0%, rgba(214, 180, 106, 0.12), transparent 70%), rgba(12, 13, 15, 0.86);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px;
+  animation: story-in 0.6s ease-out both;
+}
+.summary[hidden] { display: none; }
+.sum-head { position: relative; padding-right: 30px; }
+.sum-head small { color: var(--accent); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+.sum-head h2 { margin: 6px 0 14px; font: 500 24px/1.2 Georgia, 'Times New Roman', serif; }
+.sum-x { position: absolute; top: -4px; right: -6px; background: none; border: 0; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px 6px; }
+.sum-x:hover { color: var(--text); }
+.sum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.sum-tile { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 9px 11px; }
+.sum-tile small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.sum-tile b { display: block; font-size: 20px; font-weight: 600; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.sum-tile span { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+.sum-tile.good b { color: #6fd08c; }
+.sum-tile.warn b { color: #ffb44a; }
+.sum-bn { margin: 12px 0 0; color: #cfccc3; font-size: 12.5px; line-height: 1.5; }
+.sum-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.srow .perf { font: 500 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); text-align: right; }
+
 @media (max-width: 760px) {
   .story { left: 10px; right: 10px; width: auto; padding: 14px 15px 12px; }
   .story h2 { font-size: 19px; }
   .story p { font-size: 12.5px; }
   .hero h1 { font-size: 26px; }
   .hero { padding: 22px 18px 20px; }
+  .summary { padding: 16px 14px 14px; top: auto; bottom: 62px; transform: translateX(-50%); max-height: calc(100% - 180px); }
+  .sum-head h2 { font-size: 19px; }
+  .sum-grid { grid-template-columns: repeat(2, 1fr); }
+  .sum-tile b { font-size: 17px; }
   #app.ops-full .drawer { height: 100%; border-radius: 0; }
   .hud { gap: 10px; padding: 6px 9px; }
   .hud-brand small, .hud-stats div:nth-child(n+3) { display: none; }

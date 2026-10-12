@@ -14,6 +14,9 @@ import { createKitchenScene } from './scene/index.js';
 import { bindSim } from './scene/bind.js';
 import { createSiteTour } from './site-tour.js';
 import { mountTraceCard } from './trace.js';
+import { vocab } from './dashboard/terms.js';
+import { createPerfMeter } from './perf.js';
+import { mountSummaryCard } from './summary-card.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -23,6 +26,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(`twin.${k}`, v); } catch { /* private mode */ } },
 };
 const SPEEDS = [1, 5, 15, 30, 60, 120, 300];
+const perf = createPerfMeter();
+// ?terms=factory opens in Factory vocabulary; the dashboard toggle and the menu switch it for the whole site.
+vocab.set(q.get('terms') === 'factory');
 
 // ------------------------------------------------------------ simulation
 const index = buildIndex(data);
@@ -36,8 +42,9 @@ const twin = await createKitchenScene($('#twin'), {
   data,
   quality: q.get('quality') || store.get('quality') || 'auto',
   labels: 'stations',
+  factory: vocab.factory,
 });
-window.kitchenTwin = { twin, sim };
+window.kitchenTwin = { twin, sim, perf: () => ({ ...perf.stats(), quality: twin.quality, auto: twin.autoQuality }) };
 const binding = bindSim(twin, sim);
 const trace = mountTraceCard($('[data-trace]'), sim, { onFly: (id) => { twin.highlight([id]); twin.flyTo(id); } });
 // Open the genealogy card for a 3D plate (the one being followed, or one that was clicked).
@@ -71,6 +78,7 @@ twin.on('select', (pick) => {
 // ------------------------------------------------------------ frame loop: the sim owns the clock
 let hudT = 0, dashT = 0;
 twin.onFrame((dt) => {
+  perf.frame();
   sim.tick(dt);
   binding.update(dt);
   hudT += dt; dashT += dt;
@@ -90,18 +98,25 @@ function renderHud() {
   const st = sim.state;
   $('[data-clock]').textContent = fmtClock(st.t);
   const ph = $('[data-phase]');
-  ph.textContent = st.phase;
+  ph.textContent = vocab.factory ? PHASE_FACTORY[st.phase] || st.phase : st.phase;
   ph.className = `pill ${st.phase}${sim.playing ? ' live' : ''}`;
   const k = st.kpis || {};
   const open = st.tickets.filter((x) => !x.passed).length;
   $('[data-stats]').innerHTML = [
-    ['Covers', `${st.covers.seated}<small>/${st.covers.booked}</small>`],
-    ['On the rail', open],
-    ['Ticket p90', k.ticketP90 ? `${Math.round(k.ticketP90 / 60)}<small>m</small>` : '–'],
-    ['Constraint', k.bottleneck?.key ? esc(constraintName(k.bottleneck.key)) : 'none'],
-  ].map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('');
+    [['Covers', 'Build plan'], `${st.covers.seated}<small>/${st.covers.booked}</small>`],
+    [['On the rail', 'WIP orders'], open],
+    [['Ticket p90', 'Lead time p90'], k.ticketP90 ? `${Math.round(k.ticketP90 / 60)}<small>m</small>` : '–'],
+    [['Constraint', 'Constraint'], k.bottleneck?.key ? esc(constraintName(k.bottleneck.key)) : 'none'],
+  ].map(([l, v]) => `<div><small>${vocab.pick(l)}</small><b>${v}</b></div>`).join('');
   $('[data-act="play"]').textContent = sim.playing ? '❚❚' : '▶';
+  summary.check(st);
+  if (!side.hidden) renderPerf();
 }
+const PHASE_FACTORY = { prep: 'pre-production', service: 'production', closed: 'shift over' };
+const renderPerf = () => {
+  const p = perf.stats();
+  $('[data-perf]').textContent = p.fps == null ? 'measuring…' : `${Math.round(p.fps)} fps · first frame ${(p.firstFrameMs / 1000).toFixed(1)} s`;
+};
 // Bottleneck keys look like "role:cdp-garde-manger" or "appliance:EQ-COMBI-KITCHEN"; show the data's own name.
 const constraintName = (key) => {
   const id = key.replace(/^\w+:/, '');
@@ -127,8 +142,12 @@ function setOps(mode, remember = true) {
   $$('[data-act="drawer"]').forEach((b) => b.classList.toggle('on', drawerOpen));
   if (drawerOpen && !was) { hideHero(); dash.update(true); }
 }
-// Factory vocabulary in the dashboard, flipped by the site tour.
-const setTerms = (factory) => $(`#dashboard [data-terms="${factory ? 1 : 0}"]`)?.click();
+// Factory vocabulary everywhere (dashboard, HUD, 3D labels, end-of-service card), flipped by the site tour too.
+const setTerms = (factory) => vocab.set(factory);
+const vocabSel = $('[data-vocab]');
+vocabSel.value = vocab.factory ? 'factory' : 'kitchen';
+vocabSel.onchange = () => vocab.set(vocabSel.value === 'factory');
+vocab.on((on) => { vocabSel.value = on ? 'factory' : 'kitchen'; twin.setTerms(on); renderHud(); });
 // Scroll the drawer to a dashboard panel (by its data-term), below the dashboard's sticky top bar.
 const dashPanel = (term) => {
   const body = $('.drawer-body');
@@ -154,6 +173,11 @@ const hero = $('[data-hero]');
 const hideHero = () => { if (!hero.hidden) { hero.hidden = true; store.set('hero', '1'); } };
 const story = createSiteTour($('[data-story]'), { twin, sim, ops: (m) => setOps(m, false), dashPanel, terms: setTerms, overlay: setOverlay, labels: setLabels });
 story.onChange((on) => { $$('[data-act="site"]').forEach((b) => b.classList.toggle('on', on)); if (!on) setOps('closed'); });
+const summary = mountSummaryCard($('[data-summary]'), {
+  sim,
+  onOps: () => { story.stop(); setOps(lastOpsMode); $('[data-tab="ops"]').click(); },
+  onReplay: () => { sim.seek(sim.config.doorsOpen - 600); sim.play(); renderHud(); },
+});
 const caption = $('[data-caption]');
 let captionTimer = 0;
 const say = (text, ms = 3200) => {
@@ -163,7 +187,7 @@ const say = (text, ms = 3200) => {
 };
 const actions = {
   play() { sim.playing ? sim.pause() : sim.play(); renderHud(); },
-  menu() { hideHero(); setMenu(side.hidden); },
+  menu() { hideHero(); setMenu(side.hidden); if (!side.hidden) renderPerf(); },
   site() { hideHero(); setMenu(false); story.active ? story.stop() : story.start(); },
   tour() { hideHero(); setMenu(false); story.stop(); twin.touring ? twin.stopTour() : twin.startTour(); },
   overview() { setMenu(false); story.stop(); twin.overview(); },
@@ -186,6 +210,7 @@ const actions = {
     // ?covers&seating&seed&t (hours after doors open) reproduce this exact moment: the sim is deterministic.
     const c = sim.config;
     const p = leversToQuery(c, new URLSearchParams({ covers: c.covers, seating: c.seating, seed: c.seed, t: ((sim.t - c.doorsOpen) / 3600).toFixed(2), intro: 0 }));
+    if (vocab.factory) p.set('terms', 'factory');
     const url = `${location.origin}${location.pathname}?${p}`;
     try { await navigator.clipboard.writeText(url); say('Link to this moment copied. It replays the same service, to the second.', 3000); }
     catch { prompt('Link to this moment', url); }
@@ -231,13 +256,13 @@ twin.on('tour', (e) => {
   if (e.shot && !story.active) say(e.shot, 2600);
 });
 twin.on('follow', (e) => {
-  if (e.done) say('Served.', 1600);
+  if (e.done) say(vocab.pick(['Served.', 'Shipped.']), 1600);
   else { tracePlate(e.id); if (!story.active) say('Following a plate to the pass and out to the dining room.', 2600); }
 });
 document.addEventListener('keydown', (e) => {
   if (e.target.matches?.('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.code === 'Space') { e.preventDefault(); story.active ? story.togglePause() : actions.play(); }
-  if (e.key === 'Escape') { if (!side.hidden) setMenu(false); else if (story.active) story.stop(); else if (trace.open) trace.hide(); else if (drawerOpen) setOps('closed'); }
+  if (e.key === 'Escape') { if (summary.open) summary.hide(); else if (!side.hidden) setMenu(false); else if (story.active) story.stop(); else if (trace.open) trace.hide(); else if (drawerOpen) setOps('closed'); }
   if (story.active && e.key === 'ArrowRight') story.next();
   if (story.active && e.key === 'ArrowLeft') story.prev();
   if (e.key === 's') actions.site();
@@ -258,6 +283,7 @@ sim.on('reset', ({ config }) => {
 if (q.get('play') !== '0') sim.play();
 renderHud();
 $('[data-loading]').classList.add('done');
+perf.markReady();
 setTimeout(() => $('[data-loading]').remove(), 900);
 // ?ops=split|full opens the dashboard; ?tour=site starts the site tour. A first visit lands on the opening
 // shot and then offers the site tour.
