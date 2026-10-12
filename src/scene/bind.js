@@ -26,6 +26,7 @@ export function bindSim(twin, sim, { syncHz = 6 } = {}) {
   const applKey = new Map();  // appliance id -> last pushed state key
   const lastStep = new Map(); // ticket -> { station, staff } of its latest finished cooking step
   const plates = new Map();   // ticket -> [item ids]
+  const plateMeta = new Map(); // item id -> { ticket, dish } (for the genealogy card)
   let plateSeq = 0, acc = 0, lastT = sim.t, stopped = false;
 
   const walkSpeed = () => Math.max(1.3, Math.min(5.5, 1.4 * Math.sqrt(Math.max(1, sim.speed) / 6)));
@@ -34,6 +35,7 @@ export function bindSim(twin, sim, { syncHz = 6 } = {}) {
   const dropPlates = () => {
     for (const ids of plates.values()) for (const id of ids) twin.removeItem(id);
     plates.clear();
+    plateMeta.clear();
     lastStep.clear();
     errand.clear();
   };
@@ -95,6 +97,7 @@ export function bindSim(twin, sim, { syncHz = 6 } = {}) {
     const ids = [];
     for (let i = 0; i < Math.min(3, p.qty || 1); i++) {
       const id = `plate-${++plateSeq}`;
+      plateMeta.set(id, { ticket: p.ticket, dish: p.dish });
       twin.addItem(id, { kind: 'plate', dishId: p.dish, label: `${p.dish} · ${p.ticket}` }, from.station);
       ids.push(id);
     }
@@ -126,7 +129,7 @@ export function bindSim(twin, sim, { syncHz = 6 } = {}) {
       for (const id of ids.slice(1)) twin.moveItem(id, to, { seconds: 0.5 });
       await new Promise((r) => setTimeout(r, 1500)); // leave the course on the table for a beat
     } catch { /* interrupted by a seek */ } finally {
-      for (const id of ids) twin.removeItem(id);
+      for (const id of ids) { twin.removeItem(id); plateMeta.delete(id); }
       errand.delete(p.staff);
       want.delete(p.staff);
     }
@@ -138,6 +141,8 @@ export function bindSim(twin, sim, { syncHz = 6 } = {}) {
   sync(true);
 
   return {
+    /** The ticket and dish a 3D plate belongs to, or null. */
+    plateOf(itemId) { return plateMeta.get(itemId) ?? null; },
     // Call once per frame after sim.tick(); mirrors state at syncHz.
     update(dt = 1 / 60) {
       if (stopped) return;

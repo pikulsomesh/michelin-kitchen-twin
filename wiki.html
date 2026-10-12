@@ -459,11 +459,11 @@ twin.exportUSD();</code></pre>
               <tr><td>Site tour <kbd>s</kbd></td><td>An 11-chapter guided story of the whole twin. It moves the camera, opens the dashboard split or full, flips the factory vocabulary, the utilization and foot-traffic overlays, follows a plate and opens the optimizer, with one caption card per chapter. Chapters auto-advance; <kbd>←</kbd> <kbd>→</kbd> step, <kbd>Space</kbd> pauses, <kbd>Esc</kbd> ends it. <code>?tour=site</code> starts it</td></tr>
               <tr><td>Kitchen tour <kbd>t</kbd></td><td>A camera tour through 15 shots: the suites, hearth, rotisserie, combis, reach-ins, the pass, the clock, pastry, the garden window, the annex and the plant layout from above</td></tr>
               <tr><td>Bird's-eye view <kbd>o</kbd></td><td>The whole plant from above</td></tr>
-              <tr><td>Follow a plate <kbd>f</kbd></td><td>The camera follows the next plate from its station to the pass and out to the dining room</td></tr>
+              <tr><td>Follow a plate <kbd>f</kbd></td><td>The camera follows the next plate from its station to the pass and out to the dining room, and its genealogy card opens: ticket (work order), every routing step with its cook, machine, times and queue wait, the bill of materials with the prep batch (lot) each component came from, food cost and lead time. Click any plate in the kitchen to follow it, or a routing step to fly there. Built by <code>src/sim/genealogy.js</code> from the engine's own records</td></tr>
               <tr><td>Labels</td><td>Station labels, station and machine labels, or none</td></tr>
               <tr><td>Overlay</td><td>Utilization heat on stations and machines, foot-traffic trails, or both</td></tr>
               <tr><td>Quality</td><td>Auto, Low, Medium, High or Pro Max</td></tr>
-              <tr><td>Click anything</td><td>Picks a machine or ingredient: highlights it, shows its details and selects it in the dashboard</td></tr>
+              <tr><td>Click anything</td><td>Picks a machine, ingredient or plate: highlights it, shows its details and selects it in the dashboard</td></tr>
               <tr><td>Share, OpenUSD, Studio</td><td>See <a href="#share">Share links</a>, <a href="#usd">OpenUSD export</a> and <a href="#studio">Studio</a></td></tr>
               <tr><td>Scenarios</td><td>Opens the dashboard at the scenarios and optimizer panel</td></tr>
               <tr><td>Operations</td><td>The live dashboard and the production plan in a drawer. <b>Split</b> keeps the 3D twin beside it; <b>Metrics only</b> gives the dashboard the whole screen. The last choice is remembered, and <code>?ops=split</code> or <code>?ops=full</code> opens it</td></tr>
@@ -487,13 +487,13 @@ twin.exportUSD();</code></pre>
               <tr><td>Ticket rail</td><td>Open tickets per table and course, with their age</td></tr>
               <tr><td>Throughput and WIP</td><td>Plates per hour on a 15-minute rolling window, open tickets and queued tasks</td></tr>
               <tr><td>Ticket time by course</td><td>p50 and p90 against the 15-minute target</td></tr>
-              <tr><td>Station Gantt</td><td>The last 75 minutes of hands-on work for cooks or machines, colored by course group, prep and pot wash</td></tr>
+              <tr><td>Station Gantt</td><td>The last 75 minutes of hands-on work for cooks or machines, colored by course group, prep and pot wash. Click a bar to fly the 3D camera to that machine or station; a bar that cooked a plate also opens the plate's genealogy</td></tr>
               <tr><td>Inventory</td><td>Service stock and the pantry, draining live</td></tr>
               <tr><td>Appliances</td><td>OEE = availability × performance × quality, and load</td></tr>
               <tr><td>Brigade</td><td>Utilization by station</td></tr>
               <tr><td>Plan the night</td><td>Guests, orders, stock and timing tabs that build a config patch and re-run the night from the same seed</td></tr>
               <tr><td>Guests: the dining-room line</td><td>In the house, waiting and walked away; course gaps against target</td></tr>
-              <tr><td>What if…</td><td>One-click scenarios with before and after on every KPI</td></tr>
+              <tr><td>What if…</td><td>One-click scenarios with before and after on every KPI. <b>Pin this night as the baseline</b> keeps a run; every later night (a scenario, a re-plan or an optimizer plan) is then compared against the pinned one, KPI by KPI</td></tr>
               <tr><td>Service scenarios and optimizer</td><td>Precomputed nights for 40 to 120 guests, the optimizer's ranked plans, and a button to load one onto the twin</td></tr>
               <tr><td>Rated capacity</td><td>The 20 to 200 cover sweep and its knee</td></tr>
               <tr><td>Mise en place and ordering</td><td>The MRP table and the shift report as CSV</td></tr>

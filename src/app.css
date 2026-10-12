@@ -1,5 +1,5 @@
 /* Site chrome around the 3D twin: HUD, dock, drawer, captions, loading. */
-#twin { position: absolute; inset: 0; }
+#twin { position: absolute; inset: 0; isolation: isolate; } /* keeps CSS2D label z-indexes under the chrome */
 #app.with-drawer #twin { right: min(560px, 46vw); }
 #app.ops-full .hud, #app.ops-full .dock { visibility: hidden; }
 
@@ -210,3 +210,40 @@ body.touring-site .dock, body.touring-site .caption { display: none; }
   #app.with-drawer .story p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .story p { max-height: 30vh; overflow: auto; }
 }
+
+/* Plate genealogy card (src/trace.js) */
+.trace {
+  position: absolute; z-index: 3; top: 76px; right: 12px; width: min(380px, calc(100% - 24px)); max-height: calc(100% - 160px);
+  overflow-y: auto; padding: 12px 14px; color: var(--text); font-size: 12px;
+  background: rgba(14, 15, 17, 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 12px;
+}
+.trace[hidden] { display: none; }
+#app.with-drawer .trace { right: calc(min(560px, 46vw) + 12px); }
+#app.ops-full .trace { display: none; }
+.trace .muted { color: var(--muted); font-weight: 400; }
+.trace header { display: flex; gap: 8px; align-items: flex-start; }
+.trace header > div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.trace header small { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.trace header b { font-size: 15px; }
+.trace .close { background: none; border: 0; color: var(--muted); font-size: 14px; cursor: pointer; padding: 2px 4px; }
+.trace h4 { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+.tr-miles { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-variant-numeric: tabular-nums; }
+.tr-miles span { display: flex; flex-direction: column; color: var(--muted); }
+.tr-miles span.ok { color: var(--text); }
+.tr-miles small { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.tr-miles i { color: var(--muted); font-style: normal; }
+.tr-miles .lead { margin-left: auto; text-align: right; color: var(--accent); font-weight: 600; }
+.tr-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.tr-steps li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: start; padding: 5px 6px; border-radius: 6px; cursor: pointer; }
+.tr-steps li:hover { background: rgba(255, 255, 255, 0.06); }
+.tr-steps li .n { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; border: 1px solid #3a3a36; color: var(--muted); }
+.tr-steps li.done .n { background: #1f3b2e; border-color: #39c28a; color: #39c28a; }
+.tr-steps li.running .n { border-color: var(--accent); color: var(--accent); }
+.tr-steps li.waiting, .tr-steps li.cancelled { opacity: 0.6; }
+.tr-steps li small, .tr-bom small { display: block; color: var(--muted); font-size: 11px; }
+.tr-steps li .t { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tr-bom { width: 100%; border-collapse: collapse; }
+.tr-bom td { padding: 4px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); vertical-align: top; }
+.tr-bom td.n { text-align: right; white-space: nowrap; padding-left: 8px; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .trace { top: auto; bottom: 72px; max-height: 45vh; } }
